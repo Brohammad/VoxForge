@@ -120,7 +120,7 @@ async def entrypoint(ctx) -> None:
 
             from livekit import rtc
 
-            # Mic ingress stays at 16 kHz for STT; agent publish matches Cartesia (24 kHz).
+            # Mic ingress stays at 16 kHz for STT; agent TTS publishes at 48 kHz (WebRTC).
             audio_source = rtc.AudioSource(PUBLISH_SAMPLE_RATE, 1, queue_size_ms=5000)
             local_track = rtc.LocalAudioTrack.create_audio_track(
                 "voxforge-agent",
@@ -167,6 +167,19 @@ async def entrypoint(ctx) -> None:
                 livekit_room_lifecycle_total.labels(event="no_audio_track").inc()
                 logger.error("livekit_no_audio_track", session_id=str(session_id))
                 return
+
+            @ctx.room.on("data_received")
+            def _on_data(data_packet) -> None:
+                try:
+                    raw = data_packet.data
+                    text = raw.decode("utf-8") if isinstance(raw, (bytes, bytearray)) else str(raw)
+                    import json
+
+                    payload = json.loads(text)
+                except Exception:
+                    return
+                if payload.get("type") == "interrupt":
+                    asyncio.create_task(runner.handle_client_interrupt())
 
             @ctx.room.on("participant_disconnected")
             def _on_disconnect(participant_obj) -> None:

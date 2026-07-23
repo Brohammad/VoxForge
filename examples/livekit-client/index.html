@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoxForge — LiveKit WebRTC Client</title>
-  <link rel="stylesheet" href="/examples/livekit/static/styles.css?v=9" />
+  <link rel="stylesheet" href="/examples/livekit/static/styles.css?v=10" />
 </head>
 <body>
   <div class="page">
@@ -29,8 +29,8 @@
       <h2>How audio works locally</h2>
       <p>
         Agent replies play on your <strong>Mac speakers</strong>.
-        Use <strong>push-to-talk</strong> (hold Space or the mic button) for cleaner turns.
-        Headphones help avoid feedback.
+        Use <strong>push-to-talk</strong> (hold Space) — starting talk while the agent speaks
+        interrupts them. Headphones help avoid feedback.
       </p>
     </section>
 
@@ -72,11 +72,22 @@
     </section>
 
     <section class="panel">
+      <h2>Latency (last turn)</h2>
+      <dl class="status-grid latency-grid">
+        <div><dt>STT</dt><dd id="lat-stt">—</dd></div>
+        <div><dt>LLM first token</dt><dd id="lat-llm">—</dd></div>
+        <div><dt>TTS first byte</dt><dd id="lat-tts">—</dd></div>
+        <div><dt>E2E</dt><dd id="lat-e2e">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel">
       <h2>Talk</h2>
-      <p class="hint">Hold the button or <kbd>Space</kbd> while speaking, then release and wait for the reply.</p>
+      <p class="hint">Hold <kbd>Space</kbd> or the button while speaking, then release and wait.</p>
       <div class="actions">
         <button id="ptt-btn" type="button" class="btn ptt" disabled>Hold to talk</button>
         <button id="play-speakers-btn" type="button" class="btn primary" disabled>Replay on Mac speakers</button>
+        <button id="download-recording-btn" type="button" class="btn" disabled>Download call audio</button>
       </div>
       <div id="audio-container" class="audio-container"></div>
     </section>
@@ -93,6 +104,6 @@
   </div>
 
   <script src="/examples/livekit/static/livekit-client.umd.min.js"></script>
-  <script src="/examples/livekit/static/app.js?v=9"></script>
+  <script src="/examples/livekit/static/app.js?v=10"></script>
 </body>
 </html>

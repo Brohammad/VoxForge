@@ -188,6 +188,20 @@ class LiveKitSessionRunner:
                 last_sequence=last_sequence,
             )
 
+    async def handle_client_interrupt(self) -> None:
+        """Browser push-to-talk / barge-in while agent is speaking."""
+        livekit_barge_in_total.inc()
+        clear = getattr(self.audio_publisher, "clear", None)
+        if callable(clear):
+            clear()
+        await self.pipeline.interrupt(self.session_id)
+        if self._send_data:
+            try:
+                await self._send_data({"type": "interrupted"})
+            except Exception:
+                pass
+        logger.info("livekit_client_interrupt", session_id=str(self.session_id))
+
     async def _continuous_listening(self, callbacks) -> None:
         while not self._shutdown.is_set():
             try:
@@ -242,6 +256,9 @@ class LiveKitSessionRunner:
         phase = await self.session_manager.get_session_phase(self.session_id)
         if phase == SessionPhase.SPEAKING:
             livekit_barge_in_total.inc()
+            clear = getattr(self.audio_publisher, "clear", None)
+            if callable(clear):
+                clear()
             await self.pipeline.interrupt(self.session_id)
 
     async def _heartbeat_loop(self) -> None:

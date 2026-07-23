@@ -23,7 +23,11 @@ let pollTimer = null;
 let hearInFlight = false;
 let liveAssistantEl = null;
 let pttDown = false;
-let micEnabled = false;
+let callPhase = "idle";
+let mediaRecorder = null;
+let micChunks = [];
+let assistantWavParts = []; // {text, blob} from /demo/hear
+let currentAudio = null; // HTMLAudioElement for barge-in stop
 
 const els = {
   tokenInput: document.getElementById("token-input"),
@@ -34,6 +38,7 @@ const els = {
   disconnectBtn: document.getElementById("disconnect-btn"),
   dashboardLink: document.getElementById("dashboard-link"),
   pttBtn: document.getElementById("ptt-btn"),
+  downloadRecordingBtn: document.getElementById("download-recording-btn"),
   errorBanner: document.getElementById("error-banner"),
   statusConnection: document.getElementById("status-connection"),
   statusSession: document.getElementById("status-session"),
@@ -42,6 +47,10 @@ const els = {
   statusParticipants: document.getElementById("status-participants"),
   statusMic: document.getElementById("status-mic"),
   statusPhase: document.getElementById("status-phase"),
+  latStt: document.getElementById("lat-stt"),
+  latLlm: document.getElementById("lat-llm"),
+  latTts: document.getElementById("lat-tts"),
+  latE2e: document.getElementById("lat-e2e"),
   audioContainer: document.getElementById("audio-container"),
   eventLog: document.getElementById("event-log"),
   transcriptBox: document.getElementById("transcript-box"),
@@ -71,7 +80,24 @@ function setStatus(key, value) {
 }
 
 function setPhase(phase) {
+  callPhase = phase;
   setStatus("statusPhase", phase);
+}
+
+function msLabel(value) {
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  return `${Math.round(Number(value))} ms`;
+}
+
+function updateLatency(metrics) {
+  if (!metrics) return;
+  if (els.latStt) els.latStt.textContent = msLabel(metrics.stt_ms);
+  if (els.latLlm) els.latLlm.textContent = msLabel(metrics.llm_first_token_ms);
+  if (els.latTts) els.latTts.textContent = msLabel(metrics.tts_first_byte_ms);
+  if (els.latE2e) els.latE2e.textContent = msLabel(metrics.e2e_ms);
+  log(
+    `Latency STT=${msLabel(metrics.stt_ms)} LLM=${msLabel(metrics.llm_first_token_ms)} TTS=${msLabel(metrics.tts_first_byte_ms)} E2E=${msLabel(metrics.e2e_ms)}`,
+  );
 }
 
 function updateParticipantCount() {
@@ -86,13 +112,10 @@ function setDashboardLink(id) {
   if (!els.dashboardLink) return;
   if (!id) {
     els.dashboardLink.classList.add("hidden");
-    els.dashboardLink.removeAttribute("href");
     return;
   }
-  // Dashboard deep-link: sessions list; operators can open the session from there.
   els.dashboardLink.href = `/dashboard#session=${id}`;
   els.dashboardLink.classList.remove("hidden");
-  els.dashboardLink.textContent = "Open in dashboard";
 }
 
 function appendTranscript(role, text) {
@@ -121,9 +144,7 @@ async function api(path, options = {}) {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
-  if (token && !headers.Authorization) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+  if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${API}${path}`, { ...options, headers });
   if (!res.ok) {
     const body = await res.text();
@@ -133,7 +154,7 @@ async function api(path, options = {}) {
       if (typeof parsed.detail === "string") detail = parsed.detail;
       else if (parsed.detail) detail = JSON.stringify(parsed.detail);
     } catch {
-      // keep raw
+      // keep
     }
     throw new Error(`${res.status}: ${detail}`);
   }
@@ -143,6 +164,29 @@ async function api(path, options = {}) {
 
 function textKey(text) {
   return text.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function stopLocalPlayback() {
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    } catch {
+      // ignore
+    }
+    currentAudio = null;
+  }
+}
+
+async function sendInterrupt() {
+  if (!room) return;
+  try {
+    const payload = new TextEncoder().encode(JSON.stringify({ type: "interrupt" }));
+    await room.localParticipant.publishData(payload, { reliable: true });
+    log("Sent interrupt to agent");
+  } catch (err) {
+    log(`Interrupt send failed: ${err.message}`);
+  }
 }
 
 async function playOnMacSpeakers(text, { force = false } = {}) {
@@ -160,17 +204,40 @@ async function playOnMacSpeakers(text, { force = false } = {}) {
   setPhase("speaking (Mac speakers)");
   log("Playing assistant on Mac speakers…");
   try {
-    const res = await fetch(`${API}/demo/hear`, {
+    // Prefer browser WAV playback (can interrupt) + server afplay for reliability.
+    const res = await fetch(`${API}/demo/speak`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: cleaned }),
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || `hear ${res.status}`);
-    log(`Mac speakers OK (${data.bytes || "?"} bytes)`);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || `speak ${res.status}`);
+    }
+    const buffer = await res.arrayBuffer();
+    const blob = new Blob([buffer], { type: "audio/wav" });
+    assistantWavParts.push({ text: cleaned, blob });
+    if (els.downloadRecordingBtn) els.downloadRecordingBtn.disabled = false;
+
+    stopLocalPlayback();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.playsInline = true;
+    try {
+      await audio.play();
+      log(`Browser WAV playing (${buffer.byteLength} bytes)`);
+    } catch (playErr) {
+      log(`Browser play blocked (${playErr.message}); falling back to afplay`);
+      await fetch(`${API}/demo/hear`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: cleaned }),
+      });
+    }
   } catch (err) {
     playedTexts.delete(key);
-    log(`Mac speakers failed: ${err.message}`);
+    log(`Playback failed: ${err.message}`);
   } finally {
     hearInFlight = false;
     if (room) setPhase(pttDown ? "talking" : "listening (hold Space)");
@@ -185,11 +252,10 @@ async function demoLogin() {
       if (!r.ok) throw new Error("Demo account is disabled");
       return r.json();
     });
-    const password = info.password_hint;
     const data = await fetch(`${API}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: info.email, password }),
+      body: JSON.stringify({ email: info.email, password: info.password_hint }),
     }).then(async (r) => {
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.detail || `login ${r.status}`);
@@ -212,7 +278,6 @@ async function setMic(enabled) {
   if (!room) return;
   try {
     await room.localParticipant.setMicrophoneEnabled(enabled);
-    micEnabled = enabled;
     setStatus("statusMic", enabled ? "live" : "muted (PTT)");
     if (els.pttBtn) {
       els.pttBtn.classList.toggle("active", enabled);
@@ -225,8 +290,19 @@ async function setMic(enabled) {
 
 async function pttStart(event) {
   if (event) event.preventDefault();
-  if (!room || pttDown || hearInFlight) return;
+  if (!room || pttDown) return;
   pttDown = true;
+
+  // Barge-in if agent is speaking.
+  if (
+    callPhase.includes("speaking") ||
+    callPhase === "generating" ||
+    hearInFlight
+  ) {
+    stopLocalPlayback();
+    await sendInterrupt();
+  }
+
   setPhase("talking");
   await setMic(true);
   log("PTT down — speak now");
@@ -236,11 +312,80 @@ async function pttEnd(event) {
   if (event) event.preventDefault();
   if (!room || !pttDown) return;
   pttDown = false;
-  // Keep mic open briefly so endpointing catches trailing audio.
   await new Promise((r) => setTimeout(r, 350));
   await setMic(false);
   setPhase("thinking");
   log("PTT up — waiting for agent reply");
+}
+
+async function startMicRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micChunks = [];
+    const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      ? "audio/webm;codecs=opus"
+      : "audio/webm";
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size) micChunks.push(ev.data);
+    };
+    mediaRecorder.start(1000);
+    log("Mic recording started");
+  } catch (err) {
+    log(`Mic recording unavailable: ${err.message}`);
+  }
+}
+
+function stopMicRecording() {
+  return new Promise((resolve) => {
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+      resolve(null);
+      return;
+    }
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(micChunks, { type: "audio/webm" });
+      mediaRecorder.stream.getTracks().forEach((t) => t.stop());
+      mediaRecorder = null;
+      resolve(blob);
+    };
+    mediaRecorder.stop();
+  });
+}
+
+async function downloadCallAudio() {
+  const micBlob = await stopMicRecording();
+  // Restart recording if still connected
+  if (room) startMicRecording();
+
+  if (!assistantWavParts.length && !micBlob) {
+    log("Nothing to download yet");
+    return;
+  }
+
+  // Download mic webm
+  if (micBlob) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(micBlob);
+    a.download = `voxforge-mic-${sessionId || "call"}.webm`;
+    a.click();
+  }
+  // Download each assistant WAV (and latest as primary)
+  const last = assistantWavParts[assistantWavParts.length - 1];
+  if (last) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(last.blob);
+    a.download = `voxforge-assistant-${sessionId || "call"}.wav`;
+    a.click();
+  }
+  // Also zip-less: download all assistant turns
+  assistantWavParts.forEach((part, i) => {
+    if (part === last) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(part.blob);
+    a.download = `voxforge-assistant-turn-${i + 1}.wav`;
+    a.click();
+  });
+  log("Download started (mic webm + assistant wavs)");
 }
 
 async function seedSeenMessages() {
@@ -349,9 +494,8 @@ function handleAgentPayload(payload) {
   if (!payload || typeof payload !== "object") return;
 
   if (payload.type === "transcript") {
-    if (payload.partial) {
-      setPhase("talking");
-    } else if (payload.text) {
+    if (payload.partial) setPhase("talking");
+    else if (payload.text) {
       appendTranscript("user", payload.text);
       setPhase("thinking");
       log(`You: ${payload.text}`);
@@ -365,6 +509,7 @@ function handleAgentPayload(payload) {
   }
 
   if (payload.type === "metric") {
+    updateLatency(payload);
     const text = assistantBuffer.trim();
     assistantBuffer = "";
     liveAssistantEl = null;
@@ -373,6 +518,12 @@ function handleAgentPayload(payload) {
       log(`Agent: ${text}`);
       playOnMacSpeakers(text);
     }
+  }
+
+  if (payload.type === "interrupted") {
+    stopLocalPlayback();
+    setPhase("interrupted");
+    log("Agent interrupted");
   }
 
   if (payload.type === "error") {
@@ -459,6 +610,7 @@ async function connect() {
   liveAssistantEl = null;
   playedTexts = new Set();
   seenMessageIds = new Set();
+  assistantWavParts = [];
   pttDown = false;
 
   try {
@@ -490,10 +642,9 @@ async function connect() {
       peerConnectionTimeout: 20000,
       websocketTimeout: 20000,
     });
-    // Push-to-talk: start muted, hold Space / button to speak.
     await room.localParticipant.setMicrophoneEnabled(false);
-    micEnabled = false;
     attachExistingRemoteAudio(room);
+    await startMicRecording();
 
     setStatus("statusMic", "muted (PTT)");
     els.disconnectBtn.disabled = false;
@@ -507,7 +658,7 @@ async function connect() {
 
     await playOnMacSpeakers("Connected. Hold space and speak when ready.", { force: true });
     setPhase("listening (hold Space)");
-    log("Ready — hold Space (or Hold to talk), speak, release, wait for reply.");
+    log("Ready — hold Space to talk; start talking while agent speaks to interrupt.");
   } catch (err) {
     const msg = String(err.message || err);
     showError(msg);
@@ -520,13 +671,13 @@ async function connect() {
 async function disconnect() {
   stopPolling();
   pttDown = false;
+  stopLocalPlayback();
   els.disconnectBtn.disabled = true;
   if (els.pttBtn) els.pttBtn.disabled = true;
   const endedSession = sessionId;
+  await stopMicRecording();
   if (room) {
-    if (room.state !== ConnectionState.Disconnected) {
-      await room.disconnect();
-    }
+    if (room.state !== ConnectionState.Disconnected) await room.disconnect();
     room = null;
   }
   els.audioContainer.innerHTML = "";
@@ -537,19 +688,17 @@ async function disconnect() {
   setPhase("idle");
   if (endedSession) setDashboardLink(endedSession);
   cleanupUi();
-  log("Session ended");
+  log("Session ended — use Download call audio if you want the recordings.");
 }
 
 els.demoLoginBtn?.addEventListener("click", demoLogin);
 els.connectBtn.addEventListener("click", connect);
 els.disconnectBtn.addEventListener("click", disconnect);
 els.playSpeakersBtn?.addEventListener("click", () => {
-  if (!lastAssistantText) {
-    log("No assistant text yet.");
-    return;
-  }
+  if (!lastAssistantText) return log("No assistant text yet.");
   playOnMacSpeakers(lastAssistantText, { force: true });
 });
+els.downloadRecordingBtn?.addEventListener("click", downloadCallAudio);
 
 if (els.pttBtn) {
   els.pttBtn.addEventListener("pointerdown", pttStart);
@@ -568,7 +717,6 @@ window.addEventListener("keyup", (event) => {
   pttEnd(event);
 });
 
-// Convenience: if no token yet, try demo login silently when demo is enabled.
 if (!token) {
   fetch(`${API}/demo/info`)
     .then((r) => (r.ok ? r.json() : null))
