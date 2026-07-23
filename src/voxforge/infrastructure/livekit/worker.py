@@ -10,7 +10,10 @@ from voxforge.config import get_settings
 from voxforge.core.events.bus import get_event_bus
 from voxforge.infrastructure.db.session import get_engine, init_db
 from voxforge.infrastructure.livekit.audio_bridge import PIPELINE_SAMPLE_RATE
-from voxforge.infrastructure.livekit.audio_publisher import LiveKitAudioPublisher
+from voxforge.infrastructure.livekit.audio_publisher import (
+    PUBLISH_SAMPLE_RATE,
+    LiveKitAudioPublisher,
+)
 from voxforge.infrastructure.livekit.room_utils import parse_session_id
 from voxforge.infrastructure.observability.logging import get_logger, setup_logging
 from voxforge.infrastructure.observability.metrics import livekit_room_lifecycle_total
@@ -117,14 +120,25 @@ async def entrypoint(ctx) -> None:
 
             from livekit import rtc
 
-            audio_source = rtc.AudioSource(PIPELINE_SAMPLE_RATE, 1)
+            # Mic ingress stays at 16 kHz for STT; agent publish matches Cartesia (24 kHz).
+            audio_source = rtc.AudioSource(PUBLISH_SAMPLE_RATE, 1, queue_size_ms=5000)
             local_track = rtc.LocalAudioTrack.create_audio_track(
                 "voxforge-agent",
                 audio_source,
             )
-            published_track = await ctx.room.local_participant.publish_track(local_track)
+            published_track = await ctx.room.local_participant.publish_track(
+                local_track,
+                rtc.TrackPublishOptions(source=rtc.TrackSource.SOURCE_MICROPHONE),
+            )
+            # Do NOT wait_for_subscription here — that deadlocks before the browser
+            # joins. Playout subscription happens after the participant connects.
 
-            publisher = LiveKitAudioPublisher(audio_source, sample_rate=PIPELINE_SAMPLE_RATE)
+            publisher = LiveKitAudioPublisher(
+                audio_source,
+                sample_rate=PUBLISH_SAMPLE_RATE,
+                # Client page plays via /demo/hear (avoids double Mac playback).
+                mirror_afplay=False,
+            )
             runner = LiveKitSessionRunner(
                 session_id=session_id,
                 session_manager=bundle.session_manager,

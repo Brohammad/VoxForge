@@ -16,6 +16,9 @@ _EXEMPT_SUFFIXES = (
     "/api/v1/auth/logout",
     "/api/v1/auth/invites/accept",
     "/api/v1/demo/quickstart",
+    "/api/v1/demo/speak",
+    "/api/v1/demo/hear",
+    "/api/v1/demo/chat",
 )
 _EXEMPT_CONTAINS = (
     "/sso/saml/acs",

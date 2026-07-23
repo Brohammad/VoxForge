@@ -1,5 +1,7 @@
 const API = "/api/v1/dashboard";
 let token = localStorage.getItem("voxforge_token") || "";
+/** True after a successful /me or dashboard fetch (cookie sessions are HttpOnly). */
+let sessionOk = false;
 let trendDays = Number(localStorage.getItem("voxforge_trend_days") || 7);
 let orgId = null;
 
@@ -120,8 +122,13 @@ function dismissWizard() {
   localStorage.setItem(WIZARD_DISMISS_KEY, "1");
 }
 
+function hasCookieSession() {
+  // Access JWT is HttpOnly — JS cannot read voxforge_access. CSRF cookie is the readable signal.
+  return Boolean(readCookie("voxforge_csrf")) || Boolean(readCookie("voxforge_access"));
+}
+
 function isAuthenticated() {
-  return Boolean(token) || readCookie("voxforge_access");
+  return Boolean(token) || sessionOk || hasCookieSession();
 }
 
 function setWizardStep(step) {
@@ -574,9 +581,11 @@ function clearError() {
 }
 
 function setConnected(ok) {
+  sessionOk = Boolean(ok);
   els.authStatus.textContent = ok ? "Connected" : "Not connected";
   els.authStatus.classList.toggle("connected", ok);
   els.logoutBtn?.classList.toggle("hidden", !ok);
+  renderWizardAuthStatus();
 }
 
 async function loginWithPassword() {
@@ -1619,7 +1628,7 @@ document.querySelectorAll(".nav-link").forEach((link) => {
 
 setTrendDays(trendDays);
 
-if (token || readCookie("voxforge_access")) {
+if (token || hasCookieSession()) {
   refreshAll();
   loadOnboardingStatus().catch(() => {});
   scheduleKnowledgePolling();
@@ -1638,4 +1647,4 @@ if (inviteToken) {
   }
 }
 
-setInterval(() => { if (token) refreshAll(); }, 30000);
+setInterval(() => { if (isAuthenticated()) refreshAll(); }, 30000);

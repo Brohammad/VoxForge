@@ -4,19 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoxForge Demo</title>
-  <link rel="stylesheet" href="/public/demo/styles.css" />
+  <link rel="stylesheet" href="/public/demo/styles.css?v=5" />
 </head>
 <body>
   <header>
     <a href="/" class="back">← VoxForge</a>
     <h1>Interactive Voice Pipeline Demo</h1>
-    <p>Runs the production <code>VoicePipelineService</code> path with mock providers — no API keys required.</p>
+    <p>
+      Type a message — the LLM replies, then this Mac plays Cartesia TTS through your speakers
+      (bypasses Safari autoplay).
+    </p>
   </header>
 
   <main>
     <section class="panel">
-      <button id="run-demo" class="btn">Run demo call</button>
-      <p id="status" class="status">Click to execute a scripted support call through STT → LLM → TTS → evaluation.</p>
+      <button id="run-demo" class="btn" type="button">Run one-click sample call</button>
+      <p id="status" class="status">Or chat below — replies play on your Mac speakers.</p>
     </section>
 
     <section class="panel results hidden" id="results">
@@ -25,24 +28,31 @@
         <div><span class="label">E2E latency</span><strong id="out-e2e">—</strong></div>
         <div><span class="label">Session</span><strong id="out-session">—</strong></div>
       </div>
-      <div class="transcript">
-        <h2>User</h2>
-        <p id="out-user"></p>
-        <h2>Assistant</h2>
-        <p id="out-assistant"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Live chat (multi-turn)</h2>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" type="text" placeholder="e.g. I need to change my billing contact" required />
+        <button id="chat-send" class="btn" type="submit">Send</button>
+      </form>
+      <div class="play-row">
+        <button id="play-voice" class="btn btn-play" type="button" disabled>Play on speakers</button>
+        <a id="download-voice" class="btn btn-secondary hidden" href="#" download="assistant.wav">Download WAV</a>
       </div>
+      <p class="status">Sound comes from the API host via <code>afplay</code> — turn Mac volume up.</p>
     </section>
 
     <section class="panel secondary">
       <h2>Explore further</h2>
       <ul>
-        <li><a href="/dashboard">Operator dashboard</a> — log in with <code id="demo-creds">demo@voxforge.io</code></li>
+        <li><a href="/dashboard">Operator dashboard</a> — <code id="demo-creds">demo@voxforge.io</code></li>
         <li><a href="/api/v1/docs">OpenAPI reference</a></li>
-        <li><a href="/examples/livekit">LiveKit WebRTC example</a> (requires LiveKit configuration)</li>
       </ul>
     </section>
   </main>
 
-  <script src="/public/demo/app.js"></script>
+  <script src="/public/demo/app.js?v=6"></script>
 </body>
 </html>

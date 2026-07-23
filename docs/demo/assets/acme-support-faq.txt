@@ -1,0 +1,103 @@
+# Acme Support Knowledge Base
+# Sample document for VoxForge First Agent demo (Step 3 — Knowledge)
+
+Company: Acme Cloud Billing
+Last updated: 2026-07-22
+Audience: Customer support voice agents
+
+---
+
+## 1. Billing contact changes
+
+Customers can update the billing contact on their account.
+
+Requirements:
+- Account email must be verified.
+- Requester must be an account owner or billing admin.
+- New billing contact needs a valid work email.
+
+Process:
+1. Verify the caller's identity with account email + last invoice ID.
+2. Confirm the new billing contact name and email.
+3. Update the billing contact in the billing portal.
+4. Send a confirmation email to both the old and new contacts.
+
+Scripted reply:
+"I can help with that. After I verify your account, I'll update the billing contact and send a confirmation email."
+
+Typical resolution time: under 5 minutes when identity is verified.
+
+---
+
+## 2. Refund policy
+
+Refunds are available within 30 days of purchase when:
+- The order ID is provided.
+- The subscription has not already been refunded.
+- Usage charges for the current cycle are under the published fair-use cap.
+
+Refunds are not available for:
+- Custom professional services already delivered.
+- Third-party marketplace add-ons billed by another vendor.
+- Accounts suspended for abuse.
+
+How to request:
+1. Collect order ID and account email.
+2. Confirm purchase date is within 30 days.
+3. Submit refund ticket with reason code REFUND_30D.
+4. Tell the customer refunds post in 5–7 business days.
+
+---
+
+## 3. Support hours
+
+Billing support (phone / voice):
+- Monday–Friday, 9:00–18:00 IST
+- Closed on Indian public holidays
+
+Technical support (chat / ticket):
+- 24×7 for Enterprise plans
+- Business hours for Starter and Pro
+
+Emergency production outages:
+- Always escalate to the on-call SRE rotation.
+
+---
+
+## 4. When to escalate to a human
+
+Escalate immediately if:
+- The caller asks for a human agent.
+- Identity cannot be verified after two attempts.
+- The issue involves a disputed charge over $1,000.
+- The customer reports unauthorized account access.
+- Confidence is low or the knowledge base has no matching article.
+
+Handoff checklist:
+- Capture account email.
+- Capture order ID / invoice ID if available.
+- Summarize what was already tried.
+- Keep the caller on the line until an agent accepts.
+
+---
+
+## 5. Common intents
+
+| Intent | Example phrase | First action |
+|--------|----------------|--------------|
+| billing_contact_change | "I need to change the billing contact" | Verify identity, update contact |
+| refund_request | "I want a refund for order …" | Check 30-day window |
+| invoice_copy | "Can you resend last month's invoice?" | Lookup invoice and email PDF |
+| plan_upgrade | "We want to move to Enterprise" | Collect seats + region, create sales ticket |
+| password_reset | "I can't log in" | Send secure reset link; do not ask for password |
+
+---
+
+## 6. Tone and safety
+
+- Be concise and calm.
+- Never invent policy that is not in this document.
+- Never ask for full credit card numbers over voice.
+- If unsure, say you will escalate rather than guess.
+
+End of sample knowledge document.

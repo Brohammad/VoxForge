@@ -51,6 +51,7 @@ Browser          VoxForge API       LiveKit SFU       LiveKit Worker
 
 ## Notes
 
+- The browser SDK is vendored at `static/livekit-client.umd.min.js` (no CDN required).
 - The worker bridges room audio into `VoicePipelineService` (same stack as WebSocket voice).
 - For WebSocket voice, use `/api/v1/ws/voice` instead.
 - See `docs/architecture/livekit-integration.md` for failure modes and observability.

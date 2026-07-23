@@ -18,6 +18,21 @@ Materials for demonstrating VoxForge to recruiters, investors, and pilot custome
 | [demo-script-long.md](demo-script-long.md) | 8 minutes | Technical walkthrough |
 | [presenter-notes.md](presenter-notes.md) | — | Talking points and FAQs |
 
+## Client demo (local, one command)
+
+```bash
+bash scripts/client_demo.sh
+```
+
+Starts Postgres/Redis, migrates, ensures the demo account, warms the pipeline, opens browser tabs, and prints an 8-minute cue card. Dashboard login: `demo@voxforge.io` / `VoxForgeDemo!`.
+
+```bash
+make client-demo          # same as above
+OPEN_BROWSER=0 make client-demo   # prep only, no tabs
+```
+
+Teaching deep-dive (API walkthrough): `bash scripts/teach_me_voxforge.sh`
+
 ## Recording
 
 | Document | Purpose |

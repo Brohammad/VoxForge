@@ -225,10 +225,18 @@ class LiveKitSessionRunner:
                 try:
                     self._audio_queue.put_nowait(pcm)
                 except asyncio.QueueFull:
-                    logger.warning(
-                        "livekit_audio_queue_full",
-                        session_id=str(self.session_id),
-                    )
+                    # Drop oldest frame so STT/turn detection can keep up (Safari mic floods).
+                    try:
+                        _ = self._audio_queue.get_nowait()
+                    except asyncio.QueueEmpty:
+                        pass
+                    try:
+                        self._audio_queue.put_nowait(pcm)
+                    except asyncio.QueueFull:
+                        logger.warning(
+                            "livekit_audio_queue_full",
+                            session_id=str(self.session_id),
+                        )
 
     async def _maybe_barge_in(self) -> None:
         phase = await self.session_manager.get_session_phase(self.session_id)
@@ -243,7 +251,8 @@ class LiveKitSessionRunner:
 
     @staticmethod
     async def send_json_data(
-        publish_fn: Callable[[bytes, str], Awaitable[None]],
+        publish_fn: Callable[..., Awaitable[None]],
         payload: dict[str, Any],
     ) -> None:
-        await publish_fn(json.dumps(payload).encode("utf-8"), "voxforge")
+        # livekit-rtc >=1.x: topic is keyword-only (positional topic breaks publish_data).
+        await publish_fn(json.dumps(payload).encode("utf-8"), topic="voxforge")

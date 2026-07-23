@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from voxforge.api.v1.router import api_v1_router
+from voxforge.api.ws.livekit_proxy import router as livekit_proxy_router
 from voxforge.api.ws.voice import router as ws_router
 from voxforge.config import get_settings
 from voxforge.core.exceptions import (
@@ -134,6 +135,7 @@ def create_app() -> FastAPI:
 
     app.include_router(api_v1_router, prefix="/api/v1")
     app.include_router(ws_router)
+    app.include_router(livekit_proxy_router)
 
     if PUBLIC_DIR.is_dir():
         app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public-static")
@@ -144,7 +146,10 @@ def create_app() -> FastAPI:
 
         @app.get("/demo")
         async def demo_page() -> FileResponse:
-            return FileResponse(PUBLIC_DIR / "demo" / "index.html")
+            return FileResponse(
+                PUBLIC_DIR / "demo" / "index.html",
+                headers={"Cache-Control": "no-store"},
+            )
 
     if DASHBOARD_DIR.is_dir():
         app.mount(

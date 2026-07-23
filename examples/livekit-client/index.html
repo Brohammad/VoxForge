@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoxForge — LiveKit WebRTC Client</title>
-  <link rel="stylesheet" href="/examples/livekit/static/styles.css" />
+  <link rel="stylesheet" href="/examples/livekit/static/styles.css?v=9" />
 </head>
 <body>
   <div class="page">
@@ -18,17 +18,30 @@
       </div>
       <nav class="links">
         <a href="/dashboard">Dashboard</a>
+        <a href="/demo">Demo chat</a>
         <a href="/api/v1/docs" target="_blank">API Docs</a>
       </nav>
     </header>
 
     <div id="error-banner" class="error-banner hidden"></div>
 
+    <section class="panel warn-panel">
+      <h2>How audio works locally</h2>
+      <p>
+        Agent replies play on your <strong>Mac speakers</strong>.
+        Use <strong>push-to-talk</strong> (hold Space or the mic button) for cleaner turns.
+        Headphones help avoid feedback.
+      </p>
+    </section>
+
     <section class="panel">
       <h2>Authentication</h2>
+      <div class="actions" style="margin-bottom: 0.75rem;">
+        <button id="demo-login-btn" type="button" class="btn primary">Use demo account</button>
+      </div>
       <div class="field-row">
         <label for="token-input">JWT access token</label>
-        <input id="token-input" type="password" placeholder="Bearer token from /api/v1/auth/login" />
+        <input id="token-input" type="password" placeholder="Filled by demo login, or paste manually" />
       </div>
       <div class="field-row">
         <label for="identity-input">Participant identity</label>
@@ -45,6 +58,7 @@
       <div class="actions">
         <button id="connect-btn" type="button" class="btn primary">Start WebRTC Session</button>
         <button id="disconnect-btn" type="button" class="btn danger" disabled>Disconnect</button>
+        <a id="dashboard-link" class="btn hidden" href="/dashboard" target="_blank">Open in dashboard</a>
       </div>
       <dl class="status-grid" id="status-grid">
         <div><dt>Connection</dt><dd id="status-connection">idle</dd></div>
@@ -53,13 +67,23 @@
         <div><dt>LiveKit URL</dt><dd id="status-url">—</dd></div>
         <div><dt>Participants</dt><dd id="status-participants">0</dd></div>
         <div><dt>Microphone</dt><dd id="status-mic">off</dd></div>
+        <div><dt>Call phase</dt><dd id="status-phase">idle</dd></div>
       </dl>
     </section>
 
     <section class="panel">
-      <h2>Remote audio</h2>
-      <p class="hint">Agent or other participants appear here when they publish audio tracks.</p>
+      <h2>Talk</h2>
+      <p class="hint">Hold the button or <kbd>Space</kbd> while speaking, then release and wait for the reply.</p>
+      <div class="actions">
+        <button id="ptt-btn" type="button" class="btn ptt" disabled>Hold to talk</button>
+        <button id="play-speakers-btn" type="button" class="btn primary" disabled>Replay on Mac speakers</button>
+      </div>
       <div id="audio-container" class="audio-container"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Transcript</h2>
+      <div id="transcript-box" class="transcript-box"></div>
     </section>
 
     <section class="panel">
@@ -68,7 +92,7 @@
     </section>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.9.3/dist/livekit-client.umd.min.js"></script>
-  <script src="/examples/livekit/static/app.js"></script>
+  <script src="/examples/livekit/static/livekit-client.umd.min.js"></script>
+  <script src="/examples/livekit/static/app.js?v=9"></script>
 </body>
 </html>

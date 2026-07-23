@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from voxforge.api.dependencies import (
@@ -9,6 +9,7 @@ from voxforge.api.dependencies import (
     rate_limit_category,
     require_scope,
 )
+from voxforge.api.ws.livekit_proxy import browser_livekit_url
 from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import Principal
 from voxforge.core.exceptions import ProviderError, SessionNotFoundError
@@ -35,6 +36,7 @@ class LiveKitTokenResponse(BaseModel):
 async def create_livekit_token(
     session_id: UUID,
     body: LiveKitTokenRequest,
+    request: Request,
     _: None = Depends(rate_limit_category("livekit")),
     principal: Principal = Depends(require_scope("sessions:write")),
     session_manager: SessionManager = Depends(get_session_manager),
@@ -61,4 +63,6 @@ async def create_livekit_token(
     dispatch = LiveKitDispatchService(settings)
     await dispatch.dispatch_agent(result["room_name"])
 
+    # Browser clients use same-origin /lk proxy when LiveKit is local Docker.
+    result = {**result, "livekit_url": browser_livekit_url(request)}
     return LiveKitTokenResponse(session_id=session_id, **result)

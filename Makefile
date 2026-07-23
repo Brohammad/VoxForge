@@ -1,4 +1,4 @@
-.PHONY: dev-up dev-down test test-unit test-integration test-feature test-failure test-e2e test-browser test-cov lint benchmark-onboarding benchmark-knowledge-base livekit-worker deploy-validate deploy-smoke prove-real-voice uptime-check
+.PHONY: dev-up dev-down test test-unit test-integration test-feature test-failure test-e2e test-browser test-cov lint benchmark-onboarding benchmark-knowledge-base livekit-worker deploy-validate deploy-smoke prove-real-voice uptime-check client-demo
 
 dev-up:
 	docker compose up -d postgres redis
@@ -6,6 +6,9 @@ dev-up:
 
 dev-down:
 	docker compose down
+
+client-demo:
+	bash scripts/client_demo.sh
 
 test:
 	pytest -v --tb=short --ignore=tests/browser
@@ -43,7 +46,7 @@ typecheck:
 	pyright
 
 livekit-worker:
-	python -m voxforge.infrastructure.livekit.worker
+	python -m voxforge.infrastructure.livekit.worker dev
 
 deploy-validate:
 	ENV_FILE=.env.production APP_ENV=production PYTHONPATH=src python3 scripts/validate_production_env.py
