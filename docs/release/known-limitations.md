@@ -22,7 +22,7 @@
 ## Security
 
 - **Dashboard auth** — Login uses HttpOnly cookies + CSRF for mutating requests. Pasting a JWT still stores it in `localStorage` as a Bearer override for API debugging only.
-- **Open registration** — No email verification on public instances; restrict with network policy or disable register in production if needed.
+- **Open registration** — No email verification. Disable with `REGISTRATION_ENABLED=false` (default in `.env.production.example`); new users join via org invite. Production validation rejects open registration when `DEMO_ENABLED=false`.
 
 ## Documentation
 

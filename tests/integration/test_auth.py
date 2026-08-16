@@ -119,3 +119,25 @@ async def test_duplicate_registration(auth_client):
     assert (await auth_client.post("/api/v1/auth/register", json=payload)).status_code == 201
     dup = await auth_client.post("/api/v1/auth/register", json=payload)
     assert dup.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_registration_disabled_returns_403(auth_client, monkeypatch):
+    from voxforge.config import get_settings
+
+    monkeypatch.setenv("REGISTRATION_ENABLED", "false")
+    get_settings.cache_clear()
+    try:
+        resp = await auth_client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": "locked-out@example.com",
+                "password": "securepass123",
+                "full_name": "Locked Out",
+                "org_name": "Locked Org",
+            },
+        )
+        assert resp.status_code == 403
+        assert "registration is disabled" in resp.json()["detail"].lower()
+    finally:
+        get_settings.cache_clear()

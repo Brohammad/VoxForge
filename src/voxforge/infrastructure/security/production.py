@@ -79,6 +79,12 @@ def collect_production_errors(settings: Settings) -> list[str]:
     if not settings.auth_required:
         errors.append("AUTH_REQUIRED must be true in production")
 
+    if settings.registration_enabled and not settings.demo_enabled:
+        errors.append(
+            "REGISTRATION_ENABLED must be false in production when DEMO_ENABLED=false "
+            "(use org invites for new users)"
+        )
+
     if settings.handoff_enabled:
         if not settings.handoff_replay_signing_secret.strip():
             errors.append("HANDOFF_REPLAY_SIGNING_SECRET must be set when handoff is enabled")
@@ -118,6 +124,12 @@ def collect_production_errors(settings: Settings) -> list[str]:
 
 def log_startup_security_warnings(settings: Settings) -> None:
     """Emit non-fatal warnings for risky but allowed development configuration."""
+    if settings.registration_enabled:
+        logger.warning(
+            "REGISTRATION_ENABLED is true; open signup has no email verification — "
+            "set REGISTRATION_ENABLED=false for invite-only access"
+        )
+
     if settings.app_env == "production":
         return
 

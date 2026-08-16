@@ -79,4 +79,7 @@ JWT_SECRET_KEY=your-secret-key-min-32-chars
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
 API_KEY_HASH_PEPPER=your-pepper
 AUTH_REQUIRED=true
+REGISTRATION_ENABLED=true
 ```
+
+Set `REGISTRATION_ENABLED=false` for invite-only deployments. `POST /api/v1/auth/register` then returns 403; use `POST /api/v1/orgs/{org_id}/invites` and `POST /api/v1/auth/invites/accept` instead. Production validation rejects open registration when `DEMO_ENABLED=false`.

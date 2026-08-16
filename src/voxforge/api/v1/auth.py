@@ -65,6 +65,11 @@ async def register(
     settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_db_session),
 ) -> RegisterResponse:
+    if not settings.registration_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail="Public registration is disabled. Use an organization invite or ask an admin.",
+        )
     try:
         user, org, tokens = await auth_service.register(body)
         await auth_service.commit()

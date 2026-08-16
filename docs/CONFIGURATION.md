@@ -78,6 +78,7 @@ When email delivery succeeds, the API omits the raw `token` in production; in `l
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `API_KEY_HASH_PEPPER` | `change-me` | API key hashing secret |
 | `AUTH_REQUIRED` | `true` | Require auth on protected routes |
+| `REGISTRATION_ENABLED` | `true` (local) / `false` (prod example) | Allow `POST /auth/register`. When false, new users join via org invite only |
 
 ---
 

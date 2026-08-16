@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     api_key_hash_pepper: str = "change-me-in-production"
 
     auth_required: bool = True
+    registration_enabled: bool = True
     auth_cookies_enabled: bool = True
     auth_cookie_name: str = "voxforge_access"
     auth_refresh_cookie_name: str = "voxforge_refresh"
