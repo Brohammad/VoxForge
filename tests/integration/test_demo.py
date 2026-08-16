@@ -52,9 +52,20 @@ async def test_demo_quickstart_runs_pipeline(test_client, demo_env, demo_seeded)
     res = await test_client.post("/api/v1/demo/quickstart")
     assert res.status_code == 200
     body = res.json()
-    assert body["status"] == "test_call_passed"
+    assert body["status"] == "demo_turn_ok"
+    assert body["session_id"]
     assert body["assistant_response"]
     assert body["e2e_ms"] is not None
+
+    # Quickstart keeps the session open for follow-up /demo/chat turns.
+    chat = await test_client.post(
+        "/api/v1/demo/chat",
+        json={"message": "Thanks, that helps.", "session_id": body["session_id"]},
+    )
+    assert chat.status_code == 200
+    chat_body = chat.json()
+    assert chat_body["session_id"] == body["session_id"]
+    assert chat_body["assistant_response"]
 
 
 @pytest.mark.asyncio
