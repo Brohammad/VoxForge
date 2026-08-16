@@ -3,13 +3,14 @@
 [![CI](https://github.com/Brohammad/VoxForge/actions/workflows/ci.yml/badge.svg)](https://github.com/Brohammad/VoxForge/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Brohammad/VoxForge?include_prereleases&label=release)](https://github.com/Brohammad/VoxForge/releases/tag/v1.0.0-rc.1)
 [![Live Demo](https://img.shields.io/badge/demo-live-38d996)](https://voxforge.brohammad.tech/demo)
+[![Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvoxforge.brohammad.tech%2Fapi%2Fv1%2Fhealth&query=%24.status&label=status&color=38d996)](https://voxforge.brohammad.tech/status)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](docs/testing/coverage-report.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Production-grade Voice AI Infrastructure** — deploy, operate, and trust.
 
-🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs)
+🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs)
 
 ![VoxForge demo — voice pipeline in action](docs/assets/screenshots/demo.gif)
 
@@ -80,6 +81,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 |---------|-----------|
 | Landing | http://localhost:8000/ |
 | Demo | http://localhost:8000/demo |
+| Status | http://localhost:8000/status |
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 

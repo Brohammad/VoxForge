@@ -10,7 +10,7 @@ Deploy VoxForge on Ubuntu 24.04 with Docker Compose, NGINX, and automatic HTTPS.
 
 | Document | Description |
 |----------|-------------|
-| [uptime.md](uptime.md) | External health checks / alerting |
+| [uptime.md](uptime.md) | External health checks, `/status` page, alerting |
 | [guide.md](guide.md) | **Primary** — step-by-step VPS deployment |
 | [verification-checklist.md](verification-checklist.md) | Post-deploy QA checklist |
 | [setup-production-env.sh](../../scripts/setup-production-env.sh) | Auto-generate `.env.production` |

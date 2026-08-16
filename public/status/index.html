@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="VoxForge live status — health and readiness probes." />
+  <title>VoxForge Status</title>
+  <link rel="stylesheet" href="/public/status/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="back">← VoxForge</a>
+    <h1>System status</h1>
+    <p class="lede">
+      Live checks against this host’s liveness and readiness endpoints.
+      Prefer <code>/api/v1/ready</code> for uptime monitors.
+    </p>
+  </header>
+
+  <main>
+    <section class="summary panel">
+      <div>
+        <span class="label">Overall</span>
+        <strong id="overall" class="pill unknown">Checking…</strong>
+      </div>
+      <div>
+        <span class="label">Last checked</span>
+        <strong id="checked-at">—</strong>
+      </div>
+      <button id="refresh" type="button">Refresh</button>
+    </section>
+
+    <section class="grid">
+      <article class="panel" id="health-card">
+        <h2>Liveness <code>/api/v1/health</code></h2>
+        <p class="hint">Process is up. Does not check Postgres or Redis.</p>
+        <div class="row">
+          <span class="label">HTTP</span>
+          <strong id="health-http">—</strong>
+        </div>
+        <div class="row">
+          <span class="label">Status</span>
+          <strong id="health-status" class="pill unknown">—</strong>
+        </div>
+        <pre id="health-body" class="payload" aria-live="polite">{}</pre>
+      </article>
+
+      <article class="panel" id="ready-card">
+        <h2>Readiness <code>/api/v1/ready</code></h2>
+        <p class="hint">Database, Redis, and optional dependencies.</p>
+        <div class="row">
+          <span class="label">HTTP</span>
+          <strong id="ready-http">—</strong>
+        </div>
+        <div class="row">
+          <span class="label">Status</span>
+          <strong id="ready-status" class="pill unknown">—</strong>
+        </div>
+        <ul id="ready-checks" class="checks"></ul>
+        <pre id="ready-body" class="payload" aria-live="polite">{}</pre>
+      </article>
+    </section>
+
+        <p class="footer-note">
+      Auto-refreshes every 30s.
+      Docs: deployment uptime guide ·
+      <a href="/api/v1/docs">API docs</a>
+      · <a href="/demo">Demo</a>
+    </p>
+  </main>
+
+  <script src="/public/status/app.js" defer></script>
+</body>
+</html>

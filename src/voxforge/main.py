@@ -151,6 +151,13 @@ def create_app() -> FastAPI:
                 headers={"Cache-Control": "no-store"},
             )
 
+        @app.get("/status")
+        async def status_page() -> FileResponse:
+            return FileResponse(
+                PUBLIC_DIR / "status" / "index.html",
+                headers={"Cache-Control": "no-store"},
+            )
+
     if DASHBOARD_DIR.is_dir():
         app.mount(
             "/dashboard/static",

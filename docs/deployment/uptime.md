@@ -2,10 +2,17 @@
 
 VoxForge exposes liveness and readiness for free uptime monitors (UptimeRobot, Healthchecks.io, Better Stack, etc.).
 
+## Public status page
+
+`GET /status` is a browser-facing status page that polls this host’s `/api/v1/health` and `/api/v1/ready` every 30 seconds. Use it for a human-readable check; point monitors at the JSON endpoints below.
+
+Live example: https://voxforge.brohammad.tech/status
+
 ## Endpoints
 
 | Path | Use |
 |------|-----|
+| `GET /status` | Human-readable status UI |
 | `GET /api/v1/health` | Process is up (lightweight) |
 | `GET /api/v1/ready` | Postgres + Redis reachable (prefer this for alerts) |
 
