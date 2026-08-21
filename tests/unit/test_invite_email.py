@@ -43,7 +43,10 @@ async def test_resend_provider_sends_email():
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("voxforge.infrastructure.email.invite_mailer.httpx.AsyncClient", return_value=mock_client):
+    with patch(
+        "voxforge.infrastructure.email.invite_mailer.httpx.AsyncClient",
+        return_value=mock_client,
+    ):
         sent = await sender.send_invite(
             InviteEmailPayload(
                 to_email="user@example.com",
@@ -90,7 +93,10 @@ async def test_create_invite_api_hides_token_when_email_sent(auth_client, monkey
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("voxforge.infrastructure.email.invite_mailer.httpx.AsyncClient", return_value=mock_client):
+    with patch(
+        "voxforge.infrastructure.email.invite_mailer.httpx.AsyncClient",
+        return_value=mock_client,
+    ):
         invite = await auth_client.post(
             f"/api/v1/orgs/{org_id}/invites",
             json={"email": f"invitee-{uuid4().hex[:8]}@example.com", "role": "member"},

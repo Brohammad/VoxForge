@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from voxforge.api.dependencies import get_current_principal, get_optional_principal, get_saml_connection_service
+from voxforge.api.dependencies import (
+    get_current_principal,
+    get_optional_principal,
+    get_saml_connection_service,
+)
 from voxforge.core.domain.auth import OrgRole, Principal, TokenPair
 from voxforge.core.domain.sso import (
     SamlConnection,

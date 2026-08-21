@@ -295,7 +295,10 @@ async def demo_chat(
         if session.status in terminal:
             raise HTTPException(
                 status_code=409,
-                detail="Demo session already ended — click Run sample call or send a new chat without an old session.",
+                detail=(
+                    "Demo session already ended — click Run sample call "
+                    "or send a new chat without an old session."
+                ),
             )
 
         # Redis state is required for turns; rebuild if TTL expired.

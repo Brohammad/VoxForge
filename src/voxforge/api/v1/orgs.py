@@ -8,14 +8,19 @@ from fastapi.responses import Response
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from voxforge.api.dependencies import get_auth_service, get_current_principal, get_invite_email_sender, require_scope
+from voxforge.api.dependencies import (
+    get_auth_service,
+    get_current_principal,
+    get_invite_email_sender,
+    require_scope,
+)
+from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import Organization, OrgRole, Principal
 from voxforge.core.exceptions import (
     ForbiddenError,
     InvalidCredentialsError,
     OrganizationNotFoundError,
 )
-from voxforge.config import Settings, get_settings
 from voxforge.infrastructure.db.session import get_db_session
 from voxforge.infrastructure.email.invite_mailer import InviteEmailPayload, InviteEmailSender
 from voxforge.modules.auth.application.service import AuthService

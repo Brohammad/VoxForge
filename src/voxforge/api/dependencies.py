@@ -8,9 +8,8 @@ from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import Principal
 from voxforge.core.events.bus import EventBus, get_event_bus
 from voxforge.core.exceptions import ForbiddenError, UnauthorizedError
-from voxforge.infrastructure.email.invite_mailer import InviteEmailSender
-from voxforge.infrastructure.db.evaluation_repository import EvaluationRepository
 from voxforge.infrastructure.db.dashboard_repository import DashboardRepository
+from voxforge.infrastructure.db.evaluation_repository import EvaluationRepository
 from voxforge.infrastructure.db.handoff_repository import HandoffRepository
 from voxforge.infrastructure.db.knowledge_repository import KnowledgeRepository
 from voxforge.infrastructure.db.memory_repository import MemoryRepository
@@ -18,6 +17,7 @@ from voxforge.infrastructure.db.outcome_repository import OutcomeRepository
 from voxforge.infrastructure.db.replay_repository import ReplayRepository
 from voxforge.infrastructure.db.session import get_db_session
 from voxforge.infrastructure.db.tool_repository import ToolCallRepository
+from voxforge.infrastructure.email.invite_mailer import InviteEmailSender
 from voxforge.infrastructure.http.rate_limit import enforce_authenticated_limits
 from voxforge.infrastructure.knowledge.blob import create_blob_store
 from voxforge.infrastructure.livekit.token_service import LiveKitTokenService

@@ -196,7 +196,9 @@ class KnowledgeRepository:
         collection = await self.get_collection(collection_id, org_id=org_id)
         if collection is None:
             return 0, []
-        documents = await self.list_documents(org_id=org_id, collection_id=collection_id, limit=10_000)
+        documents = await self.list_documents(
+            org_id=org_id, collection_id=collection_id, limit=10_000
+        )
         blob_paths: list[str] = []
         for document in documents:
             blob_paths.extend(
