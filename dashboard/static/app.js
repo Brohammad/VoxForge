@@ -103,6 +103,8 @@ let kbRecentUploads = [];
 let kbPollTimer = null;
 /** Signed replay token from #replay=…&token=… deep links (handoff URLs). */
 let replayTokenFromHash = null;
+/** Bumped on logout to ignore in-flight refreshAll from a prior session. */
+let refreshGeneration = 0;
 
 const WIZARD_DISMISS_KEY = "voxforge_wizard_dismissed";
 const WIZARD_STATE_KEY = "voxforge_wizard_state";
@@ -781,6 +783,7 @@ async function loginWithPassword() {
 }
 
 async function logout() {
+  refreshGeneration += 1;
   try {
     await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
   } catch {
@@ -788,6 +791,7 @@ async function logout() {
   }
   token = "";
   orgId = null;
+  sessionOk = false;
   els.tokenInput.value = "";
   localStorage.removeItem("voxforge_token");
   setConnected(false);
@@ -1647,6 +1651,7 @@ async function loadOnboardingStatus() {
 }
 
 async function refreshAll() {
+  const generation = ++refreshGeneration;
   clearError();
   try {
     await ensureOrgId();
@@ -1659,9 +1664,11 @@ async function refreshAll() {
       loadAlerts(),
       loadPolicies(),
     ]);
+    if (generation !== refreshGeneration) return;
     setConnected(true);
     await maybeOpenWizardAfterLogin();
   } catch (err) {
+    if (generation !== refreshGeneration) return;
     setConnected(false);
     showError(err.message);
   }

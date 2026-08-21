@@ -35,6 +35,10 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Honest ticketing language on landing and competitive docs
 - [x] Real-provider demo recording + README GIF refresh (capture script + docs; run `./scripts/capture-demo-gif.sh` after recording)
 
+## CI / merge readiness
+- [x] Stage 9: Ruff format + EMBEDDING_PROVIDER in CI/conftest
+- [x] Stage 10: Browser tests + logout race fix for hub nav / demo TTS
+
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS
 - Visual flow builder
