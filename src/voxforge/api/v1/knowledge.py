@@ -18,10 +18,22 @@ from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import Principal
 from voxforge.core.domain.knowledge import KnowledgeSearchRequest
 from voxforge.infrastructure.db.knowledge_repository import KnowledgeRepository
+from voxforge.infrastructure.knowledge.blob import create_blob_store
 from voxforge.modules.knowledge.application.ingestion_service import KnowledgeIngestionService
 from voxforge.modules.knowledge.application.search_service import KnowledgeSearchService
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
+
+
+async def _delete_blob_paths(settings: Settings, paths: list[str]) -> None:
+    if not paths:
+        return
+    blob = create_blob_store(settings.knowledge_blob_store, path=settings.knowledge_blob_path)
+    for path in paths:
+        try:
+            await blob.delete(path)
+        except OSError:
+            continue
 
 
 def _require_knowledge(settings: Settings = Depends(get_settings)) -> None:
@@ -97,6 +109,17 @@ class SearchResponse(BaseModel):
     results: list[SearchResultResponse]
 
 
+class DeleteCollectionResponse(BaseModel):
+    collection_id: UUID
+    documents_removed: int
+    status: str = "deleted"
+
+
+class DeleteDocumentResponse(BaseModel):
+    document_id: UUID
+    status: str = "deleted"
+
+
 @router.post("/collections", response_model=CollectionResponse, status_code=201)
 async def create_collection(
     body: CollectionCreateRequest,
@@ -132,6 +155,99 @@ async def list_collections(
         )
         for c in collections
     ]
+
+
+@router.get("/documents", response_model=list[DocumentResponse])
+async def list_documents(
+    collection_id: UUID | None = None,
+    _: None = Depends(_require_knowledge),
+    principal: Principal = Depends(require_scope("knowledge:read")),
+    repo: KnowledgeRepository = Depends(get_knowledge_repository),
+) -> list[DocumentResponse]:
+    documents = await repo.list_documents(
+        org_id=principal.org_id,
+        collection_id=collection_id,
+    )
+    return [
+        DocumentResponse(
+            id=d.id,
+            title=d.title,
+            source_type=d.source_type.value,
+            status=d.status.value,
+            content_hash=d.content_hash,
+            active_version_id=d.active_version_id,
+            created_at=d.created_at.isoformat(),
+            updated_at=d.updated_at.isoformat(),
+        )
+        for d in documents
+    ]
+
+
+@router.get("/collections/{collection_id}/documents", response_model=list[DocumentResponse])
+async def list_collection_documents(
+    collection_id: UUID,
+    _: None = Depends(_require_knowledge),
+    principal: Principal = Depends(require_scope("knowledge:read")),
+    repo: KnowledgeRepository = Depends(get_knowledge_repository),
+) -> list[DocumentResponse]:
+    collection = await repo.get_collection(collection_id, org_id=principal.org_id)
+    if collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    documents = await repo.list_documents(org_id=principal.org_id, collection_id=collection_id)
+    return [
+        DocumentResponse(
+            id=d.id,
+            title=d.title,
+            source_type=d.source_type.value,
+            status=d.status.value,
+            content_hash=d.content_hash,
+            active_version_id=d.active_version_id,
+            created_at=d.created_at.isoformat(),
+            updated_at=d.updated_at.isoformat(),
+        )
+        for d in documents
+    ]
+
+
+@router.delete("/collections/{collection_id}", response_model=DeleteCollectionResponse)
+async def delete_collection(
+    collection_id: UUID,
+    _: None = Depends(_require_knowledge),
+    __: None = Depends(rate_limit_category("knowledge_collections")),
+    principal: Principal = Depends(require_scope("knowledge:write")),
+    repo: KnowledgeRepository = Depends(get_knowledge_repository),
+    db: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> DeleteCollectionResponse:
+    if await repo.get_collection(collection_id, org_id=principal.org_id) is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    documents_removed, blob_paths = await repo.delete_collection(
+        collection_id, org_id=principal.org_id
+    )
+    await _delete_blob_paths(settings, blob_paths)
+    await db.commit()
+    return DeleteCollectionResponse(
+        collection_id=collection_id,
+        documents_removed=documents_removed,
+    )
+
+
+@router.delete("/documents/{document_id}", response_model=DeleteDocumentResponse)
+async def delete_document(
+    document_id: UUID,
+    _: None = Depends(_require_knowledge),
+    __: None = Depends(rate_limit_category("knowledge_collections")),
+    principal: Principal = Depends(require_scope("knowledge:write")),
+    repo: KnowledgeRepository = Depends(get_knowledge_repository),
+    db: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> DeleteDocumentResponse:
+    if await repo.get_document(document_id, org_id=principal.org_id) is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    blob_paths = await repo.delete_document(document_id, org_id=principal.org_id)
+    await _delete_blob_paths(settings, blob_paths)
+    await db.commit()
+    return DeleteDocumentResponse(document_id=document_id)
 
 
 @router.post(

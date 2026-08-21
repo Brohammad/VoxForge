@@ -67,3 +67,40 @@ async def test_knowledge_org_isolation(test_client):
 
     resp = await test_client.get(f"/api/v1/knowledge/documents/{uuid.uuid4()}")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_knowledge_list_and_delete_documents(test_client):
+    coll = await test_client.post(
+        "/api/v1/knowledge/collections",
+        json={"name": "delete-me"},
+    )
+    collection_id = coll.json()["id"]
+
+    upload = await test_client.post(
+        f"/api/v1/knowledge/collections/{collection_id}/documents",
+        files={"file": ("note.txt", io.BytesIO(b"hello world"), "text/plain")},
+        data={"title": "Note"},
+    )
+    document_id = upload.json()["document_id"]
+
+    listed = await test_client.get("/api/v1/knowledge/documents")
+    assert listed.status_code == 200
+    assert any(item["id"] == document_id for item in listed.json())
+
+    by_collection = await test_client.get(
+        f"/api/v1/knowledge/collections/{collection_id}/documents"
+    )
+    assert by_collection.status_code == 200
+    assert len(by_collection.json()) == 1
+
+    deleted = await test_client.delete(f"/api/v1/knowledge/documents/{document_id}")
+    assert deleted.status_code == 200
+    assert deleted.json()["status"] == "deleted"
+
+    missing = await test_client.get(f"/api/v1/knowledge/documents/{document_id}")
+    assert missing.status_code == 404
+
+    coll_deleted = await test_client.delete(f"/api/v1/knowledge/collections/{collection_id}")
+    assert coll_deleted.status_code == 200
+    assert coll_deleted.json()["documents_removed"] == 0

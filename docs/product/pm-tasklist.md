@@ -19,9 +19,9 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Align Playwright + key docs with “Run one-click sample call”
 
 ## Stage 4 — Knowledge completeness
-- [ ] `GET /knowledge/collections/{id}/documents` list API
-- [ ] `DELETE` collection and document APIs
-- [ ] Dashboard document table (replace localStorage catalog)
+- [x] `GET /knowledge/collections/{id}/documents` list API
+- [x] `DELETE` collection and document APIs
+- [x] Dashboard document table (replace localStorage catalog)
 
 ## Stage 5 — Dashboard auth UX
 - [ ] Hide JWT paste behind Advanced

@@ -84,7 +84,7 @@ const els = {
   handoffContextJson: document.getElementById("handoff-context-json"),
 };
 
-let kbRecentUploads = JSON.parse(localStorage.getItem("voxforge_kb_uploads") || "[]");
+let kbRecentUploads = [];
 let kbPollTimer = null;
 /** Signed replay token from #replay=…&token=… deep links (handoff URLs). */
 let replayTokenFromHash = null;
@@ -269,16 +269,7 @@ async function wizardUploadKnowledge() {
     body: formData,
   });
 
-  kbRecentUploads.unshift({
-    document_id: result.document_id,
-    job_id: result.job_id,
-    title: file.name,
-    collection_id: collectionId,
-    status: result.status,
-    progress_pct: 0,
-    uploaded_at: new Date().toISOString(),
-  });
-  saveKbRecentUploads();
+  await syncKnowledgeDocumentsFromServer();
   scheduleKnowledgePolling();
 
   if (els.wizardKnowledgeStatus) {
@@ -1175,7 +1166,21 @@ async function loadSso() {
 }
 
 function saveKbRecentUploads() {
-  localStorage.setItem("voxforge_kb_uploads", JSON.stringify(kbRecentUploads.slice(0, 20)));
+  // Catalog is server-backed; no localStorage persistence.
+}
+
+async function syncKnowledgeDocumentsFromServer() {
+  const documents = await knowledgeApi("/documents");
+  kbRecentUploads = (documents || []).map((doc) => ({
+    document_id: doc.id,
+    title: doc.title,
+    status: doc.status,
+    progress_pct: doc.status === "ready" ? 100 : doc.status === "failed" ? 0 : 50,
+    stage: doc.status,
+    updated_at: doc.updated_at,
+    uploaded_at: doc.created_at,
+  }));
+  renderKnowledgeUploads();
 }
 
 async function knowledgeApi(path, options = {}) {
@@ -1221,7 +1226,10 @@ function renderKnowledgeCollections(collections) {
       <td>${escapeHtml(collection.name)}</td>
       <td>${collection.embedding_dimensions}</td>
       <td>${fmtDate(collection.created_at)}</td>
-      <td><button type="button" class="link-btn" data-kb-collection="${collection.id}">Use</button></td>
+      <td class="actions-cell">
+        <button type="button" class="link-btn" data-kb-collection="${collection.id}">Use</button>
+        <button type="button" class="link-btn danger" data-kb-delete-collection="${collection.id}">Delete</button>
+      </td>
     </tr>
   `).join("") || "<tr><td colspan='4'>No collections yet</td></tr>";
 
@@ -1235,6 +1243,20 @@ function renderKnowledgeCollections(collections) {
       showSection("knowledge");
     });
   });
+
+  els.knowledgeCollectionsBody.querySelectorAll("[data-kb-delete-collection]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const collectionId = btn.dataset.kbDeleteCollection;
+      if (!collectionId || !window.confirm("Delete this collection and all documents in it?")) return;
+      try {
+        clearError();
+        await knowledgeApi(`/collections/${collectionId}`, { method: "DELETE" });
+        await loadKnowledge();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+  });
 }
 
 function renderKnowledgeUploads() {
@@ -1246,8 +1268,23 @@ function renderKnowledgeUploads() {
       <td>${item.progress_pct ?? 0}%</td>
       <td>${escapeHtml(item.stage || "—")}</td>
       <td>${fmtDate(item.updated_at || item.uploaded_at)}</td>
+      <td><button type="button" class="link-btn danger" data-kb-delete-document="${item.document_id}">Delete</button></td>
     </tr>
-  `).join("") || "<tr><td colspan='5'>No uploads yet</td></tr>";
+  `).join("") || "<tr><td colspan='6'>No documents yet</td></tr>";
+
+  els.knowledgeUploadsBody.querySelectorAll("[data-kb-delete-document]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const documentId = btn.dataset.kbDeleteDocument;
+      if (!documentId || !window.confirm("Delete this document?")) return;
+      try {
+        clearError();
+        await knowledgeApi(`/documents/${documentId}`, { method: "DELETE" });
+        await syncKnowledgeDocumentsFromServer();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+  });
 }
 
 async function refreshKnowledgeUploadStatuses() {
@@ -1289,6 +1326,7 @@ async function loadKnowledge() {
   }
   const collections = await knowledgeApi("/collections");
   renderKnowledgeCollections(collections);
+  await syncKnowledgeDocumentsFromServer();
   await refreshKnowledgeUploadStatuses();
 }
 
@@ -1515,17 +1553,7 @@ els.knowledgeUploadForm?.addEventListener("submit", async (event) => {
       body: formData,
     });
 
-    kbRecentUploads.unshift({
-      document_id: result.document_id,
-      job_id: result.job_id,
-      title: title || file.name,
-      collection_id: collectionId,
-      status: result.status,
-      progress_pct: 0,
-      uploaded_at: new Date().toISOString(),
-    });
-    saveKbRecentUploads();
-    renderKnowledgeUploads();
+    await syncKnowledgeDocumentsFromServer();
     scheduleKnowledgePolling();
     await refreshKnowledgeUploadStatuses();
 

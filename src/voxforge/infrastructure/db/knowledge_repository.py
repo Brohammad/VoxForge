@@ -144,6 +144,77 @@ class KnowledgeRepository:
         model = result.scalar_one_or_none()
         return self._to_document(model) if model else None
 
+    async def list_documents(
+        self,
+        *,
+        org_id: UUID,
+        collection_id: UUID | None = None,
+        limit: int = 200,
+    ) -> list[KnowledgeDocument]:
+        stmt = (
+            select(KnowledgeDocumentModel)
+            .where(KnowledgeDocumentModel.org_id == org_id)
+            .order_by(KnowledgeDocumentModel.updated_at.desc())
+            .limit(limit)
+        )
+        if collection_id is not None:
+            stmt = stmt.where(KnowledgeDocumentModel.collection_id == collection_id)
+        result = await self._session.execute(stmt)
+        return [self._to_document(m) for m in result.scalars().all()]
+
+    async def list_blob_paths_for_document(
+        self, document_id: UUID, *, org_id: UUID
+    ) -> list[str]:
+        document = await self.get_document(document_id, org_id=org_id)
+        if document is None:
+            return []
+        result = await self._session.execute(
+            select(KnowledgeDocumentVersionModel.blob_path).where(
+                KnowledgeDocumentVersionModel.document_id == document_id
+            )
+        )
+        return [path for path in result.scalars().all() if path]
+
+    async def delete_document(self, document_id: UUID, *, org_id: UUID) -> list[str]:
+        blob_paths = await self.list_blob_paths_for_document(document_id, org_id=org_id)
+        result = await self._session.execute(
+            select(KnowledgeDocumentModel).where(
+                KnowledgeDocumentModel.id == document_id,
+                KnowledgeDocumentModel.org_id == org_id,
+            )
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            return []
+        await self._session.delete(model)
+        await self._session.flush()
+        return blob_paths
+
+    async def delete_collection(
+        self, collection_id: UUID, *, org_id: UUID
+    ) -> tuple[int, list[str]]:
+        collection = await self.get_collection(collection_id, org_id=org_id)
+        if collection is None:
+            return 0, []
+        documents = await self.list_documents(org_id=org_id, collection_id=collection_id, limit=10_000)
+        blob_paths: list[str] = []
+        for document in documents:
+            blob_paths.extend(
+                await self.list_blob_paths_for_document(document.id, org_id=org_id)
+            )
+        result = await self._session.execute(
+            select(KnowledgeCollectionModel).where(
+                KnowledgeCollectionModel.id == collection_id,
+                KnowledgeCollectionModel.org_id == org_id,
+            )
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            return 0, []
+        await self._session.delete(model)
+        await self._session.flush()
+        return len(documents), blob_paths
+
     async def update_document_status(
         self,
         document_id: UUID,
