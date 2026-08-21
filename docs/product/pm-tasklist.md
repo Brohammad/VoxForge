@@ -33,7 +33,12 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Orchestrator mode visible on policy presets and active config
 - [x] Collapse nav to Talk / Knowledge / Inbox / Settings
 - [x] Honest ticketing language on landing and competitive docs
-- [x] Real-provider demo recording + README GIF refresh (capture script + docs; run `./scripts/capture-demo-gif.sh` after recording)
+- [x] Real-provider demo recording + README GIF refresh (`./scripts/generate-demo-gif.sh` for mock UI capture; `./scripts/capture-demo-gif.sh` for manual recordings)
+
+## Stage 12 — Demo GIF assets
+- [x] Automated headless Playwright recorder (`scripts/record_demo_gif.py`)
+- [x] One-command generator (`scripts/generate-demo-gif.sh`)
+- [x] Committed `docs/assets/screenshots/demo.gif` + `public/assets/screenshots/demo.gif`
 
 ## CI / merge readiness
 - [x] Stage 9: Ruff format + EMBEDDING_PROVIDER in CI/conftest

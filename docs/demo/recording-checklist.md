@@ -32,6 +32,14 @@
 
 ## GIF creation
 
+**Automated (mock providers, headless):**
+
+```bash
+./scripts/generate-demo-gif.sh
+```
+
+**Manual (screen recording with real providers):**
+
 Record `/demo`: click **Run one-click sample call**, wait for chat + in-browser TTS, then:
 
 ```bash

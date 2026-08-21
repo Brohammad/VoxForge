@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 # Build docs/assets/screenshots/demo.gif from a screen recording of /demo.
 #
-# Record 10–15s showing:
-#   1. Provider badge (mock/live)
-#   2. Click "Run one-click sample call"
-#   3. Chat reply + in-browser TTS playback
+# Automated (mock providers, headless Playwright):
+#   ./scripts/generate-demo-gif.sh
 #
-# Usage:
+# Manual (screen recording):
 #   ./scripts/capture-demo-gif.sh path/to/recording.mp4
-#
 # Requires: ffmpeg
 set -euo pipefail
 
