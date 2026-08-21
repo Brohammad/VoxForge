@@ -162,9 +162,7 @@ class KnowledgeRepository:
         result = await self._session.execute(stmt)
         return [self._to_document(m) for m in result.scalars().all()]
 
-    async def list_blob_paths_for_document(
-        self, document_id: UUID, *, org_id: UUID
-    ) -> list[str]:
+    async def list_blob_paths_for_document(self, document_id: UUID, *, org_id: UUID) -> list[str]:
         document = await self.get_document(document_id, org_id=org_id)
         if document is None:
             return []
@@ -201,9 +199,7 @@ class KnowledgeRepository:
         )
         blob_paths: list[str] = []
         for document in documents:
-            blob_paths.extend(
-                await self.list_blob_paths_for_document(document.id, org_id=org_id)
-            )
+            blob_paths.extend(await self.list_blob_paths_for_document(document.id, org_id=org_id))
         result = await self._session.execute(
             select(KnowledgeCollectionModel).where(
                 KnowledgeCollectionModel.id == collection_id,

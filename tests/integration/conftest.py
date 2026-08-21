@@ -9,6 +9,7 @@ def mock_voice_stack(monkeypatch):
     monkeypatch.setenv("STT_PROVIDER", "mock")
     monkeypatch.setenv("LLM_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("EMBEDDING_PROVIDER", "mock")
     monkeypatch.setenv("MEMORY_ENABLED", "false")
     monkeypatch.setenv("EVALUATION_HALLUCINATION_ENABLED", "false")
     get_settings.cache_clear()

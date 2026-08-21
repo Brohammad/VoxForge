@@ -50,9 +50,7 @@ class VoicePipelineBundle:
     tool_router: ToolRouter | None = None
     knowledge_context_builder: object | None = None
 
-    async def bootstrap_session_agent_config(
-        self, org_id: UUID, session_id: UUID
-    ) -> object:
+    async def bootstrap_session_agent_config(self, org_id: UUID, session_id: UUID) -> object:
         from voxforge.modules.agent_config.application.runtime import apply_active_agent_config
 
         self.response_generator = await apply_active_agent_config(

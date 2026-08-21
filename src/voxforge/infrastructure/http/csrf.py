@@ -20,9 +20,7 @@ _EXEMPT_SUFFIXES = (
     "/api/v1/demo/hear",
     "/api/v1/demo/chat",
 )
-_EXEMPT_CONTAINS = (
-    "/sso/saml/acs",
-)
+_EXEMPT_CONTAINS = ("/sso/saml/acs",)
 
 
 class CsrfMiddleware(BaseHTTPMiddleware):

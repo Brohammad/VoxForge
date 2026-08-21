@@ -30,9 +30,7 @@ def effective_orchestrator_mode(active: AgentConfigVersion | None, settings: Set
     return settings.orchestrator_mode
 
 
-async def load_active_agent_config(
-    db: AsyncSession, org_id: UUID
-) -> AgentConfigVersion | None:
+async def load_active_agent_config(db: AsyncSession, org_id: UUID) -> AgentConfigVersion | None:
     return await AgentConfigRepository(db).get_active(org_id)
 
 

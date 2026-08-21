@@ -69,6 +69,7 @@ async def livekit_ws_proxy(websocket: WebSocket, path: str) -> None:
             ping_timeout=20,
             open_timeout=10,
         ) as upstream:
+
             async def client_to_upstream() -> None:
                 try:
                     while True:
@@ -97,9 +98,7 @@ async def livekit_ws_proxy(websocket: WebSocket, path: str) -> None:
 
             t1 = asyncio.create_task(client_to_upstream())
             t2 = asyncio.create_task(upstream_to_client())
-            done, pending = await asyncio.wait(
-                {t1, t2}, return_when=asyncio.FIRST_COMPLETED
-            )
+            done, pending = await asyncio.wait({t1, t2}, return_when=asyncio.FIRST_COMPLETED)
             for task in pending:
                 task.cancel()
             for task in done:
@@ -130,14 +129,10 @@ async def livekit_http_proxy(path: str, request: Request) -> Response:
     body = await request.body()
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        upstream = await client.request(
-            request.method, target, headers=headers, content=body
-        )
+        upstream = await client.request(request.method, target, headers=headers, content=body)
 
     excluded = {"content-encoding", "transfer-encoding", "content-length"}
-    out_headers = {
-        k: v for k, v in upstream.headers.items() if k.lower() not in excluded
-    }
+    out_headers = {k: v for k, v in upstream.headers.items() if k.lower() not in excluded}
     return Response(
         content=upstream.content,
         status_code=upstream.status_code,
