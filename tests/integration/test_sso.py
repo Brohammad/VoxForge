@@ -86,6 +86,12 @@ async def test_saml_connection_crud_scaffold(auth_client):
     assert begin_payload["saml_request"]
     assert begin_payload["relay_state"] == f"org:{org_id}:connection:{connection_id}"
 
+    public_login_resp = await auth_client.get(
+        f"/api/v1/orgs/{org_id}/sso/saml/{connection_id}/login",
+    )
+    assert public_login_resp.status_code == 200
+    assert public_login_resp.json()["connection_id"] == connection_id
+
     metadata_resp = await auth_client.get(
         f"/api/v1/orgs/{org_id}/sso/saml/{connection_id}/metadata",
         headers=headers,

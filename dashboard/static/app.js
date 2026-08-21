@@ -86,6 +86,8 @@ const els = {
 
 let kbRecentUploads = JSON.parse(localStorage.getItem("voxforge_kb_uploads") || "[]");
 let kbPollTimer = null;
+/** Signed replay token from #replay=…&token=… deep links (handoff URLs). */
+let replayTokenFromHash = null;
 
 const WIZARD_DISMISS_KEY = "voxforge_wizard_dismissed";
 const WIZARD_STATE_KEY = "voxforge_wizard_state";
@@ -799,7 +801,11 @@ async function loadReplay(sessionId) {
   if (!id) {
     throw new Error("Enter a session UUID to load replay");
   }
-  const res = await fetch(`/api/v1/sessions/${id}/replay`, {
+  const url = new URL(`/api/v1/sessions/${id}/replay`, window.location.origin);
+  if (replayTokenFromHash) {
+    url.searchParams.set("replay_token", replayTokenFromHash);
+  }
+  const res = await fetch(url.toString(), {
     credentials: "include", headers: authHeaders(),
   });
   if (!res.ok) {
@@ -1289,7 +1295,7 @@ async function loadKnowledge() {
 function scheduleKnowledgePolling() {
   if (kbPollTimer) clearInterval(kbPollTimer);
   kbPollTimer = setInterval(() => {
-    if (!token || !kbRecentUploads.length) return;
+    if (!isAuthenticated() || !kbRecentUploads.length) return;
     refreshKnowledgeUploadStatuses().catch(() => {});
   }, 5000);
 }
@@ -1426,7 +1432,7 @@ els.connectBtn.addEventListener("click", () => {
 document.querySelectorAll(".toggle-btn").forEach((btn) => {
   btn.addEventListener("click", async () => {
     setTrendDays(Number(btn.dataset.days));
-    if (!token) return;
+    if (!isAuthenticated()) return;
     try {
       clearError();
       await loadOverview();
@@ -1600,7 +1606,7 @@ document.querySelectorAll(".nav-link").forEach((link) => {
   link.addEventListener("click", async (e) => {
     e.preventDefault();
     showSection(link.dataset.section);
-    if (!token) return;
+    if (!isAuthenticated()) return;
     try {
       clearError();
       if (link.dataset.section === "policies") {
@@ -1646,5 +1652,22 @@ if (inviteToken) {
     els.wizardAuthStatus.textContent = "Accept your invite via API POST /api/v1/auth/invites/accept, then log in.";
   }
 }
+
+function parseDashboardDeepLinks() {
+  const hash = window.location.hash.replace(/^#/, "").trim();
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  const replaySession = params.get("replay");
+  const sessionParam = params.get("session");
+  const targetSession = replaySession || sessionParam;
+  if (!targetSession) return;
+
+  if (params.get("token")) {
+    replayTokenFromHash = params.get("token");
+  }
+  openReplay(targetSession).catch((err) => showError(err.message));
+}
+
+parseDashboardDeepLinks();
 
 setInterval(() => { if (isAuthenticated()) refreshAll(); }, 30000);

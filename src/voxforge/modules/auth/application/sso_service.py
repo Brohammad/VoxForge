@@ -140,19 +140,20 @@ class SamlConnectionService:
         return build_sp_metadata(connection)
 
     async def begin_login(
-        self, *, org_id: UUID, connection_id: UUID, actor: Principal
+        self, *, org_id: UUID, connection_id: UUID, actor: Principal | None = None
     ) -> SamlLoginRedirect:
-        self._require_org_scope(actor, org_id, "orgs:read")
         connection = await self._require_active_connection(
             org_id=org_id, connection_id=connection_id
         )
+        if actor is not None:
+            self._require_org_scope(actor, org_id, "orgs:read")
         relay_state = f"org:{org_id}:connection:{connection.id}"
         redirect = build_sp_initiated_login_redirect(connection, relay_state=relay_state)
         await self._audit.log(
             action="sso.saml.login_initiated",
             resource_type="saml_connection",
             org_id=org_id,
-            user_id=actor.user_id,
+            user_id=actor.user_id if actor is not None else None,
             resource_id=str(connection.id),
             metadata={"relay_state": relay_state, "binding": redirect.binding},
         )
