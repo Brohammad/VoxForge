@@ -42,8 +42,31 @@ class VoicePipelineBundle:
     session_manager: SessionManager
     pipeline: VoicePipelineService
     response_generator: object
+    settings: Settings
+    llm: object
     memory_service: MemoryService | None = None
     handoff_orchestrator: HandoffOrchestrator | None = None
+    tool_router: ToolRouter | None = None
+    knowledge_context_builder: object | None = None
+
+    async def bootstrap_session_agent_config(
+        self, org_id: UUID, session_id: UUID
+    ) -> object:
+        from voxforge.modules.agent_config.application.runtime import apply_active_agent_config
+
+        self.response_generator = await apply_active_agent_config(
+            db=self.session_manager.db_session,
+            org_id=org_id,
+            session_id=session_id,
+            pipeline=self.pipeline,
+            response_generator=self.response_generator,
+            settings=self.settings,
+            llm=self.llm,
+            memory_service=self.memory_service,
+            tool_router=self.tool_router,
+            knowledge_context_builder=self.knowledge_context_builder,
+        )
+        return self.response_generator
 
 
 def build_voice_pipeline_bundle(
@@ -128,6 +151,10 @@ def build_voice_pipeline_bundle(
         session_manager=session_manager,
         pipeline=pipeline,
         response_generator=response_generator,
+        settings=settings,
+        llm=llm,
         memory_service=memory_service,
         handoff_orchestrator=handoff_orchestrator,
+        tool_router=tool_router,
+        knowledge_context_builder=knowledge_context_builder,
     )

@@ -435,6 +435,6 @@ def get_pipeline(
 
 
 def get_onboarding_pipeline_runner(
-    pipeline: VoicePipelineService = Depends(get_pipeline),
+    bundle=Depends(get_voice_pipeline_bundle),
 ) -> ProgrammaticPipelineRunner:
-    return ProgrammaticPipelineRunner(pipeline)
+    return ProgrammaticPipelineRunner(bundle.pipeline, bundle=bundle)

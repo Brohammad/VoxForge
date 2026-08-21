@@ -76,6 +76,9 @@ class VoicePipelineService:
         self._interrupt_event: asyncio.Event | None = None
         self._pipeline_task: asyncio.Task | None = None
 
+    def set_response_generator(self, response_generator: ResponseGenerator) -> None:
+        self._response_generator = response_generator
+
     def set_session_org(self, session_id: UUID, org_id: UUID | None) -> None:
         if org_id is not None:
             self._session_orgs[session_id] = org_id

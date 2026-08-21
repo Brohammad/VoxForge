@@ -90,6 +90,7 @@ async def voice_websocket(websocket: WebSocket) -> None:
                         websocket=websocket,
                         session_manager=session_manager,
                         auth_service=auth_service,
+                        bundle=bundle,
                         response_generator=response_generator,
                         pipeline=pipeline,
                         audio_queue=audio_queue,
@@ -99,6 +100,8 @@ async def voice_websocket(websocket: WebSocket) -> None:
                         settings=settings,
                     )
                     session_id = result.get("session_id", session_id)
+                    if result.get("response_generator") is not None:
+                        response_generator = result["response_generator"]
                     if result.get("listening_task"):
                         listening_task = result["listening_task"]
                     if result.get("heartbeat_task"):
@@ -154,6 +157,7 @@ async def _handle_control_message(
     websocket: WebSocket,
     session_manager: SessionManager,
     auth_service: AuthService,
+    bundle,
     response_generator,
     pipeline: VoicePipelineService,
     audio_queue: asyncio.Queue,
@@ -238,6 +242,11 @@ async def _handle_control_message(
             session_id=str(session.id),
             org_id=str(principal.org_id),
         )
+
+        response_generator = await bundle.bootstrap_session_agent_config(
+            principal.org_id, session.id
+        )
+        result["response_generator"] = response_generator
 
         response_generator.init_session(session.id)
         response_generator.set_session_org(session.id, principal.org_id)

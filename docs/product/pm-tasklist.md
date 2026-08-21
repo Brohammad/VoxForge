@@ -9,9 +9,9 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Honor `#replay=` and `#session=` dashboard deep links
 
 ## Stage 2 — Wire policy presets into live pipeline
-- [ ] Load `AgentConfigService.get_active()` in pipeline factory
-- [ ] Apply `system_prompt` and `orchestrator_mode` per org/session
-- [ ] Alerts read active agent `eval_thresholds`
+- [x] Load `AgentConfigService.get_active()` in pipeline factory
+- [x] Apply `system_prompt` and `orchestrator_mode` per org/session
+- [x] Alerts read active agent `eval_thresholds`
 
 ## Stage 3 — Demo voice + honest labeling
 - [ ] Browser TTS via `/demo/speak` (retire `afplay` on public path)

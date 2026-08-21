@@ -117,6 +117,8 @@ async def entrypoint(ctx) -> None:
             config = await bundle.session_manager.get_session_config(session_id)
             session = await bundle.session_manager.get_session(session_id)
             org_id = session.org_id
+            if org_id is not None:
+                await bundle.bootstrap_session_agent_config(org_id, session_id)
 
             from livekit import rtc
 

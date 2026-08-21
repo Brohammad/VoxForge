@@ -51,6 +51,10 @@ class SessionManager:
         self._settings = settings
         self._db_session = db_session
 
+    @property
+    def db_session(self) -> AsyncSession:
+        return self._db_session
+
     async def create_session(
         self,
         *,
