@@ -12,7 +12,9 @@
 
 🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs)
 
-![VoxForge demo — voice pipeline in action](docs/assets/screenshots/demo.gif)
+![VoxForge demo — one-click sample call with in-browser TTS](docs/assets/screenshots/demo.gif)
+
+*Refresh this GIF after UI changes: record `/demo` (see [recording checklist](docs/demo/recording-checklist.md)), then run `./scripts/capture-demo-gif.sh recording.mp4`.*
 
 VoxForge is an open-source platform for building and operating enterprise voice agents. Unlike chatbot wrappers, it ships a **complete voice stack**: transport, orchestration, knowledge retrieval, tool execution, per-turn evaluation, session replay, human handoff, and an operator dashboard — all deployable to your own infrastructure.
 
@@ -85,7 +87,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 
-Mock STT/LLM/TTS providers work **without API keys**. Click **Run one-click sample call** at `/demo` to exercise the full pipeline.
+Mock STT/LLM/TTS providers work **without API keys**. Open `/demo`, check the provider badge, click **Run one-click sample call**, and hear TTS in your browser.
 
 Detailed walkthrough: [docs/ONBOARDING.md](docs/ONBOARDING.md)
 

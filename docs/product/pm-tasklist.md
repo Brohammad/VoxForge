@@ -33,7 +33,7 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Orchestrator mode visible on policy presets and active config
 - [x] Collapse nav to Talk / Knowledge / Inbox / Settings
 - [x] Honest ticketing language on landing and competitive docs
-- [ ] Real-provider demo recording + README GIF refresh (deferred)
+- [x] Real-provider demo recording + README GIF refresh (capture script + docs; run `./scripts/capture-demo-gif.sh` after recording)
 
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS
