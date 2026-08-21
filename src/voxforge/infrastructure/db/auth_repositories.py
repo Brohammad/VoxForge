@@ -15,6 +15,7 @@ from voxforge.core.exceptions import (
 from voxforge.infrastructure.db.models import (
     ApiKeyModel,
     AuditLogModel,
+    OrganizationInviteModel,
     OrganizationMemberModel,
     OrganizationModel,
     SamlConnectionModel,
@@ -173,6 +174,66 @@ class OrganizationMemberRepository:
             role=OrgRole(model.role),
             created_at=model.created_at,
         )
+
+
+class OrganizationInviteRepository:
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def create(
+        self,
+        *,
+        org_id: UUID,
+        email: str,
+        role: OrgRole,
+        token_hash: str,
+        invited_by_user_id: UUID | None,
+        expires_at: datetime,
+    ) -> OrganizationInviteModel:
+        existing = await self.get_pending_by_org_email(org_id=org_id, email=email)
+        if existing is not None:
+            existing.role = role.value
+            existing.token_hash = token_hash
+            existing.invited_by_user_id = invited_by_user_id
+            existing.expires_at = expires_at
+            existing.accepted_at = None
+            await self._session.flush()
+            await self._session.refresh(existing)
+            return existing
+        model = OrganizationInviteModel(
+            org_id=org_id,
+            email=email.lower().strip(),
+            role=role.value,
+            token_hash=token_hash,
+            invited_by_user_id=invited_by_user_id,
+            expires_at=expires_at,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        await self._session.refresh(model)
+        return model
+
+    async def get_pending_by_org_email(
+        self, *, org_id: UUID, email: str
+    ) -> OrganizationInviteModel | None:
+        stmt = select(OrganizationInviteModel).where(
+            OrganizationInviteModel.org_id == org_id,
+            OrganizationInviteModel.email == email.lower().strip(),
+            OrganizationInviteModel.accepted_at.is_(None),
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_token_hash(self, token_hash: str) -> OrganizationInviteModel | None:
+        stmt = select(OrganizationInviteModel).where(
+            OrganizationInviteModel.token_hash == token_hash
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def mark_accepted(self, invite: OrganizationInviteModel) -> None:
+        invite.accepted_at = datetime.now(UTC)
+        await self._session.flush()
 
 
 class ApiKeyRepository:

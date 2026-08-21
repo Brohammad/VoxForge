@@ -26,15 +26,46 @@ Environment variables for local development (`.env`) and production (`.env.produ
 
 | Variable | Default | Options |
 |----------|---------|---------|
-| `STT_PROVIDER` | `mock` | `mock`, `deepgram`, `openai` |
+| `STT_PROVIDER` | `mock` | `mock`, `deepgram` |
 | `LLM_PROVIDER` | `mock` | `mock`, `openai` |
-| `TTS_PROVIDER` | `mock` | `mock`, `openai`, `cartesia`, `elevenlabs` |
+| `TTS_PROVIDER` | `mock` | `mock`, `cartesia` |
 | `EMBEDDING_PROVIDER` | `mock` | `mock`, `openai` |
 | `DEEPGRAM_API_KEY` | — | Required when `STT_PROVIDER=deepgram` |
-| `OPENAI_API_KEY` | — | Required for OpenAI providers |
+| `OPENAI_API_KEY` | — | Required for OpenAI LLM/embeddings |
 | `CARTESIA_API_KEY` | — | Required when `TTS_PROVIDER=cartesia` |
 
 Production with `DEMO_ENABLED=false` requires real providers (not `mock`).
+
+---
+
+## Auth cookies
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AUTH_COOKIES_ENABLED` | `true` | Set HttpOnly cookies on login/register/refresh |
+| `AUTH_COOKIE_NAME` | `voxforge_access` | Access token cookie name |
+| `AUTH_COOKIE_SECURE` | auto | `true` in production when unset |
+| `READY_FAIL_ON_DEGRADED` | `false` | Return HTTP 503 when optional deps are degraded |
+
+Cookie-authenticated mutating requests require `X-CSRF-Token` matching the `voxforge_csrf` cookie (Bearer / API key exempt).
+
+## Org invites
+
+`POST /api/v1/orgs/{org_id}/invites` with `{ "email", "role" }` creates a one-time invite. Accept via `POST /api/v1/auth/invites/accept`.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_PROVIDER` | `log` | `log` (dev), `resend`, or `smtp` |
+| `EMAIL_FROM` | `VoxForge <invites@voxforge.local>` | From address |
+| `RESEND_API_KEY` | — | Required when `EMAIL_PROVIDER=resend` |
+| `SMTP_HOST` | — | SMTP server hostname |
+| `SMTP_PORT` | `587` | SMTP port |
+| `SMTP_USER` | — | SMTP username (optional) |
+| `SMTP_PASSWORD` | — | SMTP password (optional) |
+| `SMTP_USE_TLS` | `true` | STARTTLS for SMTP |
+| `INVITE_TTL_HOURS` | `72` | Invite expiry |
+
+When email delivery succeeds, the API omits the raw `token` in production; in `log` mode the token is returned for local testing.
 
 ---
 
@@ -47,6 +78,7 @@ Production with `DEMO_ENABLED=false` requires real providers (not `mock`).
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `API_KEY_HASH_PEPPER` | `change-me` | API key hashing secret |
 | `AUTH_REQUIRED` | `true` | Require auth on protected routes |
+| `REGISTRATION_ENABLED` | `true` (local) / `false` (prod example) | Allow `POST /auth/register`. When false, new users join via org invite only |
 
 ---
 

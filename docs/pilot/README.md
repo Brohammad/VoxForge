@@ -41,4 +41,4 @@ See [../deployment/guide.md](../deployment/guide.md) and [../deployment/verifica
 
 ## Request a pilot
 
-Open a [GitHub issue](https://github.com/Brohammad/VoxFauge/issues/new?template=feature_request.md) or [Discussion](https://github.com/Brohammad/VoxFauge/discussions).
+Open a [GitHub issue](https://github.com/Brohammad/VoxForge/issues/new?template=feature_request.md) or [Discussion](https://github.com/Brohammad/VoxForge/discussions).

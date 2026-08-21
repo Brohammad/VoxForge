@@ -59,9 +59,25 @@ class CartesiaTTSProvider:
                             "cartesia",
                             f"HTTP {response.status_code}: {body.decode()}",
                         )
-                    async for chunk in response.aiter_bytes(chunk_size=4096):
-                        if chunk:
-                            yield AudioChunk(data=chunk, sample_rate=24000, encoding="pcm_s16le")
+                    leftover = b""
+                    async for raw in response.aiter_bytes(chunk_size=4096):
+                        if not raw:
+                            continue
+                        data = leftover + raw
+                        # Never split a 16-bit sample across AudioChunk boundaries.
+                        if len(data) % 2 == 1:
+                            leftover = data[-1:]
+                            data = data[:-1]
+                        else:
+                            leftover = b""
+                        if data:
+                            yield AudioChunk(data=data, sample_rate=24000, encoding="pcm_s16le")
+                    if len(leftover) == 1:
+                        yield AudioChunk(
+                            data=leftover + b"\x00",
+                            sample_rate=24000,
+                            encoding="pcm_s16le",
+                        )
         except httpx.HTTPError as exc:
             logger.error("cartesia_tts_error", error=str(exc))
             raise ProviderError("cartesia", str(exc)) from exc

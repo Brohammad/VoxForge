@@ -27,7 +27,7 @@ This document reflects **current behavior** in the codebase. Session consistency
 | `GET /api/v1/health` | Liveness | `200 ok` | `200 ok` |
 | `GET /api/v1/ready` | Readiness | `200` with `status: degraded` | `200` with `status: degraded` |
 
-**Note:** `/ready` currently returns HTTP 200 even when degraded. Load balancers should inspect the JSON body (`status`, `database`, `redis`), not status code alone. P1 may add fail-closed readiness semantics.
+**Note:** `/ready` returns HTTP 200 when optional deps are degraded (so LBs that only check status codes keep routing). Critical failures (Postgres/Redis) always return **503**. Set `READY_FAIL_ON_DEGRADED=true` to treat soft failures as 503 as well. Prefer inspecting the JSON `status` field for alerting; see [uptime.md](../deployment/uptime.md).
 
 ---
 

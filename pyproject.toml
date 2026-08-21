@@ -4,7 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "voxforge"
-version = "0.1.0"
+version = "1.0.0rc1"
+license = "MIT"
 description = "Production-grade Voice AI Infrastructure Platform"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -55,6 +56,7 @@ dev = [
     "pytest-playwright>=0.6.0",
     "playwright>=1.49.0",
     "ruff>=0.8.0",
+    "pyright>=1.1.390",
     "httpx>=0.28.0",
     "fakeredis>=2.26.0",
     "aiosqlite>=0.20.0",
@@ -106,3 +108,15 @@ ignore = ["B008"]
 "src/voxforge/infrastructure/knowledge/worker.py" = ["E402"]
 "src/voxforge/infrastructure/security/saml.py" = ["E501"]
 "tests/helpers/saml_fixtures.py" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+include = ["src/voxforge/api", "src/voxforge/core"]
+exclude = ["**/__pycache__"]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+reportMissingImports = "warning"
+reportMissingTypeStubs = false

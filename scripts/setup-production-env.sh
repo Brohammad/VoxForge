@@ -19,6 +19,7 @@ fi
 gen_secret() { openssl rand -hex 32; }
 
 POSTGRES_PASSWORD="$(gen_secret)"
+REDIS_PASSWORD="$(gen_secret)"
 JWT_SECRET_KEY="$(gen_secret)"
 API_KEY_HASH_PEPPER="$(gen_secret)"
 METRICS_BEARER_TOKEN="$(gen_secret)"
@@ -37,9 +38,11 @@ replace() {
 }
 
 replace POSTGRES_PASSWORD "$POSTGRES_PASSWORD"
+replace REDIS_PASSWORD "$REDIS_PASSWORD"
 replace JWT_SECRET_KEY "$JWT_SECRET_KEY"
 replace API_KEY_HASH_PEPPER "$API_KEY_HASH_PEPPER"
 replace DATABASE_URL "postgresql+asyncpg://voxforge:${POSTGRES_PASSWORD}@postgres:5432/voxforge"
+replace REDIS_URL "redis://:${REDIS_PASSWORD}@redis:6379/0"
 replace PUBLIC_BASE_URL "https://${DOMAIN}"
 replace TRUSTED_HOSTS "$DOMAIN"
 replace CORS_ORIGINS "https://${DOMAIN}"

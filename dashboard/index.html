@@ -14,18 +14,10 @@
         <span class="brand-name">VoxForge</span>
       </div>
       <nav>
-        <a href="#overview" class="nav-link active" data-section="overview">Overview</a>
-        <a href="#onboarding" class="nav-link" data-section="onboarding">Onboarding</a>
-        <a href="#knowledge" class="nav-link" data-section="knowledge">Knowledge Base</a>
-        <a href="#handoffs" class="nav-link" data-section="handoffs">Handoffs</a>
-        <a href="#alerts" class="nav-link" data-section="alerts">Alerts</a>
-        <a href="#policies" class="nav-link" data-section="policies">Policy Presets</a>
-        <a href="#sso" class="nav-link" data-section="sso">SSO</a>
-        <a href="#sessions" class="nav-link" data-section="sessions">Sessions</a>
-        <a href="#replay" class="nav-link" data-section="replay">Replay</a>
-        <a href="#latency" class="nav-link" data-section="latency">Latency</a>
-        <a href="#evaluations" class="nav-link" data-section="evaluations">Evaluations</a>
-        <a href="#activity" class="nav-link" data-section="activity">Activity</a>
+        <a href="#overview" class="nav-link active" data-hub="talk">Talk</a>
+        <a href="#knowledge" class="nav-link" data-hub="knowledge">Knowledge</a>
+        <a href="#handoffs" class="nav-link" data-hub="inbox">Inbox</a>
+        <a href="#policies" class="nav-link" data-hub="settings">Settings</a>
       </nav>
       <div class="sidebar-footer">
         <a href="/examples/livekit">WebRTC Demo</a>
@@ -35,22 +27,73 @@
 
     <main class="main">
       <header class="topbar">
-        <h1 id="page-title">Overview</h1>
+        <h1 id="page-title">Talk · Overview</h1>
         <div class="auth-bar">
           <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
           <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
           <button id="login-btn" type="button">Login</button>
-          <span class="auth-divider">or paste token</span>
-          <input id="token-input" type="password" placeholder="JWT access token" autocomplete="off" />
-          <button id="connect-btn" type="button">Connect</button>
+          <button id="register-toggle-btn" type="button" class="btn-secondary">Register</button>
           <button id="logout-btn" type="button" class="hidden">Logout</button>
           <span id="auth-status" class="status-badge">Not connected</span>
         </div>
+        <details id="advanced-auth" class="advanced-auth">
+          <summary>Advanced: paste JWT</summary>
+          <div class="advanced-auth-row">
+            <input id="token-input" type="password" placeholder="JWT access token" autocomplete="off" />
+            <button id="connect-btn" type="button">Connect</button>
+          </div>
+        </details>
       </header>
+
+      <div id="register-panel" class="register-panel hidden panel">
+        <h2>Create account</h2>
+        <form id="register-form" class="sso-form">
+          <label>Email<input id="register-email" type="email" required autocomplete="email" /></label>
+          <label>Password<input id="register-password" type="password" required minlength="8" autocomplete="new-password" /></label>
+          <label>Full name<input id="register-full-name" type="text" required /></label>
+          <label>Organization<input id="register-org-name" type="text" required /></label>
+          <div class="button-row">
+            <button type="submit">Create account</button>
+            <button id="register-cancel-btn" type="button" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+        <div id="register-status" class="card-sub"></div>
+      </div>
 
       <div id="error-banner" class="error-banner hidden"></div>
 
+      <nav id="hub-subnav" class="hub-subnav" aria-label="Section tabs">
+        <div class="hub-tabs" data-hub="talk">
+          <a href="#overview" class="hub-tab active" data-section="overview">Overview</a>
+          <a href="#onboarding" class="hub-tab" data-section="onboarding">First Agent</a>
+          <a href="#sessions" class="hub-tab" data-section="sessions">Sessions</a>
+          <a href="#replay" class="hub-tab" data-section="replay">Replay</a>
+          <a href="#latency" class="hub-tab" data-section="latency">Latency</a>
+          <a href="#evaluations" class="hub-tab" data-section="evaluations">Evaluations</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="knowledge">
+          <a href="#knowledge" class="hub-tab active" data-section="knowledge">Knowledge Base</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="inbox">
+          <a href="#handoffs" class="hub-tab active" data-section="handoffs">Handoffs</a>
+          <a href="#alerts" class="hub-tab" data-section="alerts">Alerts</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="settings">
+          <a href="#policies" class="hub-tab active" data-section="policies">Policy Presets</a>
+          <a href="#sso" class="hub-tab" data-section="sso">SSO</a>
+          <a href="#api-keys" class="hub-tab" data-section="api-keys">API Keys</a>
+          <a href="#activity" class="hub-tab" data-section="activity">Activity</a>
+        </div>
+      </nav>
+
       <section id="overview" class="section">
+        <div class="panel voice-kpi-panel">
+          <div class="panel-header">
+            <h2>Voice KPIs</h2>
+            <span class="card-sub">Latency and cost from evaluated turns</span>
+          </div>
+          <div class="cards voice-kpi-cards" id="voice-kpi-cards"></div>
+        </div>
         <div class="cards" id="overview-cards"></div>
         <div class="panel trend-panel">
           <div class="panel-header">
@@ -65,17 +108,90 @@
       </section>
 
       <section id="onboarding" class="section hidden">
-        <div class="panel">
-          <h2>Outcome-first Onboarding</h2>
-          <p>Complete: register account -> connect token -> run sample call -> verify KPI outcomes.</p>
-          <div class="button-row">
-            <button id="onboarding-start-btn" type="button">1. Start</button>
-            <button id="onboarding-connect-btn" type="button">2. Connect Token</button>
-            <button id="onboarding-sample-btn" type="button">3. Run Sample Call</button>
-            <button id="onboarding-status-btn" type="button">Refresh Status</button>
+        <div class="panel wizard-panel">
+          <div class="wizard-header">
+            <div>
+              <h2>First Agent Setup</h2>
+              <p class="card-sub">Configure a support agent, add knowledge, and run a test call in under 15 minutes.</p>
+            </div>
+            <button id="wizard-dismiss-btn" type="button" class="link-btn">Skip for now</button>
           </div>
-          <div id="onboarding-status" class="card-sub">No onboarding run yet.</div>
-          <pre id="onboarding-json" class="json-preview"></pre>
+
+          <ol id="wizard-progress" class="wizard-progress" aria-label="Setup progress">
+            <li class="wizard-progress-step active" data-step="1">Connect</li>
+            <li class="wizard-progress-step" data-step="2">Agent</li>
+            <li class="wizard-progress-step" data-step="3">Knowledge</li>
+            <li class="wizard-progress-step" data-step="4">Test call</li>
+            <li class="wizard-progress-step" data-step="5">Done</li>
+          </ol>
+
+          <div id="wizard-step-1" class="wizard-step active">
+            <h3>Step 1 — Connect</h3>
+            <p>Log in above with email/password, register a new org, or accept an invite below.</p>
+            <div id="wizard-auth-status" class="card-sub">Not connected</div>
+            <form id="wizard-invite-form" class="sso-form hidden">
+              <label class="full-width">
+                Invite token
+                <input id="wizard-invite-token" type="text" required />
+              </label>
+              <label>Full name<input id="wizard-invite-name" type="text" required /></label>
+              <label>Password<input id="wizard-invite-password" type="password" required minlength="8" /></label>
+              <div class="button-row">
+                <button type="submit">Accept invite &amp; log in</button>
+              </div>
+            </form>
+            <div id="wizard-invite-status" class="card-sub"></div>
+          </div>
+
+          <div id="wizard-step-2" class="wizard-step hidden">
+            <h3>Step 2 — Choose agent preset</h3>
+            <p>Apply a policy bundle as your active agent configuration.</p>
+            <div id="wizard-presets" class="preset-grid"></div>
+            <div id="wizard-preset-status" class="card-sub">Select a preset to continue.</div>
+          </div>
+
+          <div id="wizard-step-3" class="wizard-step hidden">
+            <h3>Step 3 — Add knowledge</h3>
+            <p>Upload at least one document so the agent can ground answers.</p>
+            <form id="wizard-knowledge-form" class="sso-form">
+              <label>
+                Collection name
+                <input id="wizard-collection-name" type="text" value="Support Docs" required />
+              </label>
+              <label class="full-width">
+                Document
+                <input id="wizard-knowledge-file" type="file" accept=".pdf,.txt,.md,.csv,.html" required />
+              </label>
+            </form>
+            <div id="wizard-knowledge-status" class="card-sub">No document uploaded yet.</div>
+          </div>
+
+          <div id="wizard-step-4" class="wizard-step hidden">
+            <h3>Step 4 — Run test call</h3>
+            <p>Runs the same programmatic voice pipeline used in production onboarding.</p>
+            <div id="wizard-sample-status" class="card-sub">Ready to run sample call.</div>
+          </div>
+
+          <div id="wizard-step-5" class="wizard-step hidden">
+            <h3>Step 5 — Verify</h3>
+            <div id="wizard-complete-status" class="card-sub">Test call passed.</div>
+            <div id="wizard-replay-summary" class="card-sub"></div>
+            <div class="button-row">
+              <button id="wizard-open-replay-btn" type="button" class="link-btn">Open full replay</button>
+              <button id="wizard-open-overview-btn" type="button" class="link-btn">View overview KPIs</button>
+            </div>
+          </div>
+
+          <div class="wizard-actions">
+            <button id="wizard-back-btn" type="button" disabled>Back</button>
+            <button id="wizard-next-btn" type="button">Continue</button>
+          </div>
+
+          <details class="wizard-advanced">
+            <summary>Advanced onboarding API</summary>
+            <div id="onboarding-status" class="card-sub">No onboarding run yet.</div>
+            <pre id="onboarding-json" class="json-preview"></pre>
+          </details>
         </div>
       </section>
 
@@ -128,7 +244,7 @@
             </label>
             <label class="full-width">
               File
-              <input id="knowledge-upload-file" type="file" accept=".pdf,.txt,.md,.csv,.html,.docx" required />
+              <input id="knowledge-upload-file" type="file" accept=".pdf,.txt,.md,.csv,.html" required />
             </label>
             <div class="button-row">
               <button type="submit">Upload</button>
@@ -138,7 +254,7 @@
         </div>
 
         <div class="panel">
-          <h2>Recent Uploads</h2>
+          <h2>Documents</h2>
           <div class="table-wrap">
             <table>
               <thead>
@@ -148,6 +264,7 @@
                   <th>Progress</th>
                   <th>Stage</th>
                   <th>Updated</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="knowledge-uploads-body"></tbody>
@@ -312,6 +429,38 @@
         <div class="panel">
           <h2>Login Redirect Preview</h2>
           <pre id="sso-login-preview" class="json-preview">Initiate a test login from a connection row.</pre>
+        </div>
+      </section>
+
+      <section id="api-keys" class="section hidden">
+        <div class="panel">
+          <h2>API Keys</h2>
+          <p class="card-sub">Create scoped keys for automation. The raw secret is shown once at creation.</p>
+          <div id="api-keys-status" class="card-sub"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Prefix</th>
+                  <th>Scopes</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="api-keys-body"></tbody>
+            </table>
+          </div>
+          <form id="api-key-create-form" class="sso-form">
+            <label class="full-width">
+              Key name
+              <input id="api-key-name" type="text" placeholder="CI pipeline" required />
+            </label>
+            <div class="button-row">
+              <button type="submit">Create API key</button>
+            </div>
+          </form>
+          <pre id="api-key-created-secret" class="json-preview hidden"></pre>
         </div>
       </section>
 

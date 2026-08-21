@@ -21,7 +21,7 @@ Out of scope for Phase 5: SOC 2, penetration testing, WAF, DDoS scrubbing.
 - **RBAC** via organization roles (owner, admin, member)
 - **SAML SSO** available but not required for public demo
 
-Production requires `AUTH_REQUIRED=true`. The demo quickstart endpoint is intentionally unauthenticated but rate-limited.
+Production requires `AUTH_REQUIRED=true`. Set `REGISTRATION_ENABLED=false` for invite-only pilots (recommended when `DEMO_ENABLED=false`). The demo quickstart endpoint is intentionally unauthenticated but rate-limited.
 
 ## Demo account assumptions
 

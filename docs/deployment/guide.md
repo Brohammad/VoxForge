@@ -21,8 +21,8 @@ Deploy VoxForge on a single VPS using Docker Compose, NGINX, and Let's Encrypt T
 
 ```bash
 # On the VPS
-git clone https://github.com/Brohammad/VoxFauge.git
-cd VoxFauge
+git clone https://github.com/Brohammad/VoxForge.git
+cd VoxForge
 
 ./scripts/setup-production-env.sh your-domain.example.com
 # Or manually: cp .env.production.example .env.production

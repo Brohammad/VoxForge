@@ -45,9 +45,9 @@ See [../release/known-limitations.md](../release/known-limitations.md).
 
 ### v1.1
 
-- httpOnly session cookies for dashboard
+- ~~httpOnly session cookies for dashboard~~ (shipped)
 - Demo video + GIF in README
-- Zendesk connector (production-ready)
+- Zendesk connector (not started — mock ticketing only)
 - Enhanced voice UI (barge-in indicators)
 
 ### v2.0

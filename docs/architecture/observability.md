@@ -44,7 +44,7 @@ Full metric catalog: [metrics.md](./metrics.md).
 | Endpoint | Purpose | HTTP codes |
 |----------|---------|------------|
 | `GET /api/v1/health` | Liveness — process alive | Always `200` |
-| `GET /api/v1/ready` | Readiness — dependency checks | `200` ok/degraded, `503` unavailable |
+| `GET /api/v1/ready` | Readiness — dependency checks | `200` ok/degraded (default), `503` unavailable; optional `READY_FAIL_ON_DEGRADED=true` → `503` on degraded |
 
 Readiness checks (2s timeout each):
 

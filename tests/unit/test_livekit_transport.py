@@ -39,3 +39,16 @@ def test_chunk_to_livekit_frame_preserves_rate():
     frame = chunk_to_livekit_frame(chunk)
     assert frame.sample_rate == PIPELINE_SAMPLE_RATE
     assert frame.num_channels == 1
+
+
+def test_chunk_to_livekit_frame_keeps_cartesia_rate_when_targeted():
+    chunk = AudioChunk(data=b"\x00\x01" * 240, sample_rate=24_000)
+    frame = chunk_to_livekit_frame(chunk, target_sample_rate=24_000)
+    assert frame.sample_rate == 24_000
+    assert len(frame.data) == 480
+
+
+def test_publish_sample_rate_is_webrtc_friendly():
+    from voxforge.infrastructure.livekit.audio_publisher import PUBLISH_SAMPLE_RATE
+
+    assert PUBLISH_SAMPLE_RATE == 48_000

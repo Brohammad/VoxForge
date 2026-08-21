@@ -17,6 +17,7 @@ from voxforge.infrastructure.db.outcome_repository import OutcomeRepository
 from voxforge.infrastructure.db.replay_repository import ReplayRepository
 from voxforge.infrastructure.db.session import get_db_session
 from voxforge.infrastructure.db.tool_repository import ToolCallRepository
+from voxforge.infrastructure.email.invite_mailer import InviteEmailSender
 from voxforge.infrastructure.http.rate_limit import enforce_authenticated_limits
 from voxforge.infrastructure.knowledge.blob import create_blob_store
 from voxforge.infrastructure.livekit.token_service import LiveKitTokenService
@@ -36,7 +37,6 @@ from voxforge.infrastructure.tools.mcp_runtime_registry import MCPRuntimeRegistr
 from voxforge.infrastructure.tools.registry_factory import create_tool_registry
 from voxforge.infrastructure.voice.programmatic_runner import ProgrammaticPipelineRunner
 from voxforge.modules.agent_config.application.service import AgentConfigService
-from voxforge.modules.agent_orchestrator.application.factory import create_response_generator
 from voxforge.modules.alerts.application.service import AlertService
 from voxforge.modules.auth.application.service import AuthService
 from voxforge.modules.auth.application.sso_service import SamlConnectionService
@@ -68,6 +68,10 @@ def get_auth_service(
     return AuthService(db, settings)
 
 
+def get_invite_email_sender(settings: Settings = Depends(get_settings)) -> InviteEmailSender:
+    return InviteEmailSender(settings)
+
+
 def get_saml_connection_service(
     db: AsyncSession = Depends(get_db_session),
     settings: Settings = Depends(get_settings),
@@ -82,6 +86,7 @@ def get_handoff_repository(
 
 
 async def get_optional_principal(
+    request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Security(bearer_scheme)],
     api_key: Annotated[str | None, Security(api_key_header)],
     auth_service: AuthService = Depends(get_auth_service),
@@ -116,10 +121,18 @@ async def get_optional_principal(
         except UnauthorizedError:
             return None
 
+    cookie_token = request.cookies.get(settings.auth_cookie_name)
+    if cookie_token:
+        try:
+            return await auth_service.resolve_principal_from_bearer(cookie_token)
+        except UnauthorizedError:
+            return None
+
     return None
 
 
 async def get_current_principal(
+    request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Security(bearer_scheme)],
     api_key: Annotated[str | None, Security(api_key_header)],
     auth_service: AuthService = Depends(get_auth_service),
@@ -151,6 +164,13 @@ async def get_current_principal(
     if api_key:
         try:
             return await auth_service.resolve_principal_from_api_key(api_key)
+        except UnauthorizedError as exc:
+            raise HTTPException(status_code=401, detail=exc.message) from exc
+
+    cookie_token = request.cookies.get(settings.auth_cookie_name)
+    if cookie_token:
+        try:
+            return await auth_service.resolve_principal_from_bearer(cookie_token)
         except UnauthorizedError as exc:
             raise HTTPException(status_code=401, detail=exc.message) from exc
 
@@ -299,6 +319,27 @@ def get_mcp_registry(request: Request) -> MCPRuntimeRegistry | None:
     return getattr(request.app.state, "mcp_registry", None)
 
 
+def get_voice_pipeline_bundle(
+    db: AsyncSession = Depends(get_db_session),
+    state_store: RedisSessionStateStore = Depends(get_state_store),
+    event_bus: EventBus = Depends(get_event_bus),
+    settings: Settings = Depends(get_settings),
+    mcp_registry: MCPRuntimeRegistry | None = Depends(get_mcp_registry),
+):
+    """FastAPI entry into the shared voice composition root."""
+    from voxforge.modules.voice_gateway.application.pipeline_factory import (
+        build_voice_pipeline_bundle,
+    )
+
+    return build_voice_pipeline_bundle(
+        db,
+        state_store,
+        event_bus,
+        settings,
+        mcp_registry=mcp_registry,
+    )
+
+
 def get_handoff_orchestrator(
     db: AsyncSession = Depends(get_db_session),
     session_manager: SessionManager = Depends(get_session_manager),
@@ -387,51 +428,13 @@ def get_agent_config_service(
     return AgentConfigService(db)
 
 
-def get_response_generator(
-    llm: OpenAILLMProvider = Depends(get_llm_provider),
-    settings: Settings = Depends(get_settings),
-    memory_service: MemoryService | None = Depends(get_memory_service),
-    tool_router: ToolRouter | None = Depends(get_tool_router),
-    knowledge_context_builder=Depends(get_knowledge_context_builder),
-):
-    return create_response_generator(
-        settings,
-        llm,
-        memory_service,
-        tool_router,
-        knowledge_context_builder,
-    )
-
-
 def get_pipeline(
-    session_manager: SessionManager = Depends(get_session_manager),
-    stt=Depends(get_stt_provider),
-    response_generator=Depends(get_response_generator),
-    tts=Depends(get_tts_provider),
-    settings: Settings = Depends(get_settings),
-    memory_service: MemoryService | None = Depends(get_memory_service),
-    evaluation_engine: EvaluationEngine | None = Depends(get_evaluation_engine),
-    outcome_service: OutcomeExtractionService = Depends(get_outcome_service),
-    handoff_orchestrator: HandoffOrchestrator | None = Depends(get_handoff_orchestrator),
-    handoff_policy: HandoffPolicyEngine | None = Depends(get_handoff_policy_engine),
-    knowledge_context_builder=Depends(get_knowledge_context_builder),
+    bundle=Depends(get_voice_pipeline_bundle),
 ) -> VoicePipelineService:
-    return VoicePipelineService(
-        session_manager,
-        stt,
-        response_generator,
-        tts,
-        settings,
-        memory_service,
-        evaluation_engine,
-        outcome_service,
-        handoff_orchestrator=handoff_orchestrator,
-        handoff_policy=handoff_policy,
-        knowledge_context_builder=knowledge_context_builder,
-    )
+    return bundle.pipeline
 
 
 def get_onboarding_pipeline_runner(
-    pipeline: VoicePipelineService = Depends(get_pipeline),
+    bundle=Depends(get_voice_pipeline_bundle),
 ) -> ProgrammaticPipelineRunner:
-    return ProgrammaticPipelineRunner(pipeline)
+    return ProgrammaticPipelineRunner(bundle.pipeline, bundle=bundle)

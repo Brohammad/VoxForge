@@ -2,8 +2,12 @@
 
 ## Pre-recording
 
+- [ ] Run `./scripts/prove-real-voice.sh https://your-host` with real API keys (automated gate)
+- [ ] Set `STT_PROVIDER=deepgram`, `LLM_PROVIDER=openai`, `TTS_PROVIDER=cartesia`, `DEMO_ENABLED=false` on host
 - [ ] Use https://voxforge.brohammad.tech (or local with same UI)
 - [ ] Browser: Chrome, 1920×1080, dark mode
+- [ ] `DEMO_ENABLED=true` on host (or local)
+- [ ] Confirm provider badge shows mock or live before recording
 - [ ] Close unrelated tabs; hide bookmarks
 - [ ] Register dashboard account beforehand
 - [ ] Upload 1 sample doc to knowledge base
@@ -28,8 +32,15 @@
 
 ## GIF creation
 
+Record `/demo`: click **Run one-click sample call**, wait for chat + in-browser TTS, then:
+
 ```bash
-# From MP4 (requires ffmpeg)
+./scripts/capture-demo-gif.sh ~/Movies/demo-recording.mp4
+```
+
+Manual ffmpeg (alternative):
+
+```bash
 ffmpeg -i demo-showcase-60s.mp4 -vf "fps=10,scale=800:-1" -loop 0 demo.gif
 ```
 

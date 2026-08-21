@@ -39,6 +39,12 @@ def build_livekit_callbacks(
         await publisher.publish_chunk(chunk)
 
     async def on_metrics(metrics) -> None:
+        flush = getattr(publisher, "flush", None)
+        if callable(flush):
+            try:
+                await flush()
+            except Exception as exc:
+                logger.warning("livekit_audio_flush_failed", error=str(exc))
         if on_data_message:
             await _maybe_await(
                 on_data_message(
@@ -84,4 +90,8 @@ async def _maybe_await(result) -> None:
     import asyncio
 
     if asyncio.iscoroutine(result):
-        await result
+        try:
+            await result
+        except Exception as exc:
+            # Data-channel failures must not abort STT/LLM/TTS audio.
+            logger.warning("livekit_data_send_failed", error=str(exc))

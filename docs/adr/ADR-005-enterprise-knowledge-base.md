@@ -118,7 +118,7 @@ Members can search; admins/owners can upload and manage. All repository queries 
 ## References
 
 - [Knowledge Base Architecture](../architecture/knowledge-base.md)
-- [ADR-005 Supplement: Retrieval Pipeline](./ADR-005-retrieval-pipeline.md)
+- [ADR-005 Supplement: Retrieval Pipeline](./ADR-008-retrieval-pipeline.md)
 - [Knowledge Base Benchmarks](../benchmarks/knowledge-base.md)
 - [Memory Architecture](../architecture/memory.md)
 - [Customer Support Tools](../architecture/customer-support-tools.md)

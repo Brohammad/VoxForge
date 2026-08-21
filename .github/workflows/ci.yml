@@ -10,6 +10,7 @@ env:
   STT_PROVIDER: mock
   LLM_PROVIDER: mock
   TTS_PROVIDER: mock
+  EMBEDDING_PROVIDER: mock
   MEMORY_ENABLED: "false"
   EVALUATION_HALLUCINATION_ENABLED: "false"
   TOOLS_ENABLED: "false"
@@ -65,6 +66,13 @@ jobs:
 
       - name: Lint
         run: ruff check src tests
+
+      - name: Format check
+        run: ruff format --check src tests
+
+      - name: Typecheck (advisory)
+        continue-on-error: true
+        run: pyright
 
       - name: Dependency audit
         run: |
@@ -250,6 +258,7 @@ jobs:
           DEMO_ENABLED: "true"
           JWT_SECRET_KEY: ci-browser-test-secret-key-32-chars-min
           API_KEY_HASH_PEPPER: ci-browser-test-pepper-value
+          RATE_LIMIT_ENABLED: "false"
         run: |
           chmod +x scripts/run_browser_tests.sh
           ./scripts/run_browser_tests.sh

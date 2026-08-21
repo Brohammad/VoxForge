@@ -5,13 +5,24 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from voxforge.api.dependencies import get_auth_service, get_current_principal, require_scope
+from voxforge.api.dependencies import (
+    get_auth_service,
+    get_current_principal,
+    get_invite_email_sender,
+    require_scope,
+)
+from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import Organization, OrgRole, Principal
-from voxforge.core.exceptions import ForbiddenError, OrganizationNotFoundError
+from voxforge.core.exceptions import (
+    ForbiddenError,
+    InvalidCredentialsError,
+    OrganizationNotFoundError,
+)
 from voxforge.infrastructure.db.session import get_db_session
+from voxforge.infrastructure.email.invite_mailer import InviteEmailPayload, InviteEmailSender
 from voxforge.modules.auth.application.service import AuthService
 
 router = APIRouter(prefix="/orgs", tags=["organizations"])
@@ -40,6 +51,22 @@ class OrgResponse(BaseModel):
 class AddMemberRequest(BaseModel):
     user_id: UUID
     role: OrgRole = OrgRole.MEMBER
+
+
+class CreateInviteRequest(BaseModel):
+    email: EmailStr
+    role: OrgRole = OrgRole.MEMBER
+
+
+class InviteResponse(BaseModel):
+    id: UUID
+    org_id: UUID
+    email: str
+    role: str
+    expires_at: str
+    accept_url: str
+    token: str | None = None
+    email_sent: bool = False
 
 
 class MemberResponse(BaseModel):
@@ -144,6 +171,54 @@ async def add_member(
         user_id=member.user_id,
         role=member.role.value,
         created_at=member.created_at.isoformat(),
+    )
+
+
+@router.post("/{org_id}/invites", response_model=InviteResponse, status_code=201)
+async def create_invite(
+    org_id: UUID,
+    body: CreateInviteRequest,
+    principal: Principal = Depends(get_current_principal),
+    auth_service: AuthService = Depends(get_auth_service),
+    mailer: InviteEmailSender = Depends(get_invite_email_sender),
+    settings: Settings = Depends(get_settings),
+    db: AsyncSession = Depends(get_db_session),
+) -> InviteResponse:
+    try:
+        org = await auth_service.get_org(org_id)
+        invite, raw_token, accept_url = await auth_service.create_invite(
+            org_id=org_id,
+            email=str(body.email),
+            role=body.role,
+            actor=principal,
+        )
+        await auth_service.commit()
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=exc.message) from exc
+    except InvalidCredentialsError as exc:
+        raise HTTPException(status_code=400, detail=exc.message) from exc
+    except OrganizationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=exc.message) from exc
+
+    email_sent = await mailer.send_invite(
+        InviteEmailPayload(
+            to_email=invite.email,
+            org_name=org.name,
+            accept_url=accept_url,
+            role=invite.role,
+            expires_hours=settings.invite_ttl_hours,
+        )
+    )
+    expose_token = not email_sent and settings.app_env != "production"
+    return InviteResponse(
+        id=invite.id,
+        org_id=invite.org_id,
+        email=invite.email,
+        role=invite.role,
+        expires_at=invite.expires_at.isoformat(),
+        accept_url=accept_url,
+        token=raw_token if expose_token else None,
+        email_sent=email_sent,
     )
 
 

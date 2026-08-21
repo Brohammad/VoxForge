@@ -68,6 +68,27 @@ class OrganizationMemberModel(Base):
     user: Mapped[UserModel] = relationship(back_populates="memberships")
 
 
+class OrganizationInviteModel(Base):
+    __tablename__ = "organization_invites"
+    __table_args__ = (UniqueConstraint("org_id", "email", name="uq_org_invite_email"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    org_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(32), nullable=False, default="member")
+    token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+    invited_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
+
+
 class SamlConnectionModel(Base):
     __tablename__ = "saml_connections"
 

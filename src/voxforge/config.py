@@ -77,6 +77,25 @@ class Settings(BaseSettings):
     api_key_hash_pepper: str = "change-me-in-production"
 
     auth_required: bool = True
+    registration_enabled: bool = True
+    auth_cookies_enabled: bool = True
+    auth_cookie_name: str = "voxforge_access"
+    auth_refresh_cookie_name: str = "voxforge_refresh"
+    auth_cookie_samesite: str = "lax"  # lax | strict | none
+    auth_cookie_secure: bool | None = None  # None → true when app_env=production
+    auth_cookie_domain: str = ""
+    auth_csrf_cookie_name: str = "voxforge_csrf"
+    auth_csrf_header_name: str = "X-CSRF-Token"
+    invite_ttl_hours: int = 72
+    email_provider: str = "log"  # log | resend | smtp
+    email_from: str = "VoxForge <invites@voxforge.local>"
+    resend_api_key: str = ""
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = True
+    ready_fail_on_degraded: bool = False
     saml_require_signed_assertions: bool = True
     saml_clock_skew_seconds: int = 120
 
@@ -100,7 +119,7 @@ class Settings(BaseSettings):
     tools_enabled: bool = True
     support_tools_enabled: bool = True
     knowledge_enabled: bool = True
-    knowledge_base_provider: str = "mock"  # mock | internal | zendesk | freshdesk
+    knowledge_base_provider: str = "mock"  # mock | internal
     knowledge_blob_store: str = "filesystem"
     knowledge_blob_path: str = "/tmp/voxforge-knowledge"
     knowledge_worker_enabled: bool = False
@@ -112,7 +131,7 @@ class Settings(BaseSettings):
     knowledge_context_enabled: bool = True
     knowledge_max_upload_bytes: int = 52_428_800  # 50 MiB
     embedding_provider: str = "mock"  # openai | mock
-    ticketing_provider: str = "mock"  # mock | zendesk | freshdesk
+    ticketing_provider: str = "mock"  # mock only until real connectors ship
     zendesk_subdomain: str = ""
     zendesk_api_token: str = ""
     freshdesk_domain: str = ""
@@ -173,6 +192,12 @@ class Settings(BaseSettings):
         if self.metrics_allow_anonymous is not None:
             return self.metrics_allow_anonymous
         return self.app_env != "production"
+
+    @property
+    def auth_cookie_secure_effective(self) -> bool:
+        if self.auth_cookie_secure is not None:
+            return self.auth_cookie_secure
+        return self.app_env == "production"
 
     @property
     def metrics_allowed_ip_list(self) -> tuple[str, ...]:

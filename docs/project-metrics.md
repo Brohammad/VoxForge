@@ -62,7 +62,7 @@ Run: `PYTHONPATH=. pytest -v`
 - [ADR-003-mcp-runtime-discovery.md](adr/ADR-003-mcp-runtime-discovery.md)
 - [ADR-004-livekit-transport-adapter.md](adr/ADR-004-livekit-transport-adapter.md)
 - [ADR-005-enterprise-knowledge-base.md](adr/ADR-005-enterprise-knowledge-base.md)
-- [ADR-005-retrieval-pipeline.md](adr/ADR-005-retrieval-pipeline.md)
+- [ADR-008-retrieval-pipeline.md](adr/ADR-008-retrieval-pipeline.md)
 - [ADR-006-human-handoff.md](adr/ADR-006-human-handoff.md)
 
 ## Architecture documents (25)

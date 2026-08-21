@@ -6,13 +6,14 @@
 - [x] Playwright browser test suite in CI
 - [x] Security headers + CSP + production env validation
 - [x] Open-source governance (CONTRIBUTING, SECURITY, CHANGELOG)
+- [x] HttpOnly cookie auth for dashboard (Bearer still supported)
+- [x] Org email invite + accept flow
 - [ ] LiveKit WebRTC end-to-end validation with real audio
-- [ ] Zendesk / Freshdesk provider implementation or removal from config
+- [x] Zendesk / Freshdesk stubs removed from factory (re-add when implemented)
 - [ ] Nightly CI: live provider + load smoke jobs
 
 ## v1.1
 
-- HttpOnly cookie auth option for dashboard (reduce XSS token exposure)
 - Collection delete API for knowledge base
 - Playwright coverage for SSO admin flows
 - Horizontal scaling guide (multi-worker + sticky sessions)

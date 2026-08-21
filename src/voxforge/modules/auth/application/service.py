@@ -1,4 +1,6 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from hashlib import sha256
+from secrets import token_urlsafe
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,11 +27,13 @@ from voxforge.core.exceptions import (
 from voxforge.infrastructure.db.auth_repositories import (
     ApiKeyRepository,
     AuditLogRepository,
+    OrganizationInviteRepository,
     OrganizationMemberRepository,
     OrganizationRepository,
     UserRepository,
 )
 from voxforge.infrastructure.db.models import UserModel
+from voxforge.infrastructure.observability.logging import get_logger
 from voxforge.infrastructure.security.tokens import (
     create_access_token,
     create_refresh_token,
@@ -42,6 +46,8 @@ from voxforge.infrastructure.security.tokens import (
     verify_password,
 )
 
+logger = get_logger(__name__)
+
 
 class AuthService:
     def __init__(self, db_session: AsyncSession, settings: Settings) -> None:
@@ -50,6 +56,7 @@ class AuthService:
         self._users = UserRepository(db_session)
         self._orgs = OrganizationRepository(db_session)
         self._members = OrganizationMemberRepository(db_session)
+        self._invites = OrganizationInviteRepository(db_session)
         self._api_keys = ApiKeyRepository(db_session)
         self._audit = AuditLogRepository(db_session)
 
@@ -161,6 +168,83 @@ class AuthService:
     ) -> OrganizationMember:
         self._require_scope(actor, "orgs:manage_members", org_id)
         return await self._members.add_member(org_id=org_id, user_id=user_id, role=role)
+
+    async def create_invite(
+        self, *, org_id: UUID, email: str, role: OrgRole, actor: Principal
+    ) -> tuple[object, str, str]:
+        """Create (or refresh) an org invite. Returns invite model, raw token, accept URL."""
+        self._require_scope(actor, "orgs:manage_members", org_id)
+        normalized = email.lower().strip()
+        if not normalized or "@" not in normalized:
+            raise InvalidCredentialsError("Invalid invite email")
+
+        raw_token = token_urlsafe(32)
+        token_hash = sha256(raw_token.encode("utf-8")).hexdigest()
+        expires_at = datetime.now(UTC) + timedelta(hours=self._settings.invite_ttl_hours)
+        invite = await self._invites.create(
+            org_id=org_id,
+            email=normalized,
+            role=role,
+            token_hash=token_hash,
+            invited_by_user_id=actor.user_id,
+            expires_at=expires_at,
+        )
+        base = self._settings.public_base_url.rstrip("/") or "http://localhost:8000"
+        accept_url = f"{base}/dashboard?invite={raw_token}"
+        await self._audit.log(
+            action="org.member_invited",
+            resource_type="organization_invite",
+            org_id=org_id,
+            user_id=actor.user_id,
+            resource_id=str(invite.id),
+            metadata={"email": normalized, "role": role.value},
+        )
+        logger.info(
+            "org_invite_created",
+            org_id=str(org_id),
+            email=normalized,
+            accept_url=accept_url,
+        )
+        return invite, raw_token, accept_url
+
+    async def accept_invite(
+        self, *, token: str, password: str, full_name: str
+    ) -> tuple[User, UUID, TokenPair]:
+        token_hash = sha256(token.encode("utf-8")).hexdigest()
+        invite = await self._invites.get_by_token_hash(token_hash)
+        if invite is None or invite.accepted_at is not None:
+            raise InvalidCredentialsError("Invalid or already used invite")
+        expires_at = invite.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        if expires_at < datetime.now(UTC):
+            raise InvalidCredentialsError("Invite has expired")
+
+        role = OrgRole(invite.role)
+        existing = await self._users.get_by_email(invite.email)
+        if existing is None:
+            user = await self._users.create(
+                email=invite.email,
+                hashed_password=hash_password(password),
+                full_name=full_name,
+            )
+        else:
+            user = existing
+            stored = await self._db.get(UserModel, user.id)
+            if stored is not None and not verify_password(password, stored.hashed_password):
+                raise InvalidCredentialsError("Password does not match existing account")
+
+        await self._members.upsert_member(org_id=invite.org_id, user_id=user.id, role=role)
+        await self._invites.mark_accepted(invite)
+        await self._audit.log(
+            action="org.invite_accepted",
+            resource_type="organization_invite",
+            org_id=invite.org_id,
+            user_id=user.id,
+            resource_id=str(invite.id),
+        )
+        tokens = self._issue_tokens(user_id=user.id, org_id=invite.org_id, role=role)
+        return user, invite.org_id, tokens
 
     async def list_members(self, org_id: UUID, actor: Principal) -> list[OrganizationMember]:
         self._require_scope(actor, "orgs:read", org_id)

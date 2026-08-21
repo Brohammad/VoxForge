@@ -5,8 +5,8 @@ Thank you for helping improve VoxForge. This project targets production-grade vo
 ## Development setup
 
 ```bash
-git clone https://github.com/Brohammad/VoxFauge.git
-cd VoxFauge
+git clone https://github.com/Brohammad/VoxForge.git
+cd VoxForge
 cp .env.example .env
 docker compose up -d postgres redis
 pip install -e ".[dev,livekit]"
@@ -79,6 +79,6 @@ Report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/Brohammad/VoxFauge/discussions) or file an issue.
+Open a [GitHub Discussion](https://github.com/Brohammad/VoxForge/discussions) or file an issue.
 
 Documentation index: [docs/README.md](docs/README.md)

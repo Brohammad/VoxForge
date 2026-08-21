@@ -175,9 +175,7 @@ async def test_accept_handoff_rejects_other_agent(orchestrator, active_session, 
         reason="help",
         policy=policy,
     )
-    await orchestrator.accept_handoff(
-        handoff_id=package.handoff_id, org_id=org_id, user_id=uuid4()
-    )
+    await orchestrator.accept_handoff(handoff_id=package.handoff_id, org_id=org_id, user_id=uuid4())
 
     with pytest.raises(ValueError, match="already accepted"):
         await orchestrator.accept_handoff(
@@ -198,15 +196,9 @@ async def test_complete_handoff_idempotent(orchestrator, active_session, handoff
         reason="help",
         policy=policy,
     )
-    await orchestrator.accept_handoff(
-        handoff_id=package.handoff_id, org_id=org_id, user_id=user_id
-    )
-    first = await orchestrator.complete_handoff(
-        handoff_id=package.handoff_id, org_id=org_id
-    )
-    second = await orchestrator.complete_handoff(
-        handoff_id=package.handoff_id, org_id=org_id
-    )
+    await orchestrator.accept_handoff(handoff_id=package.handoff_id, org_id=org_id, user_id=user_id)
+    first = await orchestrator.complete_handoff(handoff_id=package.handoff_id, org_id=org_id)
+    second = await orchestrator.complete_handoff(handoff_id=package.handoff_id, org_id=org_id)
     assert first.id == second.id
     assert first.status == HandoffStatus.COMPLETED
 

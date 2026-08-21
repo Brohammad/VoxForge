@@ -38,7 +38,7 @@ curl -fsS https://voxforge.brohammad.tech/api/v1/ready
 
 ```bash
 ssh root@<DROPLET_IP>
-cd /opt/VoxFauge   # or /opt/VoxForge depending on clone path
+cd /opt/VoxForge
 git pull origin main
 ./deploy.sh up
 ```

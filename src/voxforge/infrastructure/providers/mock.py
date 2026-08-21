@@ -20,9 +20,9 @@ class MockSTTProvider:
                     is_partial=True,
                     confidence=0.9,
                 )
-                yield TranscriptEvent(text="mock transcript", is_final=True, confidence=1.0)
+                yield TranscriptEvent(text="mock transcript", is_partial=False, confidence=1.0)
                 return
-        yield TranscriptEvent(text="mock transcript", is_final=True, confidence=1.0)
+        yield TranscriptEvent(text="mock transcript", is_partial=False, confidence=1.0)
 
 
 class MockLLMProvider:

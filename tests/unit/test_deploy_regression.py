@@ -62,7 +62,7 @@ def test_docker_compose_prod_parses_with_defaults(prod_compose_env: None) -> Non
         cwd=ROOT,
         capture_output=True,
         text=True,
-        env={**os.environ, "POSTGRES_PASSWORD": "test-secret"},
+        env={**os.environ, "POSTGRES_PASSWORD": "test-secret", "REDIS_PASSWORD": "test-redis"},
     )
     assert result.returncode == 0, result.stderr
 
@@ -77,6 +77,7 @@ def test_docker_compose_cpu_limits_are_configurable(prod_compose_env: None) -> N
         env={
             **os.environ,
             "POSTGRES_PASSWORD": "test-secret",
+            "REDIS_PASSWORD": "test-redis",
             "COMPOSE_CPU_APP": "0.25",
             "COMPOSE_MEM_APP": "768M",
         },
@@ -91,7 +92,7 @@ def test_ensure_demo_account_script_exists() -> None:
 
 def test_docker_entrypoint_skips_missing_demo_script() -> None:
     text = (ROOT / "scripts" / "docker-entrypoint.sh").read_text()
-    assert '[ -f /app/scripts/ensure_demo_account.py ]' in text
+    assert "[ -f /app/scripts/ensure_demo_account.py ]" in text
 
 
 def test_deploy_sh_auto_generates_env_file() -> None:

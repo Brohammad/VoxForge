@@ -85,12 +85,8 @@ async def test_repeated_replay_token_verification():
     handoff_id = uuid4()
     _, token = service.generate(session_id=session_id, org_id=org_id, handoff_id=handoff_id)
 
-    assert service.verify(
-        session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token
-    )
-    assert service.verify(
-        session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token
-    )
+    assert service.verify(session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token)
+    assert service.verify(session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token)
     assert not service.verify(
         session_id=session_id, org_id=org_id, handoff_id=handoff_id, token="tampered.sig"
     )

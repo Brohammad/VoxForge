@@ -103,8 +103,13 @@ def _check_llm_provider(settings: Settings) -> str:
     return "error: missing credentials"
 
 
-def _aggregate_status(checks: dict[str, str]) -> tuple[str, int]:
-    """Return (status, http_status). Critical: database, redis."""
+def _aggregate_status(checks: dict[str, str], *, fail_on_degraded: bool = False) -> tuple[str, int]:
+    """Return (status, http_status). Critical: database, redis.
+
+    By default degraded optional deps still return HTTP 200 so load balancers
+    that only check status codes keep serving. Set READY_FAIL_ON_DEGRADED=true
+    to treat soft failures as 503.
+    """
     critical = ("database", "redis")
     for name in critical:
         if checks.get(name) != "ok":
@@ -116,7 +121,7 @@ def _aggregate_status(checks: dict[str, str]) -> tuple[str, int]:
         for k in checks
     )
     if has_degraded:
-        return "degraded", 200
+        return "degraded", 503 if fail_on_degraded else 200
     return "ok", 200
 
 
@@ -144,5 +149,7 @@ async def run_readiness_checks(
     checks["embedding_provider"] = _check_embedding_provider(settings)
     checks["llm_provider"] = _check_llm_provider(settings)
 
-    status, http_status = _aggregate_status(checks)
+    status, http_status = _aggregate_status(
+        checks, fail_on_degraded=settings.ready_fail_on_degraded
+    )
     return HealthReport(status=status, checks=checks, http_status=http_status)

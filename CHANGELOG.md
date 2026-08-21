@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Added MIT `LICENSE` file; package/API version aligned to `1.0.0-rc.1`.
+- Documentation and badges use `Brohammad/VoxForge` (corrected from `VoxFauge`).
+- Provider docs match implemented STT/TTS backends (`deepgram` / `cartesia` only).
+- `CreateSessionRequest.config` is schema-validated (allowlisted fields + size cap).
+- Voice composition unified on `build_voice_pipeline_bundle` (REST onboarding + WS + LiveKit).
+- Dashboard auth prefers HttpOnly cookies; JWT paste remains as Bearer override.
+- Removed unimplemented Zendesk/Freshdesk stub providers from the factory.
+- Production Redis requires `REDIS_PASSWORD`; Dependabot enabled.
+- ADR retrieval supplement renumbered to ADR-008.
+- Cookie sessions require double-submit CSRF (`X-CSRF-Token`) on mutating requests.
+
+### Added
+- Org email invites (`POST /orgs/{id}/invites` + `POST /auth/invites/accept`).
+- Global `VoxForgeError` HTTP handlers; client-safe WebSocket/pipeline error messages.
+- External uptime guide and `scripts/prove-real-voice.sh`.
+- `examples/hello-voice` curl walkthrough.
+- CI: `ruff format --check` + advisory `pyright`; tag-triggered deploy smoke workflow.
+- `READY_FAIL_ON_DEGRADED` for fail-closed readiness.
+
 ### Launch (2026-07-10)
 
 #### Added
@@ -70,5 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Evaluation engine, session replay, operator dashboard, and Prometheus metrics.
 - Production deployment path: Docker Compose, NGINX, TLS, `deploy.sh`, CI pipeline.
 
-[Unreleased]: https://github.com/Brohammad/VoxForge/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Brohammad/VoxForge/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/Brohammad/VoxForge/releases/tag/v1.0.0-rc.1
 [0.1.0]: https://github.com/Brohammad/VoxForge/releases/tag/v0.1.0

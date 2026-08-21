@@ -1,0 +1,26 @@
+# Deploy smoke (on tag)
+# Builds the production image when a version tag is pushed.
+# Does not SSH to a VPS — run ./deploy.sh smoke on the host after pull.
+
+name: Deploy smoke
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build production image
+        run: docker build -f Dockerfile.prod -t voxforge:${{ github.ref_name }} .
+
+      - name: Compose config sanity
+        run: |
+          cp .env.production.example .env.production
+          sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=ci-postgres/' .env.production
+          sed -i 's/^REDIS_PASSWORD=.*/REDIS_PASSWORD=ci-redis/' .env.production
+          docker compose -f docker-compose.prod.yml --env-file .env.production config --quiet

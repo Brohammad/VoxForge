@@ -3,7 +3,7 @@
 Use any section below as-is or mix for LinkedIn, resume, portfolio site, GitHub, and interviews.
 
 **Live demo:** https://voxforge.brohammad.tech  
-**Repo:** https://github.com/Brohammad/VoxFauge  
+**Repo:** https://github.com/Brohammad/VoxForge  
 **Release:** v1.0.0-rc.1
 
 ---
@@ -88,8 +88,8 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 ### Links
 
 - Demo: https://voxforge.brohammad.tech/demo
-- Docs: https://github.com/Brohammad/VoxFauge/tree/main/docs
-- Architecture: https://github.com/Brohammad/VoxFauge/blob/main/docs/portfolio/architecture-diagrams.md
+- Docs: https://github.com/Brohammad/VoxForge/tree/main/docs
+- Architecture: https://github.com/Brohammad/VoxForge/blob/main/docs/portfolio/architecture-diagrams.md
 
 ---
 
@@ -160,7 +160,7 @@ Open-source voice AI infrastructure — unified pipeline, RAG, evaluation, repla
 
 **Title:** VoxForge  
 **Subtitle:** Voice AI infrastructure you can deploy, operate, and trust.  
-**CTA:** [Live Demo](https://voxforge.brohammad.tech/demo) · [GitHub](https://github.com/Brohammad/VoxFauge) · [API Docs](https://voxforge.brohammad.tech/api/v1/docs)
+**CTA:** [Live Demo](https://voxforge.brohammad.tech/demo) · [GitHub](https://github.com/Brohammad/VoxForge) · [API Docs](https://voxforge.brohammad.tech/api/v1/docs)
 
 **Tags:** Open Source · Python · FastAPI · LangGraph · Docker · Production
 

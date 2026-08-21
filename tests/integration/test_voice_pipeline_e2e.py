@@ -55,6 +55,11 @@ def test_websocket_voice_session_lifecycle(fake_redis, db_engine, monkeypatch):
     from voxforge.infrastructure import db as db_module
     from voxforge.infrastructure import redis as redis_module
 
+    async def _noop_init(*_args, **_kwargs) -> None:
+        return None
+
+    monkeypatch.setattr("voxforge.main.init_db", _noop_init)
+    monkeypatch.setattr("voxforge.main.init_redis", _noop_init)
     monkeypatch.setenv("AUTH_REQUIRED", "true")
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key-at-least-32-bytes-long")
     monkeypatch.setenv("API_KEY_HASH_PEPPER", "test-pepper")

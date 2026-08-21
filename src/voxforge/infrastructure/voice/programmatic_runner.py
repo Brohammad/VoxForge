@@ -12,8 +12,14 @@ _tracer = get_tracer(__name__)
 class ProgrammaticPipelineRunner:
     """Adapter that runs scripted turns through VoicePipelineService."""
 
-    def __init__(self, pipeline: VoicePipelineService) -> None:
+    def __init__(
+        self,
+        pipeline: VoicePipelineService,
+        *,
+        bundle: object | None = None,
+    ) -> None:
         self._pipeline = pipeline
+        self._bundle = bundle
 
     async def run_scripted_turn(
         self,
@@ -29,6 +35,8 @@ class ProgrammaticPipelineRunner:
             span.set_attribute("voxforge.transcript_length", len(transcript))
 
             self._pipeline.set_session_org(session_id, org_id)
+            if self._bundle is not None:
+                await self._bundle.bootstrap_session_agent_config(org_id, session_id)
             logger.info(
                 "onboarding_scripted_turn_start",
                 session_id=str(session_id),

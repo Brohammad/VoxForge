@@ -15,7 +15,7 @@ class AlertService:
         self._repository = repository
 
     async def get_alerts(self, org_id: UUID, *, days: int = 7) -> AlertSummary:
-        thresholds = await self._resolve_thresholds()
+        thresholds = await self._resolve_thresholds(org_id)
         outcomes = await self._repository.get_outcome_summary(org_id, days=days)
         evals = await self._repository.get_evaluation_summary(org_id)
         latency = await self._repository.get_latency_stats(org_id)
@@ -130,15 +130,21 @@ class AlertService:
             )
         ]
 
-    async def _resolve_thresholds(self) -> AlertThresholds:
-        result = await self._db.execute(
-            select(SupportTemplateModel)
-            .where(SupportTemplateModel.is_default.is_(True))
-            .order_by(SupportTemplateModel.created_at.asc())
-            .limit(1)
-        )
-        template = result.scalar_one_or_none()
-        raw = (template.eval_thresholds if template is not None else {}) or {}
+    async def _resolve_thresholds(self, org_id: UUID) -> AlertThresholds:
+        from voxforge.infrastructure.db.agent_config_repository import AgentConfigRepository
+
+        active = await AgentConfigRepository(self._db).get_active(org_id)
+        if active is not None and active.eval_thresholds:
+            raw = active.eval_thresholds
+        else:
+            result = await self._db.execute(
+                select(SupportTemplateModel)
+                .where(SupportTemplateModel.is_default.is_(True))
+                .order_by(SupportTemplateModel.created_at.asc())
+                .limit(1)
+            )
+            template = result.scalar_one_or_none()
+            raw = (template.eval_thresholds if template is not None else {}) or {}
         return AlertThresholds(
             task_success_min=float(raw.get("task_success_min", 0.8)),
             escalation_max=float(raw.get("escalation_max", 0.35)),

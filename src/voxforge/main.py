@@ -2,16 +2,33 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from voxforge.api.v1.router import api_v1_router
+from voxforge.api.ws.livekit_proxy import router as livekit_proxy_router
 from voxforge.api.ws.voice import router as ws_router
 from voxforge.config import get_settings
+from voxforge.core.exceptions import (
+    ApiKeyNotFoundError,
+    ForbiddenError,
+    InvalidCredentialsError,
+    OrganizationNotFoundError,
+    PipelineError,
+    ProviderError,
+    SamlAssertionError,
+    SamlConnectionNotFoundError,
+    SessionNotFoundError,
+    SessionStateError,
+    UnauthorizedError,
+    UserNotFoundError,
+    VoxForgeError,
+)
 from voxforge.infrastructure.db.session import close_db, init_db
+from voxforge.infrastructure.http.csrf import CsrfMiddleware
 from voxforge.infrastructure.http.rate_limit import RateLimitMiddleware
 from voxforge.infrastructure.http.request_context import RequestContextMiddleware
 from voxforge.infrastructure.http.security_headers import SecurityHeadersMiddleware
@@ -28,6 +45,21 @@ from voxforge.infrastructure.tools.registry_factory import register_support_tool
 DASHBOARD_DIR = Path(__file__).resolve().parents[2] / "dashboard"
 LIVEKIT_EXAMPLE_DIR = Path(__file__).resolve().parents[2] / "examples" / "livekit-client"
 PUBLIC_DIR = Path(__file__).resolve().parents[2] / "public"
+
+_ERROR_STATUS_CODES: dict[type[VoxForgeError], int] = {
+    UnauthorizedError: 401,
+    InvalidCredentialsError: 401,
+    ForbiddenError: 403,
+    SessionNotFoundError: 404,
+    UserNotFoundError: 404,
+    OrganizationNotFoundError: 404,
+    ApiKeyNotFoundError: 404,
+    SamlConnectionNotFoundError: 404,
+    SamlAssertionError: 400,
+    SessionStateError: 409,
+    ProviderError: 502,
+    PipelineError: 500,
+}
 
 
 @asynccontextmanager
@@ -58,7 +90,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="VoxForge",
         description="Production-grade Voice AI Infrastructure Platform",
-        version="0.1.0",
+        version="1.0.0-rc.1",
         docs_url="/api/v1/docs",
         redoc_url="/api/v1/redoc",
         openapi_url="/api/v1/openapi.json",
@@ -76,8 +108,21 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
     app.add_middleware(RateLimitMiddleware, settings=settings)
+    app.add_middleware(CsrfMiddleware, settings=settings)
     app.add_middleware(RequestContextMiddleware)
     app.add_middleware(SecurityHeadersMiddleware, settings=settings)
+
+    @app.exception_handler(VoxForgeError)
+    async def voxforge_error_handler(_request: Request, exc: VoxForgeError) -> JSONResponse:
+        status = 400
+        for exc_type, code in _ERROR_STATUS_CODES.items():
+            if isinstance(exc, exc_type):
+                status = code
+                break
+        return JSONResponse(
+            status_code=status,
+            content={"detail": exc.message, "code": exc.code},
+        )
 
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
@@ -90,6 +135,7 @@ def create_app() -> FastAPI:
 
     app.include_router(api_v1_router, prefix="/api/v1")
     app.include_router(ws_router)
+    app.include_router(livekit_proxy_router)
 
     if PUBLIC_DIR.is_dir():
         app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public-static")
@@ -100,7 +146,17 @@ def create_app() -> FastAPI:
 
         @app.get("/demo")
         async def demo_page() -> FileResponse:
-            return FileResponse(PUBLIC_DIR / "demo" / "index.html")
+            return FileResponse(
+                PUBLIC_DIR / "demo" / "index.html",
+                headers={"Cache-Control": "no-store"},
+            )
+
+        @app.get("/status")
+        async def status_page() -> FileResponse:
+            return FileResponse(
+                PUBLIC_DIR / "status" / "index.html",
+                headers={"Cache-Control": "no-store"},
+            )
 
     if DASHBOARD_DIR.is_dir():
         app.mount(

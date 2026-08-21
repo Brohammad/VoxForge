@@ -12,14 +12,14 @@ Get from `git clone` to first voice session in under 15 minutes.
 
 | Minute | Action | Command |
 |--------|--------|---------|
-| 0–2 | Clone | `git clone https://github.com/Brohammad/VoxFauge.git && cd VoxFauge` |
+| 0–2 | Clone | `git clone https://github.com/Brohammad/VoxForge.git && cd VoxForge` |
 | 2–3 | Env | `cp .env.example .env` |
 | 3–5 | Dependencies | `uv sync` or `pip install -e ".[dev,livekit]"` |
 | 5–7 | Database | `docker compose up -d postgres redis && alembic upgrade head` |
 | 7–8 | Start API | `uvicorn voxforge.main:app --reload --app-dir src` |
 | 8–10 | First API call | Open http://localhost:8000/api/v1/docs → `GET /health` |
 | 10–12 | Dashboard | http://localhost:8000/dashboard → register account |
-| 12–15 | Voice demo | http://localhost:8000/demo → **Run demo call** |
+| 12–15 | Voice demo | http://localhost:8000/demo → **Run one-click sample call** |
 
 ## Verify tests
 

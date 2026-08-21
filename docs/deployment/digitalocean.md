@@ -38,7 +38,7 @@ ssh root@<DROPLET_IP>
 ```
 
 ```bash
-git clone https://github.com/Brohammad/VoxFauge.git /opt/VoxForge
+git clone https://github.com/Brohammad/VoxForge.git /opt/VoxForge
 cd /opt/VoxForge
 chmod +x scripts/bootstrap-server.sh scripts/setup-production-env.sh deploy.sh
 ./scripts/bootstrap-server.sh

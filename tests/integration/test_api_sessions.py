@@ -17,6 +17,15 @@ async def test_create_session_via_api(test_client):
 
 
 @pytest.mark.asyncio
+async def test_create_session_rejects_unknown_config_keys(test_client):
+    response = await test_client.post(
+        "/api/v1/sessions",
+        json={"transport_type": "websocket", "config": {"language": "en", "evil": True}},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_get_session_via_api(test_client):
     create_resp = await test_client.post("/api/v1/sessions", json={})
     session_id = create_resp.json()["session_id"]

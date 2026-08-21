@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from voxforge.api.dependencies import (
@@ -22,10 +22,37 @@ from voxforge.modules.session_manager.application.service import SessionManager
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
+# Client-supplied session config must stay small and schema-bound (no free-form JSON bags).
+_MAX_SESSION_CONFIG_BYTES = 4096
+
+
+class SessionConfig(BaseModel):
+    """Allowlisted session options passed at create time."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    language: str | None = Field(default=None, max_length=16)
+    voice_id: str | None = Field(default=None, max_length=128)
+
+    @field_validator("language", "voice_id")
+    @classmethod
+    def strip_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
 
 class CreateSessionRequest(BaseModel):
     transport_type: TransportType = TransportType.WEBSOCKET
-    config: dict = Field(default_factory=dict)
+    config: SessionConfig = Field(default_factory=SessionConfig)
+
+    def config_dict(self) -> dict:
+        data = self.config.model_dump(exclude_none=True)
+        encoded = self.config.model_dump_json(exclude_none=True)
+        if len(encoded.encode("utf-8")) > _MAX_SESSION_CONFIG_BYTES:
+            raise ValueError(f"session config exceeds {_MAX_SESSION_CONFIG_BYTES} bytes")
+        return data
 
 
 class CreateSessionResponse(BaseModel):
@@ -85,7 +112,7 @@ async def create_session(
 ) -> CreateSessionResponse:
     session = await session_manager.create_session(
         transport_type=body.transport_type,
-        config=body.config,
+        config=body.config_dict(),
         org_id=principal.org_id,
         created_by_user_id=principal.user_id,
     )

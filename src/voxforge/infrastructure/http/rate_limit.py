@@ -84,8 +84,9 @@ RATE_LIMIT_POLICIES: tuple[RateLimitPolicy, ...] = (
     RateLimitPolicy(
         category="demo",
         path_prefixes=("/api/v1/demo",),
-        sustained_per_minute=10,
-        burst_per_10_seconds=3,
+        # Local client demos: chat + hear per turn; keep headroom for retries.
+        sustained_per_minute=120,
+        burst_per_10_seconds=30,
         fail_mode="closed",
     ),
     RateLimitPolicy(

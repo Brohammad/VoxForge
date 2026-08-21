@@ -45,9 +45,7 @@ def test_production_validation_rejects_weak_secrets():
 
 
 def test_production_validation_requires_trusted_hosts():
-    errors = collect_production_errors(
-        _production_settings(trusted_hosts="*", demo_enabled=False)
-    )
+    errors = collect_production_errors(_production_settings(trusted_hosts="*", demo_enabled=False))
     assert any("TRUSTED_HOSTS" in e for e in errors)
 
 
@@ -63,6 +61,62 @@ def test_production_validation_requires_replay_signing_secret():
     assert any("HANDOFF_REPLAY_SIGNING_SECRET" in e for e in errors)
 
 
+def test_production_validation_requires_distinct_replay_secret():
+    secret = "d" * 32
+    errors = collect_production_errors(
+        _production_settings(jwt_secret_key=secret, handoff_replay_signing_secret=secret)
+    )
+    assert any("must differ from JWT_SECRET_KEY" in e for e in errors)
+
+
+def test_production_validation_rejects_stub_support_providers():
+    errors = collect_production_errors(
+        _production_settings(ticketing_provider="zendesk", knowledge_base_provider="freshdesk")
+    )
+    assert any("Stub support integrations" in e for e in errors)
+
+
 def test_development_skips_validation():
     settings = Settings(app_env="development", jwt_secret_key="change-me")
     assert collect_production_errors(settings) == []
+
+
+def test_production_rejects_open_registration_without_demo():
+    errors = collect_production_errors(
+        _production_settings(
+            demo_enabled=False,
+            registration_enabled=True,
+            stt_provider="deepgram",
+            llm_provider="openai",
+            tts_provider="cartesia",
+            embedding_provider="openai",
+            deepgram_api_key="dg-test",
+            openai_api_key="sk-test",
+            cartesia_api_key="c-test",
+        )
+    )
+    assert any("REGISTRATION_ENABLED" in e for e in errors)
+
+
+def test_production_allows_open_registration_with_demo():
+    errors = collect_production_errors(
+        _production_settings(demo_enabled=True, registration_enabled=True)
+    )
+    assert not any("REGISTRATION_ENABLED" in e for e in errors)
+
+
+def test_production_allows_invite_only_without_demo():
+    errors = collect_production_errors(
+        _production_settings(
+            demo_enabled=False,
+            registration_enabled=False,
+            stt_provider="deepgram",
+            llm_provider="openai",
+            tts_provider="cartesia",
+            embedding_provider="openai",
+            deepgram_api_key="dg-test",
+            openai_api_key="sk-test",
+            cartesia_api_key="c-test",
+        )
+    )
+    assert errors == []

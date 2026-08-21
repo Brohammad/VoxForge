@@ -6,7 +6,7 @@
 |------|------|
 | **Version** | v1.0.0-rc.1 |
 | **Release notes** | [v1.0.0-rc.1.md](v1.0.0-rc.1.md) |
-| **GitHub Release** | https://github.com/Brohammad/VoxFauge/releases/tag/v1.0.0-rc.1 |
+| **GitHub Release** | https://github.com/Brohammad/VoxForge/releases/tag/v1.0.0-rc.1 |
 | **Live instance** | https://voxforge.brohammad.tech |
 
 ## Reports

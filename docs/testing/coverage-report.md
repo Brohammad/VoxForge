@@ -2,10 +2,10 @@
 
 | Metric | Value | Target |
 |--------|------:|-------:|
-| Overall line coverage | 80.9% | 70% |
-| Branch coverage | 53.7% | — |
+| Overall line coverage | 81.1% | 70% |
+| Branch coverage | 54.3% | — |
 | Business logic coverage | 85.7% | 85% |
-| Lines covered | 6,999 / 8,648 | — |
+| Lines covered | 7,051 / 8,691 | — |
 | Gate status | **PASS** | — |
 
 ## Artifacts

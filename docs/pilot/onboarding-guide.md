@@ -35,9 +35,9 @@ Follow [deployment checklist](../deployment/verification-checklist.md).
 
 | Setting | Recommendation |
 |---------|----------------|
-| `STT_PROVIDER` | `deepgram` or `openai` |
+| `STT_PROVIDER` | `deepgram` |
 | `LLM_PROVIDER` | `openai` |
-| `TTS_PROVIDER` | `elevenlabs` or `openai` |
+| `TTS_PROVIDER` | `cartesia` |
 | `KNOWLEDGE_WORKER_ENABLED` | `true` on 4GB+ VPS |
 | `DEMO_ENABLED` | `false` in production pilot |
 

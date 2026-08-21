@@ -1,4 +1,4 @@
-# ADR-005 Supplement: Knowledge Base Retrieval Pipeline
+# ADR-008: Knowledge Base Retrieval Pipeline
 
 ## Status
 

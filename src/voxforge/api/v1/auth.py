@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Response
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from voxforge.api.dependencies import get_auth_service, get_current_principal
+from voxforge.config import Settings, get_settings
 from voxforge.core.domain.auth import (
     LoginRequest,
     Principal,
@@ -14,6 +15,7 @@ from voxforge.core.domain.auth import (
 )
 from voxforge.core.exceptions import InvalidCredentialsError, UnauthorizedError
 from voxforge.infrastructure.db.session import get_db_session
+from voxforge.infrastructure.security.cookies import clear_auth_cookies, set_auth_cookies
 from voxforge.modules.auth.application.service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -42,18 +44,39 @@ class MeResponse(BaseModel):
     principal_type: str
 
 
+class AcceptInviteRequest(BaseModel):
+    token: str = Field(min_length=16, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
+    full_name: str = Field(min_length=1, max_length=255)
+
+
+class AcceptInviteResponse(BaseModel):
+    user_id: UUID
+    org_id: UUID
+    email: str
+    tokens: TokenPair
+
+
 @router.post("/register", response_model=RegisterResponse, status_code=201)
 async def register(
     body: RegisterRequest,
+    response: Response,
     auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_db_session),
 ) -> RegisterResponse:
+    if not settings.registration_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail="Public registration is disabled. Use an organization invite or ask an admin.",
+        )
     try:
         user, org, tokens = await auth_service.register(body)
         await auth_service.commit()
     except InvalidCredentialsError as exc:
         raise HTTPException(status_code=400, detail=exc.message) from exc
 
+    set_auth_cookies(response, tokens, settings)
     return RegisterResponse(
         user_id=user.id,
         org_id=org.id,
@@ -67,7 +90,9 @@ async def register(
 @router.post("/login", response_model=TokenPair)
 async def login(
     body: LoginRequest,
+    response: Response,
     auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_db_session),
 ) -> TokenPair:
     try:
@@ -75,13 +100,16 @@ async def login(
         await auth_service.commit()
     except (InvalidCredentialsError, UnauthorizedError) as exc:
         raise HTTPException(status_code=401, detail=exc.message) from exc
+    set_auth_cookies(response, tokens, settings)
     return tokens
 
 
 @router.post("/refresh", response_model=TokenPair)
 async def refresh(
     body: RefreshRequest,
+    response: Response,
     auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_db_session),
 ) -> TokenPair:
     try:
@@ -89,7 +117,42 @@ async def refresh(
         await auth_service.commit()
     except UnauthorizedError as exc:
         raise HTTPException(status_code=401, detail=exc.message) from exc
+    set_auth_cookies(response, tokens, settings)
     return tokens
+
+
+@router.post("/logout", status_code=204)
+async def logout(
+    response: Response,
+    settings: Settings = Depends(get_settings),
+) -> None:
+    clear_auth_cookies(response, settings)
+
+
+@router.post("/invites/accept", response_model=AcceptInviteResponse)
+async def accept_invite(
+    body: AcceptInviteRequest,
+    response: Response,
+    auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
+    db: AsyncSession = Depends(get_db_session),
+) -> AcceptInviteResponse:
+    try:
+        user, org_id, tokens = await auth_service.accept_invite(
+            token=body.token,
+            password=body.password,
+            full_name=body.full_name,
+        )
+        await auth_service.commit()
+    except (InvalidCredentialsError, UnauthorizedError) as exc:
+        raise HTTPException(status_code=400, detail=exc.message) from exc
+    set_auth_cookies(response, tokens, settings)
+    return AcceptInviteResponse(
+        user_id=user.id,
+        org_id=org_id,
+        email=user.email,
+        tokens=tokens,
+    )
 
 
 @router.get("/me", response_model=MeResponse)

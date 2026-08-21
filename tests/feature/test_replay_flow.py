@@ -87,9 +87,7 @@ async def test_replay_link_generate_and_verify(handoff_settings_from_env):
 
     url, token = service.generate(session_id=session_id, org_id=org_id, handoff_id=handoff_id)
     assert str(session_id) in url
-    assert service.verify(
-        session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token
-    )
+    assert service.verify(session_id=session_id, org_id=org_id, handoff_id=handoff_id, token=token)
 
 
 @pytest.fixture

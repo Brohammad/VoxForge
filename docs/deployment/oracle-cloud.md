@@ -72,7 +72,7 @@ ssh ubuntu@<ORACLE_VM_IP>   # default user is often 'ubuntu' on Ubuntu images
 
 ```bash
 sudo -i   # or use ubuntu with sudo below
-git clone https://github.com/Brohammad/VoxFauge.git /opt/VoxForge
+git clone https://github.com/Brohammad/VoxForge.git /opt/VoxForge
 cd /opt/VoxForge
 chmod +x scripts/bootstrap-server.sh scripts/setup-production-env.sh deploy.sh
 ./scripts/bootstrap-server.sh

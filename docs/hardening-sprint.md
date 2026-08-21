@@ -30,8 +30,9 @@ Production blockers from the staff engineering review. No architectural redesign
 | Rate limiting: fail-closed on Redis errors; extend to expensive endpoints | DoS/cost abuse protection | **Done** — [rate-limiting.md](../architecture/rate-limiting.md) |
 | Metrics protection & observability hardening | Production diagnosability without SSH | **Done** — [observability.md](../architecture/observability.md), [metrics.md](../architecture/metrics.md) |
 | Protect `/api/v1/metrics` in application layer | Defense in depth beyond NGINX | **Done** (part of observability hardening) |
-| Validate `HANDOFF_REPLAY_SIGNING_SECRET` in production | Separate replay integrity from JWT secret |
-| Validate `CreateSessionRequest.config` schema | Prevents arbitrary JSON injection into session state |
+| Validate `CreateSessionRequest.config` schema | Prevents arbitrary JSON injection into session state | **Done** |
+| Validate `HANDOFF_REPLAY_SIGNING_SECRET` in production | Separate replay integrity from JWT secret | **Done** (required, strong, distinct from JWT) |
+| Reject stub Zendesk/Freshdesk providers in production | Avoid late opaque failures mid-pilot | **Done** |
 | **Failure recovery runbook** | Document actual behavior under Redis/Postgres/LiveKit/API failures — see [failure-recovery.md](../architecture/failure-recovery.md) |
 
 ---

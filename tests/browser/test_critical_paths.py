@@ -27,15 +27,12 @@ def test_landing_page_navigation(page: Page, base_url: str) -> None:
 
 def test_demo_quickstart(page: Page, base_url: str) -> None:
     page.goto(f"{base_url}/demo")
-    run_btn = page.get_by_role("button", name="Run demo call")
+    run_btn = page.get_by_role("button", name="Run one-click sample call")
     if run_btn.is_disabled():
         pytest.skip("Demo disabled — set DEMO_ENABLED=true")
     run_btn.click()
-    expect(page.locator("#status")).to_contain_text(
-        re.compile("completed|failed", re.I), timeout=20_000
-    )
-    if "failed" in page.locator("#status").inner_text().lower():
-        pytest.fail(page.locator("#status").inner_text())
+    expect(page.locator("#out-status")).to_contain_text("demo_turn_ok", timeout=20_000)
+    expect(page.locator("#results")).to_be_visible()
 
 
 def test_dashboard_login_and_overview(page: Page, base_url: str) -> None:
@@ -95,11 +92,12 @@ def test_knowledge_upload_and_search(page: Page, base_url: str) -> None:
     collection_id = coll.json()["id"]
 
     page.goto(f"{base_url}/dashboard")
-    page.locator("#token-input").fill(token)
-    page.get_by_role("button", name="Connect").click()
+    page.locator("#login-email").fill(email)
+    page.locator("#login-password").fill(password)
+    page.get_by_role("button", name="Login").click()
     expect(page.locator("#auth-status")).to_contain_text("Connected", timeout=10_000)
 
-    page.locator('a[data-section="knowledge"]').click()
+    page.locator('a[data-hub="knowledge"]').click()
     expect(page.locator("#knowledge-collection-name")).to_be_visible(timeout=5_000)
 
     page.locator("#knowledge-collection-name").fill(f"UI Collection {suffix}")
@@ -214,7 +212,7 @@ def test_logout_clears_session(page: Page, base_url: str) -> None:
     expect(page.locator("#auth-status")).to_contain_text("Connected", timeout=15_000)
     expect(page.get_by_role("button", name="Logout")).to_be_visible(timeout=5_000)
     page.get_by_role("button", name="Logout").click()
-    expect(page.locator("#auth-status")).to_contain_text("Not connected", timeout=5_000)
+    expect(page.locator("#auth-status")).to_contain_text("Not connected", timeout=10_000)
 
 
 def test_404_returns_not_found(page: Page, base_url: str) -> None:

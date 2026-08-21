@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from voxforge.api.dependencies import get_current_principal, get_saml_connection_service
+from voxforge.api.dependencies import (
+    get_current_principal,
+    get_optional_principal,
+    get_saml_connection_service,
+)
 from voxforge.core.domain.auth import OrgRole, Principal, TokenPair
 from voxforge.core.domain.sso import (
     SamlConnection,
@@ -211,9 +215,10 @@ async def get_saml_metadata(
 async def begin_saml_login(
     org_id: UUID,
     connection_id: UUID,
-    principal: Principal = Depends(get_current_principal),
+    principal: Principal | None = Depends(get_optional_principal),
     service: SamlConnectionService = Depends(get_saml_connection_service),
 ) -> SamlLoginResponse:
+    """Start SP-initiated SAML login. Public when logged out (cold SSO)."""
     try:
         redirect = await service.begin_login(
             org_id=org_id,

@@ -32,6 +32,7 @@ class ConversationEngine:
         self._knowledge_context = knowledge_context_builder
         self._history: dict[UUID, list[_ChatMessage]] = {}
         self._org_ids: dict[UUID, UUID | None] = {}
+        self._session_prompts: dict[UUID, str] = {}
 
     def set_session_org(self, session_id: UUID, org_id: UUID | None) -> None:
         self._org_ids[session_id] = org_id
@@ -39,9 +40,15 @@ class ConversationEngine:
     def set_caller_scopes(self, session_id: UUID, scopes: list[str]) -> None:
         return
 
+    def set_session_system_prompt(self, session_id: UUID, prompt: str) -> None:
+        self._session_prompts[session_id] = prompt
+
+    def _system_prompt_for(self, session_id: UUID) -> str:
+        return self._session_prompts.get(session_id, self._settings.system_prompt)
+
     def init_session(self, session_id: UUID) -> None:
         self._history[session_id] = [
-            _ChatMessage(role=MessageRole.SYSTEM, content=self._settings.system_prompt)
+            _ChatMessage(role=MessageRole.SYSTEM, content=self._system_prompt_for(session_id))
         ]
 
     def add_user_message(self, session_id: UUID, content: str) -> None:
@@ -56,7 +63,7 @@ class ConversationEngine:
 
     def load_history(self, session_id: UUID, messages: list[Message]) -> None:
         self._history[session_id] = [
-            _ChatMessage(role=MessageRole.SYSTEM, content=self._settings.system_prompt)
+            _ChatMessage(role=MessageRole.SYSTEM, content=self._system_prompt_for(session_id))
         ]
         for msg in messages:
             self._history[session_id].append(_ChatMessage(role=msg.role, content=msg.content))
@@ -79,7 +86,7 @@ class ConversationEngine:
             built = await self._memory.build_messages_for_llm(
                 org_id=org_id,
                 session_id=session_id,
-                system_prompt=self._settings.system_prompt,
+                system_prompt=self._system_prompt_for(session_id),
                 recent_messages=[ChatMessageLike(role=m.role, content=m.content) for m in history],
                 query=query,
             )
@@ -102,6 +109,7 @@ class ConversationEngine:
     def clear_session(self, session_id: UUID) -> None:
         self._history.pop(session_id, None)
         self._org_ids.pop(session_id, None)
+        self._session_prompts.pop(session_id, None)
 
     def get_last_agent_trace(self, session_id: UUID) -> list[dict]:
         return []
