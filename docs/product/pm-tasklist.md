@@ -38,6 +38,8 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 ## CI / merge readiness
 - [x] Stage 9: Ruff format + EMBEDDING_PROVIDER in CI/conftest
 - [x] Stage 10: Browser tests + logout race fix for hub nav / demo TTS
+- [x] Stage 11: Disable rate limiting in browser CI (dashboard 429 fix)
+- [x] All CI checks green on PR #2 — marked ready for review
 
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS
