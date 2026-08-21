@@ -258,6 +258,7 @@ jobs:
           DEMO_ENABLED: "true"
           JWT_SECRET_KEY: ci-browser-test-secret-key-32-chars-min
           API_KEY_HASH_PEPPER: ci-browser-test-pepper-value
+          RATE_LIMIT_ENABLED: "false"
         run: |
           chmod +x scripts/run_browser_tests.sh
           ./scripts/run_browser_tests.sh

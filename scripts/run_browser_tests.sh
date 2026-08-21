@@ -25,6 +25,7 @@ export KNOWLEDGE_WORKER_ENABLED="${KNOWLEDGE_WORKER_ENABLED:-false}"
 export JWT_SECRET_KEY="${JWT_SECRET_KEY:-browser-test-secret-key-32-chars-min}"
 export API_KEY_HASH_PEPPER="${API_KEY_HASH_PEPPER:-browser-test-pepper-value}"
 export AUTH_REQUIRED="${AUTH_REQUIRED:-true}"
+export RATE_LIMIT_ENABLED="${RATE_LIMIT_ENABLED:-false}"
 
 echo "==> Running migrations"
 "$PYTHON" -m alembic upgrade head
