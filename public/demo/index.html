@@ -10,9 +10,9 @@
   <header>
     <a href="/" class="back">← VoxForge</a>
     <h1>Interactive Voice Pipeline Demo</h1>
+    <p id="provider-badge" class="provider-badge">Loading provider info…</p>
     <p>
-      Type a message — the LLM replies, then this Mac plays Cartesia TTS through your speakers
-      (bypasses Safari autoplay).
+      Type a message — the assistant replies and TTS plays in your browser.
     </p>
   </header>
 
@@ -38,10 +38,10 @@
         <button id="chat-send" class="btn" type="submit">Send</button>
       </form>
       <div class="play-row">
-        <button id="play-voice" class="btn btn-play" type="button" disabled>Play on speakers</button>
+        <button id="play-voice" class="btn btn-play" type="button" disabled>Play voice</button>
         <a id="download-voice" class="btn btn-secondary hidden" href="#" download="assistant.wav">Download WAV</a>
       </div>
-      <p class="status">Sound comes from the API host via <code>afplay</code> — turn Mac volume up.</p>
+      <p class="status">Audio is synthesized server-side and played in your browser. Use Play voice if autoplay is blocked.</p>
     </section>
 
     <section class="panel secondary">

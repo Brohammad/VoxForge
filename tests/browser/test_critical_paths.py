@@ -27,7 +27,7 @@ def test_landing_page_navigation(page: Page, base_url: str) -> None:
 
 def test_demo_quickstart(page: Page, base_url: str) -> None:
     page.goto(f"{base_url}/demo")
-    run_btn = page.get_by_role("button", name="Run demo call")
+    run_btn = page.get_by_role("button", name="Run one-click sample call")
     if run_btn.is_disabled():
         pytest.skip("Demo disabled — set DEMO_ENABLED=true")
     run_btn.click()

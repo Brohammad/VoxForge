@@ -40,6 +40,11 @@ class DemoAccountResponse(BaseModel):
     password_hint: str
     org_name: str
     note: str
+    stt_provider: str
+    llm_provider: str
+    tts_provider: str
+    embedding_provider: str
+    providers_mode: str  # mock | mixed | live
 
 
 class DemoSpeakRequest(BaseModel):
@@ -110,12 +115,29 @@ async def _synthesize_wav(tts, text: str, voice_id: str | None) -> tuple[bytes, 
 async def demo_info(settings: Settings = Depends(get_settings)) -> DemoAccountResponse:
     if not settings.demo_enabled:
         raise HTTPException(status_code=404, detail="Demo is not enabled")
+    providers = (
+        settings.stt_provider,
+        settings.llm_provider,
+        settings.tts_provider,
+        settings.embedding_provider,
+    )
+    if all(p == "mock" for p in providers):
+        mode = "mock"
+    elif all(p != "mock" for p in providers):
+        mode = "live"
+    else:
+        mode = "mixed"
     return DemoAccountResponse(
         email=settings.demo_email,
         password_hint=settings.demo_password_hint,
         org_name="VoxForge Demo",
         note="Use POST /api/v1/demo/quickstart for a one-click pipeline experience, "
         "or log in with the demo account to explore the dashboard.",
+        stt_provider=settings.stt_provider,
+        llm_provider=settings.llm_provider,
+        tts_provider=settings.tts_provider,
+        embedding_provider=settings.embedding_provider,
+        providers_mode=mode,
     )
 
 

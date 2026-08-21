@@ -2,6 +2,7 @@ const runBtn = document.getElementById("run-demo");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 const credsEl = document.getElementById("demo-creds");
+const providerBadgeEl = document.getElementById("provider-badge");
 const chatLog = document.getElementById("chat-log");
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
@@ -12,6 +13,7 @@ const downloadLink = document.getElementById("download-voice");
 let chatSessionId = null;
 let lastSpeakText = "";
 let downloadUrl = null;
+let currentAudio = null;
 let busy = false;
 
 function apiError(data, fallback) {
@@ -42,38 +44,46 @@ function appendChat(role, text) {
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-async function playOnSpeakers(text) {
+function stopCurrentAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+}
+
+async function playInBrowser(text) {
   lastSpeakText = text;
   playBtn.disabled = false;
-  statusEl.textContent = "Playing on Mac speakers…";
-  const res = await fetch("/api/v1/demo/hear", {
+  statusEl.textContent = "Synthesizing voice…";
+  stopCurrentAudio();
+
+  const res = await fetch("/api/v1/demo/speak", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(apiError(data, `Hear failed (${res.status})`));
-  statusEl.textContent = `Played on speakers (${data.bytes || "?"} bytes). Turn volume up if silent.`;
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(apiError(data, `Speak failed (${res.status})`));
+  }
 
-  // Optional download uses the same TTS once, only when user asks.
-  downloadLink.classList.add("hidden");
-  downloadLink.onclick = async (event) => {
-    event.preventDefault();
-    const speakRes = await fetch("/api/v1/demo/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (!speakRes.ok) return;
-    const buffer = await speakRes.arrayBuffer();
-    const blob = new Blob([buffer], { type: "audio/wav" });
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    downloadUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = "assistant.wav";
-    a.click();
-  };
+  const buffer = await res.arrayBuffer();
+  const blob = new Blob([buffer], { type: "audio/wav" });
+  if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+  downloadUrl = URL.createObjectURL(blob);
+
+  currentAudio = new Audio(downloadUrl);
+  currentAudio.addEventListener("ended", () => {
+    statusEl.textContent = "Playback finished.";
+  });
+  statusEl.textContent = "Playing in your browser…";
+  try {
+    await currentAudio.play();
+  } catch (playErr) {
+    statusEl.textContent = `Tap Play voice — autoplay blocked (${playErr.message}).`;
+  }
+
+  downloadLink.href = downloadUrl;
   downloadLink.classList.remove("hidden");
 }
 
@@ -100,7 +110,7 @@ async function runDemo() {
     chatSessionId = data.session_id || null;
     appendChat("user", data.user_transcript);
     appendChat("assistant", data.assistant_response || "(no reply)");
-    if (data.assistant_response) await playOnSpeakers(data.assistant_response);
+    if (data.assistant_response) await playInBrowser(data.assistant_response);
   } catch (err) {
     statusEl.textContent = `Demo failed: ${err.message}`;
   } finally {
@@ -140,7 +150,7 @@ async function sendChat(event) {
     document.getElementById("out-session").textContent = data.session_id;
     resultsEl.classList.remove("hidden");
 
-    await playOnSpeakers(data.assistant_response);
+    await playInBrowser(data.assistant_response);
   } catch (err) {
     statusEl.textContent = `Chat failed: ${err.message}`;
     appendChat("system", `Error: ${err.message}`);
@@ -159,10 +169,23 @@ playBtn.addEventListener("click", () => {
     statusEl.textContent = "No audio yet — send a message first.";
     return;
   }
-  playOnSpeakers(lastSpeakText).catch((err) => {
+  playInBrowser(lastSpeakText).catch((err) => {
     statusEl.textContent = `Play failed: ${err.message}`;
   });
 });
+
+function renderProviderBadge(data) {
+  if (!providerBadgeEl) return;
+  const mode = data.providers_mode || "mock";
+  const detail = `STT ${data.stt_provider} · LLM ${data.llm_provider} · TTS ${data.tts_provider}`;
+  providerBadgeEl.textContent =
+    mode === "mock"
+      ? `Mock providers (${detail}) — latency is not production-realistic`
+      : mode === "live"
+        ? `Live providers (${detail})`
+        : `Mixed providers (${detail})`;
+  providerBadgeEl.dataset.mode = mode;
+}
 
 async function loadDemoInfo() {
   try {
@@ -176,6 +199,7 @@ async function loadDemoInfo() {
     }
     if (!res.ok) return;
     const data = await res.json();
+    renderProviderBadge(data);
     if (credsEl && data.email && data.password_hint) {
       credsEl.textContent = `${data.email} / ${data.password_hint}`;
     }

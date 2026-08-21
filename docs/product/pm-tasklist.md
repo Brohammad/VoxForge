@@ -14,9 +14,9 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Alerts read active agent `eval_thresholds`
 
 ## Stage 3 — Demo voice + honest labeling
-- [ ] Browser TTS via `/demo/speak` (retire `afplay` on public path)
-- [ ] Mock vs real provider badges on landing and demo
-- [ ] Align Playwright + docs with “Run one-click sample call”
+- [x] Browser TTS via `/demo/speak` (retire `afplay` on public path)
+- [x] Mock vs real provider badges on demo page
+- [x] Align Playwright + key docs with “Run one-click sample call”
 
 ## Stage 4 — Knowledge completeness
 - [ ] `GET /knowledge/collections/{id}/documents` list API

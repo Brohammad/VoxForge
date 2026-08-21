@@ -85,7 +85,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 
-Mock STT/LLM/TTS providers work **without API keys**. Click **Run demo call** at `/demo` to exercise the full pipeline.
+Mock STT/LLM/TTS providers work **without API keys**. Click **Run one-click sample call** at `/demo` to exercise the full pipeline.
 
 Detailed walkthrough: [docs/ONBOARDING.md](docs/ONBOARDING.md)
 

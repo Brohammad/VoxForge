@@ -8,7 +8,7 @@ Quick answers. Full docs: [README.md](README.md)
 
 ### Do I need API keys to try VoxForge locally?
 
-No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Run demo call**.
+No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Run one-click sample call**.
 
 ### How long does local setup take?
 
