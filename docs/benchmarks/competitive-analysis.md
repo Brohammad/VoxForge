@@ -71,8 +71,8 @@ Legend: ✅ native · ⚙️ partial/BYO · ❌ not available
 - Visual agent builder
 - Multi-tenant hosted offering
 - Native telephony (SIP/PSTN) — use LiveKit SIP
-- Production Zendesk/Freshdesk connectors
-- httpOnly dashboard sessions (v1.1)
+- Production Zendesk/Freshdesk connectors (use mock ticketing + replay/API export today)
+- httpOnly dashboard sessions — **shipped** (JWT paste remains under Advanced)
 
 ## Pricing positioning
 

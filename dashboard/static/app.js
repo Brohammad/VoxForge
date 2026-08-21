@@ -313,7 +313,7 @@ function renderWizardPresets(presets) {
         <h3>${escapeHtml(preset.name)}</h3>
       </div>
       <p class="preset-description">${escapeHtml(preset.description)}</p>
-      <div class="preset-thresholds">${escapeHtml(renderPolicyThresholds(preset.eval_thresholds))}</div>
+      <div class="preset-thresholds">orchestrator=${escapeHtml(preset.orchestrator_config?.mode || "single")} · ${escapeHtml(renderPolicyThresholds(preset.eval_thresholds))}</div>
     </article>
   `).join("") || "<p class='card-sub'>No presets available.</p>";
 
@@ -1081,7 +1081,7 @@ function renderPolicyPresets(presets) {
         <h3>${escapeHtml(preset.name)}</h3>
       </div>
       <p class="preset-description">${escapeHtml(preset.description)}</p>
-      <div class="preset-thresholds">${escapeHtml(renderPolicyThresholds(preset.eval_thresholds))}</div>
+      <div class="preset-thresholds">orchestrator=${escapeHtml(preset.orchestrator_config?.mode || "single")} · ${escapeHtml(renderPolicyThresholds(preset.eval_thresholds))}</div>
       <button type="button" class="link-btn" data-apply-preset="${escapeHtml(preset.slug)}">Apply Preset</button>
     </article>
   `).join("") || "<p class='card-sub'>No policy presets available.</p>";

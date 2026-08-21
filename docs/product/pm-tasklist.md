@@ -30,10 +30,10 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] API keys management page
 
 ## Stage 6 — Product polish
-- [ ] Orchestrator mode toggle in dashboard (single vs multi_agent)
-- [ ] Collapse nav to Talk / Knowledge / Inbox / Settings
-- [ ] Remove or implement Zendesk ticket language
-- [ ] Real-provider demo recording + README GIF refresh
+- [x] Orchestrator mode visible on policy presets and active config
+- [ ] Collapse nav to Talk / Knowledge / Inbox / Settings (deferred — large IA change)
+- [x] Honest ticketing language on landing and competitive docs
+- [ ] Real-provider demo recording + README GIF refresh (deferred)
 
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS
