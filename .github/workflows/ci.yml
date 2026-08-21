@@ -130,7 +130,7 @@ jobs:
         run: python scripts/generate_coverage_report.py --skip-tests --fail-under=70
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-reports
           path: |
@@ -156,7 +156,7 @@ jobs:
         run: python scripts/benchmark_onboarding.py --iterations 10 --warmup 2 --json | tee benchmark-onboarding.json
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-onboarding
           path: benchmark-onboarding.json
@@ -179,7 +179,7 @@ jobs:
         run: python scripts/benchmark_knowledge_base.py --iterations 50 --json | tee benchmark-knowledge-base.json
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-knowledge-base
           path: benchmark-knowledge-base.json
