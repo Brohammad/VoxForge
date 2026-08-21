@@ -14,19 +14,10 @@
         <span class="brand-name">VoxForge</span>
       </div>
       <nav>
-        <a href="#overview" class="nav-link active" data-section="overview">Overview</a>
-        <a href="#onboarding" class="nav-link" data-section="onboarding">First Agent</a>
-        <a href="#knowledge" class="nav-link" data-section="knowledge">Knowledge Base</a>
-        <a href="#handoffs" class="nav-link" data-section="handoffs">Handoffs</a>
-        <a href="#alerts" class="nav-link" data-section="alerts">Alerts</a>
-        <a href="#policies" class="nav-link" data-section="policies">Policy Presets</a>
-        <a href="#sso" class="nav-link" data-section="sso">SSO</a>
-        <a href="#api-keys" class="nav-link" data-section="api-keys">API Keys</a>
-        <a href="#sessions" class="nav-link" data-section="sessions">Sessions</a>
-        <a href="#replay" class="nav-link" data-section="replay">Replay</a>
-        <a href="#latency" class="nav-link" data-section="latency">Latency</a>
-        <a href="#evaluations" class="nav-link" data-section="evaluations">Evaluations</a>
-        <a href="#activity" class="nav-link" data-section="activity">Activity</a>
+        <a href="#overview" class="nav-link active" data-hub="talk">Talk</a>
+        <a href="#knowledge" class="nav-link" data-hub="knowledge">Knowledge</a>
+        <a href="#handoffs" class="nav-link" data-hub="inbox">Inbox</a>
+        <a href="#policies" class="nav-link" data-hub="settings">Settings</a>
       </nav>
       <div class="sidebar-footer">
         <a href="/examples/livekit">WebRTC Demo</a>
@@ -36,7 +27,7 @@
 
     <main class="main">
       <header class="topbar">
-        <h1 id="page-title">Overview</h1>
+        <h1 id="page-title">Talk · Overview</h1>
         <div class="auth-bar">
           <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
           <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
@@ -70,6 +61,30 @@
       </div>
 
       <div id="error-banner" class="error-banner hidden"></div>
+
+      <nav id="hub-subnav" class="hub-subnav" aria-label="Section tabs">
+        <div class="hub-tabs" data-hub="talk">
+          <a href="#overview" class="hub-tab active" data-section="overview">Overview</a>
+          <a href="#onboarding" class="hub-tab" data-section="onboarding">First Agent</a>
+          <a href="#sessions" class="hub-tab" data-section="sessions">Sessions</a>
+          <a href="#replay" class="hub-tab" data-section="replay">Replay</a>
+          <a href="#latency" class="hub-tab" data-section="latency">Latency</a>
+          <a href="#evaluations" class="hub-tab" data-section="evaluations">Evaluations</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="knowledge">
+          <a href="#knowledge" class="hub-tab active" data-section="knowledge">Knowledge Base</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="inbox">
+          <a href="#handoffs" class="hub-tab active" data-section="handoffs">Handoffs</a>
+          <a href="#alerts" class="hub-tab" data-section="alerts">Alerts</a>
+        </div>
+        <div class="hub-tabs hidden" data-hub="settings">
+          <a href="#policies" class="hub-tab active" data-section="policies">Policy Presets</a>
+          <a href="#sso" class="hub-tab" data-section="sso">SSO</a>
+          <a href="#api-keys" class="hub-tab" data-section="api-keys">API Keys</a>
+          <a href="#activity" class="hub-tab" data-section="activity">Activity</a>
+        </div>
+      </nav>
 
       <section id="overview" class="section">
         <div class="panel voice-kpi-panel">

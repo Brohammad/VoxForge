@@ -108,6 +108,47 @@ const WIZARD_DISMISS_KEY = "voxforge_wizard_dismissed";
 const WIZARD_STATE_KEY = "voxforge_wizard_state";
 const WIZARD_DEFAULT_PRESET = "customer-support-deflection";
 
+const HUBS = {
+  talk: {
+    label: "Talk",
+    defaultSection: "overview",
+    sections: {
+      overview: "Overview",
+      onboarding: "First Agent",
+      sessions: "Sessions",
+      replay: "Replay",
+      latency: "Latency",
+      evaluations: "Evaluations",
+    },
+  },
+  knowledge: {
+    label: "Knowledge",
+    defaultSection: "knowledge",
+    sections: { knowledge: "Knowledge Base" },
+  },
+  inbox: {
+    label: "Inbox",
+    defaultSection: "handoffs",
+    sections: { handoffs: "Handoffs", alerts: "Alerts" },
+  },
+  settings: {
+    label: "Settings",
+    defaultSection: "policies",
+    sections: {
+      policies: "Policy Presets",
+      sso: "SSO",
+      "api-keys": "API Keys",
+      activity: "Activity",
+    },
+  },
+};
+
+const SECTION_TO_HUB = Object.fromEntries(
+  Object.entries(HUBS).flatMap(([hubId, hub]) =>
+    Object.keys(hub.sections).map((section) => [section, hubId])
+  )
+);
+
 const wizardState = {
   step: 1,
   presetSlug: WIZARD_DEFAULT_PRESET,
@@ -901,14 +942,56 @@ async function loadSessions() {
 }
 
 function showSection(section) {
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.classList.toggle("active", link.dataset.section === section);
+  const hubId = SECTION_TO_HUB[section] || "talk";
+  const hub = HUBS[hubId];
+
+  document.querySelectorAll(".nav-link[data-hub]").forEach((link) => {
+    link.classList.toggle("active", link.dataset.hub === hubId);
   });
+  document.querySelectorAll(".hub-tabs").forEach((tabs) => {
+    tabs.classList.toggle("hidden", tabs.dataset.hub !== hubId);
+  });
+  document.querySelectorAll(".hub-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.section === section);
+  });
+
   document.querySelectorAll(".section").forEach((node) => node.classList.add("hidden"));
   const target = document.getElementById(section);
   if (target) target.classList.remove("hidden");
-  const activeLink = document.querySelector(`.nav-link[data-section="${section}"]`);
-  els.pageTitle.textContent = activeLink ? activeLink.textContent : section;
+
+  const sectionLabel = hub?.sections[section] || section;
+  els.pageTitle.textContent = hub ? `${hub.label} · ${sectionLabel}` : sectionLabel;
+}
+
+function showHub(hubId) {
+  const hub = HUBS[hubId];
+  if (!hub) return;
+  showSection(hub.defaultSection);
+}
+
+async function loadSectionData(section) {
+  if (!isAuthenticated()) return;
+  clearError();
+  if (section === "policies") {
+    await loadPolicies();
+  }
+  if (section === "sso") {
+    await loadSso();
+  }
+  if (section === "onboarding") {
+    await initWizard({ resetStep: true });
+    await loadOnboardingStatus();
+  }
+  if (section === "knowledge") {
+    await loadKnowledge();
+    scheduleKnowledgePolling();
+  }
+  if (section === "handoffs") {
+    await loadHandoffs();
+  }
+  if (section === "api-keys") {
+    await loadApiKeys();
+  }
 }
 
 async function openReplay(sessionId) {
@@ -1800,33 +1883,26 @@ els.ssoCreateForm?.addEventListener("submit", async (event) => {
   }
 });
 
-document.querySelectorAll(".nav-link").forEach((link) => {
+document.querySelectorAll(".nav-link[data-hub]").forEach((link) => {
   link.addEventListener("click", async (e) => {
     e.preventDefault();
-    showSection(link.dataset.section);
-    if (!isAuthenticated()) return;
+    const hubId = link.dataset.hub;
+    showHub(hubId);
     try {
-      clearError();
-      if (link.dataset.section === "policies") {
-        await loadPolicies();
-      }
-      if (link.dataset.section === "sso") {
-        await loadSso();
-      }
-      if (link.dataset.section === "onboarding") {
-        await initWizard({ resetStep: true });
-        await loadOnboardingStatus();
-      }
-      if (link.dataset.section === "knowledge") {
-        await loadKnowledge();
-        scheduleKnowledgePolling();
-      }
-      if (link.dataset.section === "handoffs") {
-        await loadHandoffs();
-      }
-      if (link.dataset.section === "api-keys") {
-        await loadApiKeys();
-      }
+      await loadSectionData(HUBS[hubId].defaultSection);
+    } catch (err) {
+      showError(err.message);
+    }
+  });
+});
+
+document.querySelectorAll(".hub-tab").forEach((tab) => {
+  tab.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const section = tab.dataset.section;
+    showSection(section);
+    try {
+      await loadSectionData(section);
     } catch (err) {
       showError(err.message);
     }

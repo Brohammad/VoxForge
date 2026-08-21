@@ -31,7 +31,7 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 
 ## Stage 6 — Product polish
 - [x] Orchestrator mode visible on policy presets and active config
-- [ ] Collapse nav to Talk / Knowledge / Inbox / Settings (deferred — large IA change)
+- [x] Collapse nav to Talk / Knowledge / Inbox / Settings
 - [x] Honest ticketing language on landing and competitive docs
 - [ ] Real-provider demo recording + README GIF refresh (deferred)
 

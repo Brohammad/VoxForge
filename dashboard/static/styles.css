@@ -62,6 +62,36 @@ nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
   color: var(--text);
 }
 
+.hub-subnav {
+  padding: 0.75rem 2rem 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.hub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hub-tabs.hidden { display: none; }
+
+.hub-tab {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  border: 1px solid transparent;
+}
+
+.hub-tab:hover,
+.hub-tab.active {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
 .sidebar-footer { padding: 0.5rem; font-size: 0.8rem; }
 .sidebar-footer a { color: var(--muted); }
 
