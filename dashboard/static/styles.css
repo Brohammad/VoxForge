@@ -79,6 +79,33 @@ nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
 .topbar h1 { font-size: 1.25rem; font-weight: 600; }
 
 .auth-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.advanced-auth {
+  margin: 0 1.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.advanced-auth-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.register-panel {
+  margin: 0 1.5rem 1rem;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
 .auth-divider { color: var(--muted); font-size: 0.8rem; }
 .auth-bar input[type="email"],
 .auth-bar input[type="password"] {
@@ -231,6 +258,10 @@ nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
 
 .link-btn:hover {
   border-color: var(--accent2);
+}
+
+.link-btn.danger {
+  color: #f87171;
 }
 
 .json-preview {

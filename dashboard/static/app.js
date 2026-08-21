@@ -10,6 +10,11 @@ const els = {
   loginPassword: document.getElementById("login-password"),
   loginBtn: document.getElementById("login-btn"),
   logoutBtn: document.getElementById("logout-btn"),
+  registerToggleBtn: document.getElementById("register-toggle-btn"),
+  registerPanel: document.getElementById("register-panel"),
+  registerForm: document.getElementById("register-form"),
+  registerCancelBtn: document.getElementById("register-cancel-btn"),
+  registerStatus: document.getElementById("register-status"),
   tokenInput: document.getElementById("token-input"),
   connectBtn: document.getElementById("connect-btn"),
   authStatus: document.getElementById("auth-status"),
@@ -29,6 +34,11 @@ const els = {
   wizardDismissBtn: document.getElementById("wizard-dismiss-btn"),
   wizardProgress: document.getElementById("wizard-progress"),
   wizardAuthStatus: document.getElementById("wizard-auth-status"),
+  wizardInviteForm: document.getElementById("wizard-invite-form"),
+  wizardInviteToken: document.getElementById("wizard-invite-token"),
+  wizardInviteName: document.getElementById("wizard-invite-name"),
+  wizardInvitePassword: document.getElementById("wizard-invite-password"),
+  wizardInviteStatus: document.getElementById("wizard-invite-status"),
   wizardPresets: document.getElementById("wizard-presets"),
   wizardPresetStatus: document.getElementById("wizard-preset-status"),
   wizardKnowledgeForm: document.getElementById("wizard-knowledge-form"),
@@ -64,6 +74,11 @@ const els = {
   ssoDefaultRole: document.getElementById("sso-default-role"),
   ssoRoleMapping: document.getElementById("sso-role-mapping"),
   ssoLoginPreview: document.getElementById("sso-login-preview"),
+  apiKeysStatus: document.getElementById("api-keys-status"),
+  apiKeysBody: document.getElementById("api-keys-body"),
+  apiKeyCreateForm: document.getElementById("api-key-create-form"),
+  apiKeyName: document.getElementById("api-key-name"),
+  apiKeyCreatedSecret: document.getElementById("api-key-created-secret"),
   knowledgeStatus: document.getElementById("knowledge-status"),
   knowledgeRefreshBtn: document.getElementById("knowledge-refresh-btn"),
   knowledgeCollectionsBody: document.getElementById("knowledge-collections-body"),
@@ -168,7 +183,123 @@ function renderWizardAuthStatus() {
       ? `Connected · organization ${shortId(orgId)}`
       : "Connected · loading organization…";
   } else {
-    els.wizardAuthStatus.textContent = "Log in with email/password or paste a JWT above.";
+    els.wizardAuthStatus.textContent = "Log in with email/password, register above, or accept an invite below.";
+  }
+}
+
+async function registerAccount(event) {
+  event.preventDefault();
+  const email = document.getElementById("register-email")?.value.trim();
+  const password = document.getElementById("register-password")?.value || "";
+  const fullName = document.getElementById("register-full-name")?.value.trim();
+  const orgName = document.getElementById("register-org-name")?.value.trim();
+  if (!email || !password || !fullName || !orgName) {
+    showError("Complete all registration fields.");
+    return;
+  }
+  clearError();
+  if (els.registerStatus) els.registerStatus.textContent = "Creating account…";
+  const res = await fetch("/api/v1/auth/register", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, full_name: fullName, org_name: orgName }),
+  });
+  const body = await res.text();
+  if (!res.ok) {
+    if (els.registerStatus) els.registerStatus.textContent = "";
+    throw new Error(parseApiError(res.status, body));
+  }
+  token = "";
+  orgId = null;
+  localStorage.removeItem("voxforge_token");
+  els.registerPanel?.classList.add("hidden");
+  if (els.registerStatus) els.registerStatus.textContent = "Account created.";
+  await refreshAll();
+  await maybeOpenWizardAfterLogin();
+}
+
+async function acceptInvite(event) {
+  event.preventDefault();
+  const inviteToken = els.wizardInviteToken?.value.trim();
+  const fullName = els.wizardInviteName?.value.trim();
+  const password = els.wizardInvitePassword?.value || "";
+  if (!inviteToken || !fullName || !password) {
+    showError("Complete invite token, name, and password.");
+    return;
+  }
+  clearError();
+  if (els.wizardInviteStatus) els.wizardInviteStatus.textContent = "Accepting invite…";
+  const res = await fetch("/api/v1/auth/invites/accept", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: inviteToken, password, full_name: fullName }),
+  });
+  const body = await res.text();
+  if (!res.ok) {
+    if (els.wizardInviteStatus) els.wizardInviteStatus.textContent = "";
+    throw new Error(parseApiError(res.status, body));
+  }
+  token = "";
+  orgId = null;
+  localStorage.removeItem("voxforge_token");
+  if (els.wizardInviteStatus) els.wizardInviteStatus.textContent = "Invite accepted — you are logged in.";
+  await refreshAll();
+  await maybeOpenWizardAfterLogin();
+}
+
+async function apiKeysApi(path, options = {}) {
+  const res = await fetch(`/api/v1/api-keys${path}`, {
+    credentials: "include",
+    ...options,
+    headers: authHeaders({
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(parseApiError(res.status, body));
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+function renderApiKeys(keys) {
+  if (!els.apiKeysBody) return;
+  els.apiKeysBody.innerHTML = (keys || []).map((key) => `
+    <tr>
+      <td>${escapeHtml(key.name)}</td>
+      <td><code>${escapeHtml(key.key_prefix)}…</code></td>
+      <td>${escapeHtml((key.scopes || []).join(", "))}</td>
+      <td>${fmtDate(key.created_at)}</td>
+      <td><button type="button" class="link-btn danger" data-revoke-key="${key.id}">Revoke</button></td>
+    </tr>
+  `).join("") || "<tr><td colspan='5'>No API keys yet</td></tr>";
+
+  els.apiKeysBody.querySelectorAll("[data-revoke-key]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!window.confirm("Revoke this API key?")) return;
+      try {
+        clearError();
+        await apiKeysApi(`/${btn.dataset.revokeKey}`, { method: "DELETE" });
+        await loadApiKeys();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+  });
+}
+
+async function loadApiKeys() {
+  await ensureOrgId();
+  if (els.apiKeysStatus) els.apiKeysStatus.textContent = `Organization ${orgId}`;
+  const keys = await apiKeysApi("");
+  renderApiKeys(keys);
+  if (els.apiKeyCreatedSecret) {
+    els.apiKeyCreatedSecret.classList.add("hidden");
+    els.apiKeyCreatedSecret.textContent = "";
   }
 }
 
@@ -1014,9 +1145,11 @@ async function loadPolicies() {
 
   if (els.policyActive) {
     if (active) {
+      const mode = active.orchestrator_config?.mode || "single";
       els.policyActive.textContent = [
         `Active v${active.version}`,
         active.label,
+        `orchestrator=${mode}`,
         active.change_note || "No change note",
       ].join(" · ");
     } else {
@@ -1460,6 +1593,43 @@ els.loginBtn?.addEventListener("click", () => {
 
 els.logoutBtn?.addEventListener("click", logout);
 
+els.registerToggleBtn?.addEventListener("click", () => {
+  els.registerPanel?.classList.toggle("hidden");
+});
+
+els.registerCancelBtn?.addEventListener("click", () => {
+  els.registerPanel?.classList.add("hidden");
+});
+
+els.registerForm?.addEventListener("submit", (event) => {
+  registerAccount(event).catch((err) => showError(err.message));
+});
+
+els.wizardInviteForm?.addEventListener("submit", (event) => {
+  acceptInvite(event).catch((err) => showError(err.message));
+});
+
+els.apiKeyCreateForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    clearError();
+    const name = els.apiKeyName?.value.trim();
+    if (!name) throw new Error("Enter a key name");
+    const created = await apiKeysApi("", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+    if (els.apiKeyCreatedSecret) {
+      els.apiKeyCreatedSecret.textContent = `Copy now — shown once:\n${created.raw_key}`;
+      els.apiKeyCreatedSecret.classList.remove("hidden");
+    }
+    els.apiKeyCreateForm?.reset();
+    await loadApiKeys();
+  } catch (err) {
+    showError(err.message);
+  }
+});
+
 els.connectBtn.addEventListener("click", () => {
   token = els.tokenInput.value.trim();
   orgId = null;
@@ -1654,6 +1824,9 @@ document.querySelectorAll(".nav-link").forEach((link) => {
       if (link.dataset.section === "handoffs") {
         await loadHandoffs();
       }
+      if (link.dataset.section === "api-keys") {
+        await loadApiKeys();
+      }
     } catch (err) {
       showError(err.message);
     }
@@ -1676,8 +1849,10 @@ const inviteToken = new URLSearchParams(window.location.search).get("invite");
 if (inviteToken) {
   showSection("onboarding");
   setWizardStep(1);
+  els.wizardInviteForm?.classList.remove("hidden");
+  if (els.wizardInviteToken) els.wizardInviteToken.value = inviteToken;
   if (els.wizardAuthStatus) {
-    els.wizardAuthStatus.textContent = "Accept your invite via API POST /api/v1/auth/invites/accept, then log in.";
+    els.wizardAuthStatus.textContent = "Accept your invite below, then continue.";
   }
 }
 

@@ -24,10 +24,10 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Dashboard document table (replace localStorage catalog)
 
 ## Stage 5 — Dashboard auth UX
-- [ ] Hide JWT paste behind Advanced
-- [ ] Register UI on dashboard
-- [ ] Invite accept form (replace API-only deep link)
-- [ ] API keys management page
+- [x] Hide JWT paste behind Advanced
+- [x] Register UI on dashboard
+- [x] Invite accept form (replace API-only deep link)
+- [x] API keys management page
 
 ## Stage 6 — Product polish
 - [ ] Orchestrator mode toggle in dashboard (single vs multi_agent)

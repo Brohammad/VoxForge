@@ -21,6 +21,7 @@
         <a href="#alerts" class="nav-link" data-section="alerts">Alerts</a>
         <a href="#policies" class="nav-link" data-section="policies">Policy Presets</a>
         <a href="#sso" class="nav-link" data-section="sso">SSO</a>
+        <a href="#api-keys" class="nav-link" data-section="api-keys">API Keys</a>
         <a href="#sessions" class="nav-link" data-section="sessions">Sessions</a>
         <a href="#replay" class="nav-link" data-section="replay">Replay</a>
         <a href="#latency" class="nav-link" data-section="latency">Latency</a>
@@ -40,13 +41,33 @@
           <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
           <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
           <button id="login-btn" type="button">Login</button>
-          <span class="auth-divider">or paste token</span>
-          <input id="token-input" type="password" placeholder="JWT access token" autocomplete="off" />
-          <button id="connect-btn" type="button">Connect</button>
+          <button id="register-toggle-btn" type="button" class="btn-secondary">Register</button>
           <button id="logout-btn" type="button" class="hidden">Logout</button>
           <span id="auth-status" class="status-badge">Not connected</span>
         </div>
+        <details id="advanced-auth" class="advanced-auth">
+          <summary>Advanced: paste JWT</summary>
+          <div class="advanced-auth-row">
+            <input id="token-input" type="password" placeholder="JWT access token" autocomplete="off" />
+            <button id="connect-btn" type="button">Connect</button>
+          </div>
+        </details>
       </header>
+
+      <div id="register-panel" class="register-panel hidden panel">
+        <h2>Create account</h2>
+        <form id="register-form" class="sso-form">
+          <label>Email<input id="register-email" type="email" required autocomplete="email" /></label>
+          <label>Password<input id="register-password" type="password" required minlength="8" autocomplete="new-password" /></label>
+          <label>Full name<input id="register-full-name" type="text" required /></label>
+          <label>Organization<input id="register-org-name" type="text" required /></label>
+          <div class="button-row">
+            <button type="submit">Create account</button>
+            <button id="register-cancel-btn" type="button" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+        <div id="register-status" class="card-sub"></div>
+      </div>
 
       <div id="error-banner" class="error-banner hidden"></div>
 
@@ -91,8 +112,20 @@
 
           <div id="wizard-step-1" class="wizard-step active">
             <h3>Step 1 — Connect</h3>
-            <p>Log in above with email/password or paste a JWT, then continue.</p>
+            <p>Log in above with email/password, register a new org, or accept an invite below.</p>
             <div id="wizard-auth-status" class="card-sub">Not connected</div>
+            <form id="wizard-invite-form" class="sso-form hidden">
+              <label class="full-width">
+                Invite token
+                <input id="wizard-invite-token" type="text" required />
+              </label>
+              <label>Full name<input id="wizard-invite-name" type="text" required /></label>
+              <label>Password<input id="wizard-invite-password" type="password" required minlength="8" /></label>
+              <div class="button-row">
+                <button type="submit">Accept invite &amp; log in</button>
+              </div>
+            </form>
+            <div id="wizard-invite-status" class="card-sub"></div>
           </div>
 
           <div id="wizard-step-2" class="wizard-step hidden">
@@ -381,6 +414,38 @@
         <div class="panel">
           <h2>Login Redirect Preview</h2>
           <pre id="sso-login-preview" class="json-preview">Initiate a test login from a connection row.</pre>
+        </div>
+      </section>
+
+      <section id="api-keys" class="section hidden">
+        <div class="panel">
+          <h2>API Keys</h2>
+          <p class="card-sub">Create scoped keys for automation. The raw secret is shown once at creation.</p>
+          <div id="api-keys-status" class="card-sub"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Prefix</th>
+                  <th>Scopes</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="api-keys-body"></tbody>
+            </table>
+          </div>
+          <form id="api-key-create-form" class="sso-form">
+            <label class="full-width">
+              Key name
+              <input id="api-key-name" type="text" placeholder="CI pipeline" required />
+            </label>
+            <div class="button-row">
+              <button type="submit">Create API key</button>
+            </div>
+          </form>
+          <pre id="api-key-created-secret" class="json-preview hidden"></pre>
         </div>
       </section>
 
