@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoxForge Demo</title>
-  <link rel="stylesheet" href="/public/demo/styles.css?v=5" />
+  <link rel="stylesheet" href="/public/demo/styles.css?v=7" />
 </head>
 <body>
   <header>
@@ -12,14 +12,18 @@
     <h1>Interactive Voice Pipeline Demo</h1>
     <p id="provider-badge" class="provider-badge">Loading provider info…</p>
     <p>
-      Type a message — the assistant replies and TTS plays in your browser.
+      Speak into your microphone — the assistant replies and TTS plays in your browser.
+      Type if you prefer.
     </p>
   </header>
 
   <main>
     <section class="panel">
-      <button id="run-demo" class="btn" type="button">Run one-click sample call</button>
-      <p id="status" class="status">Or chat below — replies play on your Mac speakers.</p>
+      <div class="voice-row">
+        <button id="mic-btn" class="btn btn-mic" type="button">Start talking</button>
+        <button id="run-demo" class="btn btn-secondary" type="button">Run one-click sample call</button>
+      </div>
+      <p id="status" class="status">Click Start talking, speak, then click Stop &amp; send. Replies play in this browser.</p>
     </section>
 
     <section class="panel results hidden" id="results">
@@ -31,10 +35,10 @@
     </section>
 
     <section class="panel">
-      <h2>Live chat (multi-turn)</h2>
+      <h2>Conversation</h2>
       <div id="chat-log" class="chat-log"></div>
       <form id="chat-form" class="chat-form">
-        <input id="chat-input" type="text" placeholder="e.g. I need to change my billing contact" required />
+        <input id="chat-input" type="text" placeholder="e.g. I need to change my billing contact" />
         <button id="chat-send" class="btn" type="submit">Send</button>
       </form>
       <div class="play-row">
@@ -53,6 +57,6 @@
     </section>
   </main>
 
-  <script src="/public/demo/app.js?v=6"></script>
+  <script src="/public/demo/app.js?v=7"></script>
 </body>
 </html>

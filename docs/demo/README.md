@@ -7,7 +7,7 @@ Materials for demonstrating VoxForge to recruiters, investors, and pilot custome
 | URL | Purpose |
 |-----|---------|
 | https://voxforge.brohammad.tech | Product landing page |
-| https://voxforge.brohammad.tech/demo | One-click voice pipeline |
+| https://voxforge.brohammad.tech/demo | Speak on the public demo (mic + one-click sample) |
 | https://voxforge.brohammad.tech/dashboard | Operator console |
 
 ## Scripts

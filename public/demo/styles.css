@@ -51,6 +51,15 @@ header p { color: var(--muted); }
   cursor: pointer;
 }
 .btn:disabled { opacity: 0.6; cursor: wait; }
+.voice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.btn-mic[data-recording="true"] {
+  background: #c45c5c;
+}
 .status { color: var(--muted); margin-top: 1rem; }
 .hidden { display: none; }
 .metric-row {

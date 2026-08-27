@@ -35,6 +35,14 @@ def test_demo_quickstart(page: Page, base_url: str) -> None:
     expect(page.locator("#results")).to_be_visible()
 
 
+def test_demo_mic_control_visible(page: Page, base_url: str) -> None:
+    page.goto(f"{base_url}/demo")
+    if "Public demo is disabled" in page.locator("#status").inner_text():
+        pytest.skip("Demo disabled — set DEMO_ENABLED=true")
+    expect(page.get_by_role("button", name="Start talking")).to_be_visible()
+    expect(page.get_by_text("Speak into your microphone", exact=False)).to_be_visible()
+
+
 def test_dashboard_login_and_overview(page: Page, base_url: str) -> None:
     suffix = uuid.uuid4().hex[:8]
     email = f"browser-{suffix}@example.com"

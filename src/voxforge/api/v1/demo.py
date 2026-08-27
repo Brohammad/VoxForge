@@ -10,12 +10,13 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 
 from voxforge.api.dependencies import (
     get_onboarding_pipeline_runner,
     get_session_manager,
+    get_stt_provider,
     get_tts_provider,
 )
 from voxforge.config import Settings, get_settings
@@ -24,6 +25,8 @@ from voxforge.modules.onboarding.application.sample_scripts import get_default_s
 from voxforge.modules.session_manager.application.service import SessionManager
 
 router = APIRouter(prefix="/demo", tags=["demo"])
+
+DEMO_AUDIO_MAX_BYTES = 2_000_000
 
 
 class DemoQuickstartResponse(BaseModel):
@@ -69,6 +72,15 @@ class DemoChatResponse(BaseModel):
     e2e_ms: float | None = None
 
 
+class DemoVoiceResponse(BaseModel):
+    session_id: UUID
+    user_message: str
+    assistant_response: str
+    e2e_ms: float | None = None
+    stt_source: str
+    stt_provider: str
+
+
 def _pcm16le_to_wav(pcm: bytes, sample_rate: int = 24000) -> bytes:
     channels = 1
     bits_per_sample = 16
@@ -92,6 +104,117 @@ def _pcm16le_to_wav(pcm: bytes, sample_rate: int = 24000) -> bytes:
         data_size,
     )
     return header + pcm
+
+
+def extract_pcm16le(audio: bytes) -> bytes:
+    """Return PCM16LE samples from a WAV container, or the bytes if already raw PCM."""
+    if len(audio) >= 12 and audio[:4] == b"RIFF" and audio[8:12] == b"WAVE":
+        offset = 12
+        while offset + 8 <= len(audio):
+            chunk_id = audio[offset : offset + 4]
+            (chunk_size,) = struct.unpack_from("<I", audio, offset + 4)
+            offset += 8
+            if chunk_id == b"data":
+                return audio[offset : offset + chunk_size]
+            offset += chunk_size + (chunk_size % 2)
+        raise ValueError("WAV missing data chunk")
+    return audio
+
+
+async def _transcribe_pcm(stt, pcm: bytes, *, language: str = "en") -> str:
+    async def chunks() -> AsyncIterator[bytes]:
+        frame = 3200
+        if not pcm:
+            return
+        for i in range(0, len(pcm), frame):
+            yield pcm[i : i + frame]
+
+    last = ""
+    async for event in stt.transcribe_stream(chunks(), language=language):
+        if event.text:
+            last = event.text
+    return last.strip()
+
+
+async def _ensure_demo_session(
+    session_manager: SessionManager,
+    *,
+    org_id: UUID,
+    user_id: UUID,
+    session_id: UUID | None,
+    config: dict,
+) -> UUID:
+    from voxforge.core.domain.entities import SessionStatus, TransportType
+    from voxforge.core.exceptions import SessionNotFoundError
+
+    terminal = frozenset({SessionStatus.COMPLETED, SessionStatus.FAILED})
+    if session_id is None:
+        session = await session_manager.create_session(
+            transport_type=TransportType.WEBSOCKET,
+            config=config,
+            org_id=org_id,
+            created_by_user_id=user_id,
+        )
+        session = await session_manager.activate_session(session.id)
+        await session_manager.commit()
+        return session.id
+
+    try:
+        session = await session_manager.get_session(session_id, org_id=org_id)
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Demo session not found") from exc
+
+    if session.status in terminal:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Demo session already ended — click Start talking "
+                "or send a new chat without an old session."
+            ),
+        )
+
+    await session_manager.ensure_ephemeral_state(session.id)
+    if session.status != SessionStatus.ACTIVE:
+        session = await session_manager.activate_session(session.id)
+    await session_manager.commit()
+    return session.id
+
+
+async def _complete_demo_turn(
+    session_manager: SessionManager,
+    pipeline_runner: ProgrammaticPipelineRunner,
+    *,
+    session_id: UUID,
+    org_id: UUID,
+    transcript: str,
+    user_metadata: dict,
+) -> tuple[str, float | None]:
+    from voxforge.core.exceptions import SessionNotFoundError
+
+    try:
+        metrics = await pipeline_runner.run_scripted_turn(
+            session_id,
+            org_id,
+            transcript=transcript,
+            user_metadata=user_metadata,
+        )
+        await session_manager.commit()
+    except SessionNotFoundError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail="Demo session state expired — run sample call again to start a fresh session.",
+        ) from exc
+
+    assistant_response = ""
+    messages = await session_manager.get_messages(session_id)
+    for message in reversed(messages):
+        if message.role.value == "assistant":
+            assistant_response = message.content
+            break
+
+    if not assistant_response:
+        raise HTTPException(status_code=502, detail="No assistant response generated")
+    return assistant_response, metrics.e2e_ms
 
 
 async def _synthesize_wav(tts, text: str, voice_id: str | None) -> tuple[bytes, int]:
@@ -131,8 +254,11 @@ async def demo_info(settings: Settings = Depends(get_settings)) -> DemoAccountRe
         email=settings.demo_email,
         password_hint=settings.demo_password_hint,
         org_name="VoxForge Demo",
-        note="Use POST /api/v1/demo/quickstart for a one-click pipeline experience, "
-        "or log in with the demo account to explore the dashboard.",
+        note=(
+            "Use POST /api/v1/demo/voice for a microphone turn, "
+            "POST /api/v1/demo/quickstart for a one-click pipeline, "
+            "or log in with the demo account to explore the dashboard."
+        ),
         stt_provider=settings.stt_provider,
         llm_provider=settings.llm_provider,
         tts_provider=settings.tts_provider,
@@ -265,76 +391,115 @@ async def demo_chat(
     session_manager: SessionManager = Depends(get_session_manager),
     pipeline_runner: ProgrammaticPipelineRunner = Depends(get_onboarding_pipeline_runner),
 ) -> DemoChatResponse:
-    """Multi-turn demo chat (text in → LLM → text out). Pair with /demo/hear for audio."""
+    """Multi-turn demo chat (text in → LLM → text out). Pair with /demo/speak for audio."""
     if not settings.demo_enabled:
         raise HTTPException(status_code=404, detail="Demo is not enabled")
 
-    from voxforge.core.domain.entities import SessionStatus, TransportType
-    from voxforge.core.exceptions import SessionNotFoundError
+    org_id = UUID(settings.demo_org_id)
+    user_id = UUID(settings.demo_user_id)
+    transcript = body.message.strip()
+    session_id = await _ensure_demo_session(
+        session_manager,
+        org_id=org_id,
+        user_id=user_id,
+        session_id=body.session_id,
+        config={"demo_chat": True, "template_slug": "customer-support-deflection"},
+    )
+    assistant_response, e2e_ms = await _complete_demo_turn(
+        session_manager,
+        pipeline_runner,
+        session_id=session_id,
+        org_id=org_id,
+        transcript=transcript,
+        user_metadata={"source": "demo_chat"},
+    )
+    return DemoChatResponse(
+        session_id=session_id,
+        user_message=transcript,
+        assistant_response=assistant_response,
+        e2e_ms=e2e_ms,
+    )
+
+
+@router.post("/voice", response_model=DemoVoiceResponse)
+async def demo_voice(
+    audio: UploadFile | None = File(default=None),
+    transcript: str | None = Form(default=None),
+    session_id: UUID | None = Form(default=None),
+    settings: Settings = Depends(get_settings),
+    session_manager: SessionManager = Depends(get_session_manager),
+    pipeline_runner: ProgrammaticPipelineRunner = Depends(get_onboarding_pipeline_runner),
+    stt=Depends(get_stt_provider),
+) -> DemoVoiceResponse:
+    """Mic turn: optional WAV/PCM + optional browser transcript → same pipeline as chat."""
+    if not settings.demo_enabled:
+        raise HTTPException(status_code=404, detail="Demo is not enabled")
+
+    audio_bytes = await audio.read() if audio is not None else b""
+    if audio_bytes and len(audio_bytes) > DEMO_AUDIO_MAX_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Audio exceeds maximum size of {DEMO_AUDIO_MAX_BYTES} bytes",
+        )
+
+    client_transcript = (transcript or "").strip()
+    if len(client_transcript) > 2000:
+        raise HTTPException(status_code=422, detail="Transcript exceeds 2000 characters")
+
+    if not audio_bytes and not client_transcript:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide microphone audio or a speech transcript",
+        )
+
+    stt_source = "client"
+    user_text = client_transcript
+    if settings.stt_provider != "mock" and audio_bytes:
+        try:
+            pcm = extract_pcm16le(audio_bytes)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        user_text = await _transcribe_pcm(stt, pcm)
+        stt_source = "provider"
+        if not user_text and client_transcript:
+            user_text = client_transcript
+            stt_source = "client"
+    elif not user_text and audio_bytes:
+        try:
+            pcm = extract_pcm16le(audio_bytes)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        user_text = await _transcribe_pcm(stt, pcm)
+        stt_source = "provider"
+
+    if not user_text:
+        raise HTTPException(
+            status_code=422,
+            detail="Could not transcribe speech — try again or type a message",
+        )
 
     org_id = UUID(settings.demo_org_id)
     user_id = UUID(settings.demo_user_id)
-    terminal = frozenset({SessionStatus.COMPLETED, SessionStatus.FAILED})
-
-    if body.session_id is None:
-        session = await session_manager.create_session(
-            transport_type=TransportType.WEBSOCKET,
-            config={"demo_chat": True, "template_slug": "customer-support-deflection"},
-            org_id=org_id,
-            created_by_user_id=user_id,
-        )
-        session = await session_manager.activate_session(session.id)
-        await session_manager.commit()
-        session_id = session.id
-    else:
-        try:
-            session = await session_manager.get_session(body.session_id, org_id=org_id)
-        except SessionNotFoundError as exc:
-            raise HTTPException(status_code=404, detail="Demo session not found") from exc
-
-        if session.status in terminal:
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "Demo session already ended — click Run sample call "
-                    "or send a new chat without an old session."
-                ),
-            )
-
-        # Redis state is required for turns; rebuild if TTL expired.
-        await session_manager.ensure_ephemeral_state(session.id)
-        if session.status != SessionStatus.ACTIVE:
-            session = await session_manager.activate_session(session.id)
-        await session_manager.commit()
-        session_id = session.id
-
-    try:
-        metrics = await pipeline_runner.run_scripted_turn(
-            session_id,
-            org_id,
-            transcript=body.message.strip(),
-            user_metadata={"source": "demo_chat"},
-        )
-        await session_manager.commit()
-    except SessionNotFoundError as exc:
-        raise HTTPException(
-            status_code=409,
-            detail="Demo session state expired — run sample call again to start a fresh session.",
-        ) from exc
-
-    assistant_response = ""
-    messages = await session_manager.get_messages(session_id)
-    for message in reversed(messages):
-        if message.role.value == "assistant":
-            assistant_response = message.content
-            break
-
-    if not assistant_response:
-        raise HTTPException(status_code=502, detail="No assistant response generated")
-
-    return DemoChatResponse(
+    resolved_session_id = await _ensure_demo_session(
+        session_manager,
+        org_id=org_id,
+        user_id=user_id,
         session_id=session_id,
-        user_message=body.message.strip(),
+        config={"demo_voice": True, "template_slug": "customer-support-deflection"},
+    )
+    assistant_response, e2e_ms = await _complete_demo_turn(
+        session_manager,
+        pipeline_runner,
+        session_id=resolved_session_id,
+        org_id=org_id,
+        transcript=user_text,
+        user_metadata={"source": "demo_voice", "stt_source": stt_source},
+    )
+    return DemoVoiceResponse(
+        session_id=resolved_session_id,
+        user_message=user_text,
         assistant_response=assistant_response,
-        e2e_ms=metrics.e2e_ms,
+        e2e_ms=e2e_ms,
+        stt_source=stt_source,
+        stt_provider=settings.stt_provider,
     )

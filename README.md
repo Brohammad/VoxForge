@@ -87,7 +87,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 
-Mock STT/LLM/TTS providers work **without API keys**. Open `/demo`, check the provider badge, click **Run one-click sample call**, and hear TTS in your browser.
+Mock STT/LLM/TTS providers work **without API keys**. Open `/demo`, click **Start talking** (or **Run one-click sample call**), and hear TTS in your browser.
 
 Detailed walkthrough: [docs/ONBOARDING.md](docs/ONBOARDING.md)
 

@@ -19,6 +19,7 @@ _EXEMPT_SUFFIXES = (
     "/api/v1/demo/speak",
     "/api/v1/demo/hear",
     "/api/v1/demo/chat",
+    "/api/v1/demo/voice",
 )
 _EXEMPT_CONTAINS = ("/sso/saml/acs",)
 

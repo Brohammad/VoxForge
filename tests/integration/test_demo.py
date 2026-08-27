@@ -1,9 +1,11 @@
 """Integration tests for public demo endpoints."""
 
+import io
 from uuid import UUID
 
 import pytest
 
+from voxforge.api.v1.demo import _pcm16le_to_wav, extract_pcm16le
 from voxforge.config import get_settings
 from voxforge.infrastructure.db.models import (
     OrganizationMemberModel,
@@ -73,6 +75,64 @@ async def test_demo_quickstart_runs_pipeline(test_client, demo_env, demo_seeded)
     chat_body = chat.json()
     assert chat_body["session_id"] == body["session_id"]
     assert chat_body["assistant_response"]
+
+
+@pytest.mark.asyncio
+async def test_demo_voice_uses_client_transcript(test_client, demo_env, demo_seeded):
+    pcm = b"\x00\x01" * 160
+    wav = _pcm16le_to_wav(pcm, sample_rate=16000)
+    res = await test_client.post(
+        "/api/v1/demo/voice",
+        files={"audio": ("speech.wav", io.BytesIO(wav), "audio/wav")},
+        data={"transcript": "I need to change my billing contact"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["user_message"] == "I need to change my billing contact"
+    assert "billing contact" in body["assistant_response"].lower()
+    assert body["stt_source"] == "client"
+    assert body["stt_provider"] == "mock"
+    assert body["session_id"]
+
+
+@pytest.mark.asyncio
+async def test_demo_voice_audio_only_uses_mock_stt(test_client, demo_env, demo_seeded):
+    pcm = b"\x00\x01" * 160
+    wav = _pcm16le_to_wav(pcm, sample_rate=16000)
+    res = await test_client.post(
+        "/api/v1/demo/voice",
+        files={"audio": ("speech.wav", io.BytesIO(wav), "audio/wav")},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["user_message"] == "mock transcript"
+    assert body["stt_source"] == "provider"
+    assert body["assistant_response"]
+
+
+@pytest.mark.asyncio
+async def test_demo_voice_rejects_empty_payload(test_client, demo_env, demo_seeded):
+    res = await test_client.post("/api/v1/demo/voice")
+    assert res.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_demo_voice_disabled_returns_404(test_client, monkeypatch):
+    monkeypatch.setenv("DEMO_ENABLED", "false")
+    get_settings.cache_clear()
+    res = await test_client.post(
+        "/api/v1/demo/voice",
+        data={"transcript": "hello"},
+    )
+    assert res.status_code == 404
+    get_settings.cache_clear()
+
+
+def test_extract_pcm16le_from_wav():
+    pcm = b"\x00\x01" * 16
+    wav = _pcm16le_to_wav(pcm, sample_rate=16000)
+    assert extract_pcm16le(wav) == pcm
+    assert extract_pcm16le(pcm) == pcm
 
 
 @pytest.mark.asyncio

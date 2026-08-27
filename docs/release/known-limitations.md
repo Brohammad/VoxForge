@@ -2,7 +2,7 @@
 
 ## Voice
 
-- **Microphone / real STT streaming** — WebSocket lifecycle is tested; browser microphone capture is not automated in CI.
+- **Microphone / real STT streaming** — Public `/demo` has Start talking (PCM16 WAV + optional Web Speech). WebSocket lifecycle is tested; live microphone capture is not automated in CI.
 - **Barge-in** — Not exercised in automated browser tests.
 - **LiveKit worker** — Requires external LiveKit Cloud or self-hosted server; optional compose profile.
 - **Real-provider proof** — Public demo uses mock providers by default; run [scripts/prove-real-voice.sh](../../scripts/prove-real-voice.sh) with API keys for a real stack check.
