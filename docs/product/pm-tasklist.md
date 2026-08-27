@@ -46,6 +46,12 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Stage 11: Disable rate limiting in browser CI (dashboard 429 fix)
 - [x] All CI checks green on PR #2 — marked ready for review
 
+## Stage 13 — Portfolio & OSS polish
+- [x] Interview case study (`docs/portfolio/case-study.md`)
+- [x] Portfolio index + updated resume kit / interview prep (386+ tests)
+- [x] README test count + GIF refresh docs
+- [x] GitHub topics + good first issues (`scripts/github-oss-polish.sh` — issues #7–#10)
+
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS
 - Visual flow builder

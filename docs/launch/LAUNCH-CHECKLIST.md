@@ -20,7 +20,7 @@
 
 ## Quality gates
 
-- [x] 346 pytest (excl. browser)
+- [x] 378 pytest (excl. browser)
 - [x] 8 Playwright browser tests
 - [x] Ruff clean
 - [x] 81% coverage (70% gate)
@@ -34,9 +34,9 @@
 - [x] CHANGELOG RC-1
 - [x] Issue + PR templates
 - [ ] GitHub Discussions enabled
-- [ ] Repository topics set
+- [x] Repository topics set (`scripts/github-oss-polish.sh`)
 - [x] GitHub Release `v1.0.0-rc.1` (tag pushed; create release on GitHub)
-- [ ] Good first issues filed
+- [x] Good first issues filed (#7–#10)
 
 ## Documentation
 

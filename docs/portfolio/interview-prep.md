@@ -16,12 +16,19 @@
 - **Action:** `deploy.sh init` with bootstrap TLS, health-gated startup, env validation in container.
 - **Result:** Live at voxforge.brohammad.tech; verification checklist for operators.
 
-### 3. Dashboard login bug
+### 3. Cookie auth broke dashboard sections
 
-- **Situation:** Users could "login" but dashboard stayed disconnected.
-- **Task:** Fix without breaking register flow.
-- **Action:** Traced API response shape — login returns top-level `access_token`, not nested `tokens`.
-- **Result:** Fixed in 4 lines; added Playwright test to prevent regression.
+- **Situation:** HttpOnly cookie login worked, but Knowledge/SSO/Policies never loaded.
+- **Task:** Fix auth gating without regressing JWT or register flows.
+- **Action:** Replaced `if (!token)` with `isAuthenticated()`; fixed logout race with refresh generation; added Playwright hub-nav tests.
+- **Result:** Full dashboard usable on cookie sessions; merged in OSS pilot hardening PR.
+
+### 4. Policy presets not affecting live calls
+
+- **Situation:** Operators could apply presets in UI, but voice sessions ignored active config.
+- **Task:** Wire org active agent config into pipeline at session start.
+- **Action:** `apply_active_agent_config()` in pipeline factory; eval thresholds from org config.
+- **Result:** Preset changes affect live STT→agent→TTS path; integration tests cover runtime swap.
 
 ## System design talking points
 
@@ -36,7 +43,7 @@
 | Decision | Trade-off |
 |----------|-----------|
 | Single uvicorn worker | Simpler ops vs horizontal scale |
-| JWT in localStorage | Fast dashboard dev vs XSS surface |
+| JWT in localStorage | Cookie-first dashboard; JWT behind Advanced for API/dev |
 | Mock providers default | Easy demo vs not "real voice" out of box |
 | Self-hosted first | Control vs managed SaaS convenience |
 

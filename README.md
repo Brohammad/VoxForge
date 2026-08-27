@@ -14,7 +14,7 @@
 
 ![VoxForge demo — one-click sample call with in-browser TTS](docs/assets/screenshots/demo.gif)
 
-*Refresh this GIF after UI changes: record `/demo` (see [recording checklist](docs/demo/recording-checklist.md)), then run `./scripts/capture-demo-gif.sh recording.mp4`.*
+*Refresh this GIF: `./scripts/generate-demo-gif.sh` (automated) or record manually and run `./scripts/capture-demo-gif.sh recording.mp4` — see [recording checklist](docs/demo/recording-checklist.md).*
 
 VoxForge is an open-source platform for building and operating enterprise voice agents. Unlike chatbot wrappers, it ships a **complete voice stack**: transport, orchestration, knowledge retrieval, tool execution, per-turn evaluation, session replay, human handoff, and an operator dashboard — all deployable to your own infrastructure.
 
@@ -45,7 +45,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 354+ automated tests | Unknown |
+| **Tests** | 386+ automated tests (378 pytest + 8 Playwright) | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
