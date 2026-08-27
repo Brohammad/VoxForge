@@ -16,8 +16,8 @@ flowchart LR
 
 Open **http://localhost:8000/dashboard** after starting the server.
 
-1. Register/login via `/api/v1/auth/register` or `/api/v1/auth/login`
-2. Paste the JWT access token into the dashboard connect bar
+1. Register or log in with email/password (HttpOnly cookie session)
+2. JWT paste stays under **Advanced** for API debugging only
 3. View overview, sessions, replay, latency, evaluations, and activity
 
 Static assets live in `dashboard/` at the project root.

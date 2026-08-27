@@ -201,8 +201,8 @@ async function playOnMacSpeakers(text, { force = false } = {}) {
   if (els.playSpeakersBtn) els.playSpeakersBtn.disabled = false;
 
   hearInFlight = true;
-  setPhase("speaking (Mac speakers)");
-  log("Playing assistant on Mac speakers…");
+  setPhase("speaking");
+  log("Playing assistant in the browser…");
   try {
     // Prefer browser WAV playback (can interrupt) + server afplay for reliability.
     const res = await fetch(`${API}/demo/speak`, {
@@ -591,7 +591,7 @@ async function connect() {
   const name = els.nameInput.value.trim() || identity;
 
   if (!token) {
-    showError("Click “Use demo account” or paste a JWT first.");
+    showError("Click “Use demo account” or log in first.");
     return;
   }
   if (!identity) {

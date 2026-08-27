@@ -22,7 +22,7 @@ LIVEKIT_AGENT_NAME=voxforge-voice
 
 Open http://localhost:8000/examples/livekit
 
-1. Paste your JWT access token
+1. Click **Use demo account**, or log in and paste a JWT under the token field if you need a non-demo user
 2. Set participant identity (defaults to a random `user-*` id)
 3. Click **Start WebRTC Session**
 

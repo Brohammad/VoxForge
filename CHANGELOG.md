@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Operator docs and dashboard empty states use cookie login; JWT paste stays under Advanced.
+- LiveKit example copy plays audio in the browser instead of “Mac speakers”.
 - Added MIT `LICENSE` file; package/API version aligned to `1.0.0-rc.1`.
 - Documentation and badges use `Brohammad/VoxForge` (corrected from `VoxFauge`).
 - Provider docs match implemented STT/TTS backends (`deepgram` / `cartesia` only).

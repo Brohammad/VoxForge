@@ -7,7 +7,7 @@ VoxForge ships with Prometheus and Grafana in Docker Compose for pipeline metric
 | Service | URL | Credentials |
 |---------|-----|-------------|
 | VoxForge API | http://localhost:8000 | JWT / API key |
-| Dashboard | http://localhost:8000/dashboard | JWT in connect bar |
+| Dashboard | http://localhost:8000/dashboard | Email/password cookie login |
 | Prometheus | http://localhost:9090 | — |
 | Grafana | http://localhost:3000 | admin / voxforge |
 

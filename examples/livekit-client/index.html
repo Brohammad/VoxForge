@@ -18,7 +18,7 @@
       </div>
       <nav class="links">
         <a href="/dashboard">Dashboard</a>
-        <a href="/demo">Demo chat</a>
+        <a href="/demo">Demo</a>
         <a href="/api/v1/docs" target="_blank">API Docs</a>
       </nav>
     </header>
@@ -28,7 +28,7 @@
     <section class="panel warn-panel">
       <h2>How audio works locally</h2>
       <p>
-        Agent replies play on your <strong>Mac speakers</strong>.
+        Agent replies play <strong>in this browser</strong>.
         Use <strong>push-to-talk</strong> (hold Space) — starting talk while the agent speaks
         interrupts them. Headphones help avoid feedback.
       </p>
@@ -86,7 +86,7 @@
       <p class="hint">Hold <kbd>Space</kbd> or the button while speaking, then release and wait.</p>
       <div class="actions">
         <button id="ptt-btn" type="button" class="btn ptt" disabled>Hold to talk</button>
-        <button id="play-speakers-btn" type="button" class="btn primary" disabled>Replay on Mac speakers</button>
+        <button id="play-speakers-btn" type="button" class="btn primary" disabled>Replay in browser</button>
         <button id="download-recording-btn" type="button" class="btn" disabled>Download call audio</button>
       </div>
       <div id="audio-container" class="audio-container"></div>
@@ -104,6 +104,6 @@
   </div>
 
   <script src="/examples/livekit/static/livekit-client.umd.min.js"></script>
-  <script src="/examples/livekit/static/app.js?v=10"></script>
+  <script src="/examples/livekit/static/app.js?v=11"></script>
 </body>
 </html>
