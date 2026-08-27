@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoxForge Demo</title>
-  <link rel="stylesheet" href="/public/demo/styles.css?v=7" />
+  <link rel="stylesheet" href="/public/demo/styles.css?v=8" />
 </head>
 <body>
   <header>
@@ -21,9 +21,10 @@
     <section class="panel">
       <div class="voice-row">
         <button id="mic-btn" class="btn btn-mic" type="button">Start talking</button>
+        <button id="trust-loop-btn" class="btn" type="button">Run trust loop</button>
         <button id="run-demo" class="btn btn-secondary" type="button">Run one-click sample call</button>
       </div>
-      <p id="status" class="status">Click Start talking, speak, then click Stop &amp; send. Replies play in this browser.</p>
+      <p id="status" class="status">Speak, or run the trust loop: cite a FAQ, open replay, escalate to inbox.</p>
     </section>
 
     <section class="panel results hidden" id="results">
@@ -32,6 +33,11 @@
         <div><span class="label">E2E latency</span><strong id="out-e2e">—</strong></div>
         <div><span class="label">Session</span><strong id="out-session">—</strong></div>
       </div>
+      <div id="citations" class="citations hidden"></div>
+      <p id="inspect-links" class="inspect-links hidden">
+        <a id="open-replay" href="/dashboard">Open replay</a>
+        <a id="open-inbox" href="/dashboard#handoffs">Open inbox</a>
+      </p>
     </section>
 
     <section class="panel">
@@ -57,6 +63,6 @@
     </section>
   </main>
 
-  <script src="/public/demo/app.js?v=7"></script>
+  <script src="/public/demo/app.js?v=8"></script>
 </body>
 </html>

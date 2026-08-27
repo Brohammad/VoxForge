@@ -33,7 +33,7 @@ async def demo_seeded(db_session):
 
 
 @pytest.fixture
-def demo_env(monkeypatch):
+def demo_env(monkeypatch, tmp_path):
     monkeypatch.setenv("DEMO_ENABLED", "true")
     monkeypatch.setenv("DEMO_ORG_ID", str(DEMO_ORG_ID))
     monkeypatch.setenv("DEMO_USER_ID", str(DEMO_USER_ID))
@@ -41,6 +41,8 @@ def demo_env(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     monkeypatch.setenv("EMBEDDING_PROVIDER", "mock")
+    monkeypatch.setenv("KNOWLEDGE_WORKER_ENABLED", "false")
+    monkeypatch.setenv("KNOWLEDGE_BLOB_PATH", str(tmp_path / "kb"))
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
@@ -133,6 +135,22 @@ def test_extract_pcm16le_from_wav():
     wav = _pcm16le_to_wav(pcm, sample_rate=16000)
     assert extract_pcm16le(wav) == pcm
     assert extract_pcm16le(pcm) == pcm
+
+
+@pytest.mark.asyncio
+async def test_demo_trust_loop_cites_and_handoffs(test_client, demo_env, demo_seeded):
+    res = await test_client.post("/api/v1/demo/trust-loop")
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["status"] == "trust_loop_ok"
+    assert body["session_id"]
+    assert "refund" in body["user_transcript"].lower()
+    assert "30 days" in body["assistant_response"].lower()
+    assert body["citations"]
+    assert body["citations"][0]["document_title"]
+    assert body["replay_url"]
+    assert "handoffs" in body["inbox_url"]
+    assert body["handoff_id"]
 
 
 @pytest.mark.asyncio

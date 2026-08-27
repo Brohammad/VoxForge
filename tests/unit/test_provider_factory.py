@@ -49,3 +49,16 @@ async def test_mock_llm_billing_contact_script():
     ]
     tokens = [event.text async for event in llm.generate_stream(messages, model="mock")]
     assert any("updated the billing contact" in t for t in tokens)
+
+
+@pytest.mark.asyncio
+async def test_mock_llm_refund_script():
+    from voxforge.core.domain.entities import MessageRole
+    from voxforge.modules.memory.application.context_builder import ChatMessageLike
+
+    llm = MockLLMProvider()
+    messages = [
+        ChatMessageLike(role=MessageRole.USER, content="What is your refund policy?")
+    ]
+    tokens = [event.text async for event in llm.generate_stream(messages, model="mock")]
+    assert any("30 days" in t for t in tokens)

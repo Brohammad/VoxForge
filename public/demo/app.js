@@ -1,7 +1,12 @@
 const runBtn = document.getElementById("run-demo");
 const micBtn = document.getElementById("mic-btn");
+const trustLoopBtn = document.getElementById("trust-loop-btn");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
+const citationsEl = document.getElementById("citations");
+const inspectLinksEl = document.getElementById("inspect-links");
+const openReplayEl = document.getElementById("open-replay");
+const openInboxEl = document.getElementById("open-inbox");
 const credsEl = document.getElementById("demo-creds");
 const providerBadgeEl = document.getElementById("provider-badge");
 const chatLog = document.getElementById("chat-log");
@@ -31,6 +36,14 @@ let speechRec = null;
 let liveTranscript = "";
 let providersMode = "mock";
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function apiError(data, fallback) {
   const detail = data && data.detail;
   if (typeof detail === "string") return detail;
@@ -50,6 +63,7 @@ function setBusy(value) {
   busy = value;
   runBtn.disabled = value || talking;
   chatSend.disabled = value || talking;
+  if (trustLoopBtn) trustLoopBtn.disabled = value || talking;
   if (micBtn && !talking) micBtn.disabled = value;
 }
 
@@ -80,6 +94,31 @@ function showTurn(status, e2eMs, sessionId) {
     e2eMs != null ? `${Math.round(e2eMs)} ms` : "—";
   document.getElementById("out-session").textContent = sessionId || "—";
   resultsEl.classList.remove("hidden");
+  if (sessionId && openReplayEl) {
+    openReplayEl.href = `/dashboard#session=${sessionId}`;
+    inspectLinksEl.classList.remove("hidden");
+  }
+}
+
+function showCitations(citations, replayUrl, inboxUrl) {
+  if (replayUrl && openReplayEl) openReplayEl.href = replayUrl;
+  if (inboxUrl && openInboxEl) openInboxEl.href = inboxUrl;
+  inspectLinksEl.classList.remove("hidden");
+  if (!citationsEl) return;
+  if (!citations || !citations.length) {
+    citationsEl.classList.add("hidden");
+    citationsEl.innerHTML = "";
+    return;
+  }
+  const items = citations
+    .map((c) => {
+      const label = escapeHtml(c.citation_label || c.document_title || "Source");
+      const excerpt = escapeHtml(c.excerpt || "");
+      return `<li><strong>${label}</strong> — ${excerpt}</li>`;
+    })
+    .join("");
+  citationsEl.innerHTML = `<h3>Citations</h3><ul>${items}</ul>`;
+  citationsEl.classList.remove("hidden");
 }
 
 async function playInBrowser(text) {
@@ -359,11 +398,44 @@ async function stopTalk() {
   }
 }
 
+async function runTrustLoop() {
+  if (busy || talking) return;
+  setBusy(true);
+  statusEl.textContent = "Seeding FAQ, citing it, and opening replay + handoff…";
+  resultsEl.classList.add("hidden");
+  if (citationsEl) {
+    citationsEl.classList.add("hidden");
+    citationsEl.innerHTML = "";
+  }
+  clearChat();
+  chatSessionId = null;
+  try {
+    const res = await fetch("/api/v1/demo/trust-loop", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(apiError(data, res.statusText));
+
+    showTurn(data.status, data.e2e_ms, data.session_id);
+    showCitations(data.citations, data.replay_url, data.inbox_url);
+    chatSessionId = data.session_id || null;
+    appendChat("user", data.user_transcript);
+    appendChat("assistant", data.assistant_response || "(no reply)");
+    if (data.assistant_response) await playInBrowser(data.assistant_response);
+  } catch (err) {
+    statusEl.textContent = `Trust loop failed: ${err.message}`;
+  } finally {
+    setBusy(false);
+  }
+}
+
 async function runDemo() {
   if (busy || talking) return;
   setBusy(true);
   statusEl.textContent = "Running one-click sample call…";
   resultsEl.classList.add("hidden");
+  if (citationsEl) {
+    citationsEl.classList.add("hidden");
+    citationsEl.innerHTML = "";
+  }
   clearChat();
   chatSessionId = null;
   try {
@@ -417,6 +489,7 @@ async function sendChat(event) {
 }
 
 runBtn.addEventListener("click", runDemo);
+if (trustLoopBtn) trustLoopBtn.addEventListener("click", runTrustLoop);
 chatForm.addEventListener("submit", sendChat);
 micBtn.addEventListener("click", () => {
   if (talking) stopTalk();
@@ -454,6 +527,7 @@ async function loadDemoInfo() {
       chatSend.disabled = true;
       playBtn.disabled = true;
       micBtn.disabled = true;
+      if (trustLoopBtn) trustLoopBtn.disabled = true;
       statusEl.textContent = demoDisabledMessage();
       return;
     }

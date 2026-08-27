@@ -60,6 +60,32 @@ header p { color: var(--muted); }
 .btn-mic[data-recording="true"] {
   background: #c45c5c;
 }
+.citations {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.citations h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.citations ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+}
+.citations li { margin-bottom: 0.4rem; }
+.inspect-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.85rem;
+}
+.inspect-links.hidden,
+.citations.hidden { display: none; }
 .status { color: var(--muted); margin-top: 1rem; }
 .hidden { display: none; }
 .metric-row {

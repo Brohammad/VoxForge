@@ -4,19 +4,21 @@
 
 ## Script
 
-1. **[0–10s]** Open https://voxforge.brohammad.tech — "Production voice AI infrastructure, open source."
+1. **[0–8s]** Open https://voxforge.brohammad.tech — "Self-hosted voice AI. Speak on the public demo."
 
-2. **[10–25s]** Click **Try live demo** → **Run demo call** — "Full STT-LLM-TTS-evaluation pipeline, 36 milliseconds with mock providers."
+2. **[8–22s]** `/demo` → **Start talking** (or **Run trust loop** if you cannot use a mic). "Same pipeline as production: knowledge, evaluation, replay."
 
-3. **[25–40s]** Show transcript + session ID — "Every turn scored, traced, replayable."
+3. **[22–38s]** Trust loop results: citations from the FAQ + session ID. "The agent grounded the refund answer in a document."
 
-4. **[40–50s]** Flash dashboard replay view — "Operators get latency, evaluations, handoff queue."
+4. **[38–50s]** Click **Open replay**, then **Open inbox**. "Operators inspect the turn and pick up the handoff."
 
-5. **[50–60s]** "Clone, deploy in 15 minutes. Link in bio." → GitHub
+5. **[50–60s]** "Clone, deploy in 15 minutes." → GitHub
+
+Do not lead with the 36ms mock number. Lead with speak → cite → replay → escalate.
 
 ## Recording tips
 
 - 1920×1080, dark mode browser
 - Hide bookmarks bar
-- Pre-login to dashboard in second tab for quick switch
+- Demo account already logged in on a second tab if replay requires it
 - See [recording-checklist.md](recording-checklist.md)

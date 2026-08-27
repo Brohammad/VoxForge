@@ -36,6 +36,12 @@ class MockLLMProvider:
         lower_user = last_user.lower()
         if "billing contact" in lower_user:
             reply = "I can help with that. I verified your account and updated the billing contact."
+        elif "refund" in lower_user:
+            reply = (
+                "Refunds are available within 30 days of purchase when you provide "
+                "the order ID and the subscription has not already been refunded. "
+                "Refunds post in 5-7 business days."
+            )
         else:
             reply = f"Mock response to: {last_user[:80]}"
         yield TokenEvent(text=reply, is_final=False)

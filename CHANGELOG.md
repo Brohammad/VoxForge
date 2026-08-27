@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Public `/demo` hold-to-talk: browser microphone → `POST /api/v1/demo/voice` → same pipeline + in-browser TTS.
+- Public `/demo` trust loop: seed FAQ, cite refund policy, signed replay, handoff inbox.
 - Org email invites (`POST /orgs/{id}/invites` + `POST /auth/invites/accept`).
 - Global `VoxForgeError` HTTP handlers; client-safe WebSocket/pipeline error messages.
 - External uptime guide and `scripts/prove-real-voice.sh`.

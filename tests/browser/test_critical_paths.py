@@ -40,6 +40,7 @@ def test_demo_mic_control_visible(page: Page, base_url: str) -> None:
     if "Public demo is disabled" in page.locator("#status").inner_text():
         pytest.skip("Demo disabled — set DEMO_ENABLED=true")
     expect(page.get_by_role("button", name="Start talking")).to_be_visible()
+    expect(page.get_by_role("button", name="Run trust loop")).to_be_visible()
     expect(page.get_by_text("Speak into your microphone", exact=False)).to_be_visible()
 
 

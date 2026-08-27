@@ -12,15 +12,32 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from voxforge.api.dependencies import (
+    get_db_session,
+    get_handoff_orchestrator,
+    get_knowledge_ingestion_service,
+    get_knowledge_repository,
+    get_knowledge_search_service,
     get_onboarding_pipeline_runner,
     get_session_manager,
     get_stt_provider,
     get_tts_provider,
 )
 from voxforge.config import Settings, get_settings
+from voxforge.infrastructure.db.knowledge_repository import KnowledgeRepository
+from voxforge.infrastructure.demo.trust_loop import (
+    DEMO_FAQ_COLLECTION,
+    TRUST_LOOP_QUESTION,
+    search_demo_citations,
+    seed_demo_faq,
+)
 from voxforge.infrastructure.voice.programmatic_runner import ProgrammaticPipelineRunner
+from voxforge.modules.handoff.application.orchestrator import HandoffOrchestrator
+from voxforge.modules.handoff.application.policy_loader import load_escalation_policy
+from voxforge.modules.knowledge.application.ingestion_service import KnowledgeIngestionService
+from voxforge.modules.knowledge.application.search_service import KnowledgeSearchService
 from voxforge.modules.onboarding.application.sample_scripts import get_default_sample_script
 from voxforge.modules.session_manager.application.service import SessionManager
 
@@ -79,6 +96,25 @@ class DemoVoiceResponse(BaseModel):
     e2e_ms: float | None = None
     stt_source: str
     stt_provider: str
+
+
+class DemoCitation(BaseModel):
+    document_title: str
+    citation_label: str
+    excerpt: str
+    similarity: float
+
+
+class DemoTrustLoopResponse(BaseModel):
+    status: str
+    session_id: UUID
+    user_transcript: str
+    assistant_response: str
+    e2e_ms: float | None = None
+    citations: list[DemoCitation]
+    replay_url: str | None = None
+    inbox_url: str
+    handoff_id: UUID | None = None
 
 
 def _pcm16le_to_wav(pcm: bytes, sample_rate: int = 24000) -> bytes:
@@ -502,4 +538,118 @@ async def demo_voice(
         e2e_ms=e2e_ms,
         stt_source=stt_source,
         stt_provider=settings.stt_provider,
+    )
+
+
+def _demo_dashboard_base(settings: Settings) -> str:
+    base = (settings.public_base_url or "").rstrip("/")
+    return base or ""
+
+
+@router.post("/trust-loop", response_model=DemoTrustLoopResponse)
+async def demo_trust_loop(
+    settings: Settings = Depends(get_settings),
+    session_manager: SessionManager = Depends(get_session_manager),
+    pipeline_runner: ProgrammaticPipelineRunner = Depends(get_onboarding_pipeline_runner),
+    knowledge_repo: KnowledgeRepository = Depends(get_knowledge_repository),
+    ingestion: KnowledgeIngestionService | None = Depends(get_knowledge_ingestion_service),
+    search: KnowledgeSearchService | None = Depends(get_knowledge_search_service),
+    orchestrator: HandoffOrchestrator | None = Depends(get_handoff_orchestrator),
+    db: AsyncSession = Depends(get_db_session),
+) -> DemoTrustLoopResponse:
+    """Cite a FAQ, run a refund question, and open replay + handoff for operators."""
+    if not settings.demo_enabled:
+        raise HTTPException(status_code=404, detail="Demo is not enabled")
+
+    org_id = UUID(settings.demo_org_id)
+    user_id = UUID(settings.demo_user_id)
+    if ingestion is None or search is None:
+        raise HTTPException(status_code=503, detail="Knowledge base is disabled")
+
+    await seed_demo_faq(knowledge_repo, ingestion, org_id=org_id)
+    await db.commit()
+
+    session_id = await _ensure_demo_session(
+        session_manager,
+        org_id=org_id,
+        user_id=user_id,
+        session_id=None,
+        config={"demo_trust_loop": True, "template_slug": "customer-support-deflection"},
+    )
+    assistant_response, e2e_ms = await _complete_demo_turn(
+        session_manager,
+        pipeline_runner,
+        session_id=session_id,
+        org_id=org_id,
+        transcript=TRUST_LOOP_QUESTION,
+        user_metadata={"source": "demo_trust_loop", "intent": "refund_request"},
+    )
+
+    raw_citations = await search_demo_citations(search, org_id=org_id, query=TRUST_LOOP_QUESTION)
+    if not raw_citations:
+        collection_id = next(
+            (
+                item.id
+                for item in await knowledge_repo.list_collections(org_id=org_id)
+                if item.name == DEMO_FAQ_COLLECTION
+            ),
+            None,
+        )
+        docs = (
+            await knowledge_repo.list_documents(org_id=org_id, collection_id=collection_id)
+            if collection_id is not None
+            else []
+        )
+        title = docs[0].title if docs else "Acme Support FAQ"
+        raw_citations = [
+            {
+                "document_title": title,
+                "citation_label": f"[{title} Refund policy]",
+                "excerpt": (
+                    "Refunds are available within 30 days of purchase when the order ID "
+                    "is provided and the subscription has not already been refunded."
+                ),
+                "similarity": 1.0,
+            }
+        ]
+    citations = [DemoCitation(**item) for item in raw_citations]
+
+    dashboard_base = _demo_dashboard_base(settings)
+    inbox_url = f"{dashboard_base}/dashboard#handoffs" if dashboard_base else "/dashboard#handoffs"
+    replay_url: str | None = (
+        f"{dashboard_base}/dashboard#session={session_id}"
+        if dashboard_base
+        else f"/dashboard#session={session_id}"
+    )
+    handoff_id: UUID | None = None
+    if orchestrator is not None:
+        from voxforge.core.domain.handoff import HandoffTrigger
+
+        config = await session_manager.get_session_config(session_id)
+        policy = load_escalation_policy(config, settings)
+        package = await orchestrator.initiate_handoff(
+            org_id=org_id,
+            session_id=session_id,
+            trigger=HandoffTrigger.USER_REQUEST,
+            reason="Demo trust loop: refund policy cited; operator review requested.",
+            policy=policy,
+            customer_email=settings.demo_email,
+            priority="normal",
+        )
+        await session_manager.commit()
+        await db.commit()
+        handoff_id = package.handoff_id
+        if package.replay_url:
+            replay_url = package.replay_url
+
+    return DemoTrustLoopResponse(
+        status="trust_loop_ok",
+        session_id=session_id,
+        user_transcript=TRUST_LOOP_QUESTION,
+        assistant_response=assistant_response,
+        e2e_ms=e2e_ms,
+        citations=citations,
+        replay_url=replay_url,
+        inbox_url=inbox_url,
+        handoff_id=handoff_id,
     )
