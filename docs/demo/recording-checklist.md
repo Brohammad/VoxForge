@@ -11,7 +11,7 @@
 - [ ] Close unrelated tabs; hide bookmarks
 - [ ] Register dashboard account beforehand
 - [ ] Upload 1 sample doc to knowledge base
-- [ ] Test demo call once (warm cache)
+- [ ] Test **Start talking** or **Run trust loop** once (warm cache)
 
 ## Recording setup
 
@@ -40,7 +40,7 @@
 
 **Manual (screen recording with real providers):**
 
-Record `/demo`: click **Run one-click sample call**, wait for chat + in-browser TTS, then:
+Record `/demo`: click **Start talking** (or **Run trust loop** if you cannot use a mic), wait for citations + in-browser TTS, then:
 
 ```bash
 ./scripts/capture-demo-gif.sh ~/Movies/demo-recording.mp4

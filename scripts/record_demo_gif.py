@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record /demo quickstart flow to a WebM file for GIF conversion."""
+"""Record /demo trust-loop flow to a WebM file for GIF conversion."""
 
 from __future__ import annotations
 
@@ -31,15 +31,16 @@ def main() -> int:
         page = context.new_page()
         page.goto(f"{args.base_url.rstrip('/')}/demo", wait_until="networkidle")
 
-        run_btn = page.get_by_role("button", name="Run one-click sample call")
-        if run_btn.is_disabled():
+        trust_btn = page.get_by_role("button", name="Run trust loop")
+        if trust_btn.is_disabled():
             print("ERROR: Demo disabled — set DEMO_ENABLED=true", file=sys.stderr)
             return 1
 
-        run_btn.click()
-        page.locator("#out-status").wait_for(state="visible", timeout=20_000)
-        page.locator("#out-status").filter(has_text="demo_turn_ok").wait_for(timeout=20_000)
-        page.locator("#chat-log .chat-bubble.assistant").wait_for(timeout=5_000)
+        trust_btn.click()
+        page.locator("#out-status").wait_for(state="visible", timeout=40_000)
+        page.locator("#out-status").filter(has_text="trust_loop_ok").wait_for(timeout=40_000)
+        page.locator("#chat-log .chat-bubble.assistant").wait_for(timeout=10_000)
+        page.locator("#citations").wait_for(state="visible", timeout=10_000)
         page.wait_for_timeout(1500)
 
         video = page.video

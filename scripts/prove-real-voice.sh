@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Prove a real-provider voice turn (Deepgram + OpenAI + Cartesia).
 # Uses the programmatic onboarding sample call (no microphone required).
+# If the host has DEMO_ENABLED=true, also runs POST /api/v1/demo/trust-loop.
 #
 # Usage:
 #   export DEEPGRAM_API_KEY=... OPENAI_API_KEY=... CARTESIA_API_KEY=...
 #   export STT_PROVIDER=deepgram LLM_PROVIDER=openai TTS_PROVIDER=cartesia
-#   export DEMO_ENABLED=false   # on the server under test
 #   ./scripts/prove-real-voice.sh [base_url]
 #
 # Optional auth (auto-register if unset):
@@ -80,4 +80,23 @@ else:
 
 echo ""
 echo "OK: real-provider programmatic voice turn passed."
-echo "Next: record mic demo — docs/demo/recording-checklist.md (real providers section)"
+
+if curl -fsS "${BASE_URL}/api/v1/demo/info" >/dev/null 2>&1; then
+  echo "==> Public trust loop (demo enabled on host)"
+  loop="$(curl -sS -X POST "${BASE_URL}/api/v1/demo/trust-loop")"
+  echo "${loop}" | python3 -c '
+import json,sys
+data=json.load(sys.stdin)
+assert data.get("status")=="trust_loop_ok", data
+assert data.get("session_id"), data
+assert data.get("citations"), "expected citations"
+assert data.get("handoff_id") or data.get("replay_url"), data
+print("trust-loop session:", data["session_id"])
+print("citations:", len(data.get("citations") or []))
+print("replay:", data.get("replay_url"))
+'
+else
+  echo "==> Skipping public trust loop (DEMO_ENABLED is off on host)"
+fi
+
+echo "Next: record mic demo — docs/demo/recording-checklist.md (Start talking + trust loop)"
