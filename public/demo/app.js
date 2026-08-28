@@ -4,6 +4,7 @@ const trustLoopBtn = document.getElementById("trust-loop-btn");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 const citationsEl = document.getElementById("citations");
+const agentTraceEl = document.getElementById("agent-trace");
 const inspectLinksEl = document.getElementById("inspect-links");
 const openReplayEl = document.getElementById("open-replay");
 const openInboxEl = document.getElementById("open-inbox");
@@ -119,6 +120,25 @@ function showCitations(citations, replayUrl, inboxUrl) {
     .join("");
   citationsEl.innerHTML = `<h3>Citations</h3><ul>${items}</ul>`;
   citationsEl.classList.remove("hidden");
+}
+
+function showAgentTrace(trace) {
+  if (!agentTraceEl) return;
+  if (!trace || !trace.length) {
+    agentTraceEl.classList.add("hidden");
+    agentTraceEl.innerHTML = "";
+    return;
+  }
+  const items = trace
+    .map((step) => {
+      const agent = escapeHtml(step.agent || "agent");
+      const status = escapeHtml(step.status || "");
+      const summary = escapeHtml(step.summary || "");
+      return `<li><strong>${agent}</strong> <span class="trace-status">${status}</span>${summary ? ` — ${summary}` : ""}</li>`;
+    })
+    .join("");
+  agentTraceEl.innerHTML = `<h3>Agent trace</h3><ol>${items}</ol>`;
+  agentTraceEl.classList.remove("hidden");
 }
 
 async function playInBrowser(text) {
@@ -385,6 +405,7 @@ async function stopTalk() {
     userRow.querySelector("p").textContent = heard;
     appendChat("assistant", data.assistant_response);
     showTurn("voice_turn_ok", data.e2e_ms, data.session_id);
+    showAgentTrace(data.agent_trace);
     if (data.stt_provider === "mock" && data.stt_source === "provider") {
       statusEl.textContent =
         "Mock STT does not decode speech. Chrome speech recognition or typed chat will use your words.";
@@ -407,6 +428,7 @@ async function runTrustLoop() {
     citationsEl.classList.add("hidden");
     citationsEl.innerHTML = "";
   }
+  showAgentTrace(null);
   clearChat();
   chatSessionId = null;
   try {
@@ -416,6 +438,7 @@ async function runTrustLoop() {
 
     showTurn(data.status, data.e2e_ms, data.session_id);
     showCitations(data.citations, data.replay_url, data.inbox_url);
+    showAgentTrace(data.agent_trace);
     chatSessionId = data.session_id || null;
     appendChat("user", data.user_transcript);
     appendChat("assistant", data.assistant_response || "(no reply)");
@@ -436,6 +459,7 @@ async function runDemo() {
     citationsEl.classList.add("hidden");
     citationsEl.innerHTML = "";
   }
+  showAgentTrace(null);
   clearChat();
   chatSessionId = null;
   try {
@@ -444,6 +468,7 @@ async function runDemo() {
     if (!res.ok) throw new Error(apiError(data, res.statusText));
 
     showTurn(data.status, data.e2e_ms, data.session_id);
+    showAgentTrace(data.agent_trace);
     chatSessionId = data.session_id || null;
     appendChat("user", data.user_transcript);
     appendChat("assistant", data.assistant_response || "(no reply)");
@@ -478,6 +503,7 @@ async function sendChat(event) {
     chatSessionId = data.session_id;
     appendChat("assistant", data.assistant_response);
     showTurn("chat_turn_ok", data.e2e_ms, data.session_id);
+    showAgentTrace(data.agent_trace);
     await playInBrowser(data.assistant_response);
   } catch (err) {
     statusEl.textContent = `Chat failed: ${err.message}`;

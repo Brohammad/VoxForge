@@ -22,7 +22,15 @@ def effective_system_prompt(active: AgentConfigVersion | None, settings: Setting
     return settings.system_prompt
 
 
-def effective_orchestrator_mode(active: AgentConfigVersion | None, settings: Settings) -> str:
+def effective_orchestrator_mode(
+    active: AgentConfigVersion | None,
+    settings: Settings,
+    session_config: dict | None = None,
+) -> str:
+    if session_config:
+        mode = session_config.get("orchestrator")
+        if isinstance(mode, str) and mode.strip() in {"single", "multi_agent"}:
+            return mode.strip()
     if active is not None:
         mode = active.orchestrator_config.get("mode")
         if isinstance(mode, str) and mode.strip():
@@ -46,10 +54,11 @@ async def apply_active_agent_config(
     memory_service: object | None,
     tool_router: object | None,
     knowledge_context_builder: object | None,
+    session_config: dict | None = None,
 ) -> object:
     """Swap generator mode if needed and set per-session system prompt from active config."""
     active = await load_active_agent_config(db, org_id)
-    mode = effective_orchestrator_mode(active, settings)
+    mode = effective_orchestrator_mode(active, settings, session_config=session_config)
     prompt = effective_system_prompt(active, settings)
 
     need_multi = mode == "multi_agent"

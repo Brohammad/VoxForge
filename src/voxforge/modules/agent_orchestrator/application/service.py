@@ -29,10 +29,19 @@ class AgentOrchestrator:
         memory_service: Any | None = None,
         tool_router: Any | None = None,
         knowledge_context_builder: Any | None = None,
+        llm: Any | None = None,
     ) -> None:
         self._settings = settings
         self._tool_router = tool_router
-        self._graph = build_agent_graph(settings, tool_router)
+        self._llm = llm
+        if settings.llm_provider.lower() == "mock":
+            from voxforge.modules.agent_orchestrator.application.graph import (
+                build_mock_agent_graph,
+            )
+
+            self._graph = build_mock_agent_graph(settings, tool_router, llm)
+        else:
+            self._graph = build_agent_graph(settings, tool_router)
         self._history: dict[UUID, list[_ChatMessage]] = {}
         self._traces: dict[UUID, list[dict]] = {}
         self._memory = memory_service

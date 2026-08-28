@@ -77,6 +77,8 @@ async def test_demo_quickstart_runs_pipeline(test_client, demo_env, demo_seeded)
     chat_body = chat.json()
     assert chat_body["session_id"] == body["session_id"]
     assert chat_body["assistant_response"]
+    agents = [step["agent"] for step in chat_body.get("agent_trace") or []]
+    assert "planner" in agents
 
 
 @pytest.mark.asyncio
@@ -95,6 +97,9 @@ async def test_demo_voice_uses_client_transcript(test_client, demo_env, demo_see
     assert body["stt_source"] == "client"
     assert body["stt_provider"] == "mock"
     assert body["session_id"]
+    agents = [step["agent"] for step in body.get("agent_trace") or []]
+    assert "planner" in agents
+    assert "executor" in agents
 
 
 @pytest.mark.asyncio
@@ -151,6 +156,9 @@ async def test_demo_trust_loop_cites_and_handoffs(test_client, demo_env, demo_se
     assert body["replay_url"]
     assert "handoffs" in body["inbox_url"]
     assert body["handoff_id"]
+    agents = [step["agent"] for step in body.get("agent_trace") or []]
+    assert "planner" in agents
+    assert "tool" in agents
 
 
 @pytest.mark.asyncio

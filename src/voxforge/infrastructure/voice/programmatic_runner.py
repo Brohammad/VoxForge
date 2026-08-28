@@ -37,6 +37,10 @@ class ProgrammaticPipelineRunner:
             self._pipeline.set_session_org(session_id, org_id)
             if self._bundle is not None:
                 await self._bundle.bootstrap_session_agent_config(org_id, session_id)
+            else:
+                from voxforge.core.domain.auth import ROLE_SCOPES, OrgRole
+
+                self._pipeline.set_caller_scopes(session_id, list(ROLE_SCOPES[OrgRole.OWNER]))
             logger.info(
                 "onboarding_scripted_turn_start",
                 session_id=str(session_id),

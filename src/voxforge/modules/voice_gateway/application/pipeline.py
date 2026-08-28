@@ -84,6 +84,11 @@ class VoicePipelineService:
             self._session_orgs[session_id] = org_id
         self._response_generator.set_session_org(session_id, org_id)
 
+    def set_caller_scopes(self, session_id: UUID, scopes: list[str]) -> None:
+        setter = getattr(self._response_generator, "set_caller_scopes", None)
+        if callable(setter):
+            setter(session_id, scopes)
+
     async def run_listening(
         self,
         session_id: UUID,

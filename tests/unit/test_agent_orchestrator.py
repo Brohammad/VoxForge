@@ -25,6 +25,12 @@ def test_factory_multi_agent_mode():
     assert isinstance(gen, AgentOrchestrator)
 
 
+def test_factory_multi_agent_mock_llm_still_uses_orchestrator():
+    settings = Settings(orchestrator_mode="multi_agent", llm_provider="mock")
+    gen = create_response_generator(settings)
+    assert isinstance(gen, AgentOrchestrator)
+
+
 @pytest.mark.asyncio
 async def test_agent_orchestrator_streams_final_response():
     settings = Settings(orchestrator_mode="multi_agent", openai_api_key="test-key")
@@ -82,3 +88,37 @@ async def test_agent_orchestrator_safety_block():
                 tokens.append(event.text)
 
     assert "sorry" in "".join(tokens).lower()
+
+
+@pytest.mark.asyncio
+async def test_mock_orchestrator_runs_knowledge_tool():
+    from voxforge.core.domain.tools import ToolCallStatus, ToolDefinition, ToolResult
+    from voxforge.infrastructure.providers.mock import MockLLMProvider
+
+    class _Router:
+        def list_tools(self):
+            return [
+                ToolDefinition(name="knowledge_base_lookup", description="kb", parameters={})
+            ]
+
+        async def execute(self, name, args, **kwargs):
+            return ToolResult(
+                tool_name=name,
+                output='{"articles":[{"title":"Refunds"}]}',
+                status=ToolCallStatus.SUCCESS,
+            )
+
+    settings = Settings(orchestrator_mode="multi_agent", llm_provider="mock")
+    orchestrator = AgentOrchestrator(
+        settings, tool_router=_Router(), llm=MockLLMProvider()
+    )
+    session_id = uuid4()
+    orchestrator.init_session(session_id)
+    orchestrator.add_user_message(session_id, "What is your refund policy?")
+    tokens = []
+    async for event in orchestrator.generate_response(session_id):
+        if event.text:
+            tokens.append(event.text)
+    assert "refund" in "".join(tokens).lower()
+    agents = [step["agent"] for step in orchestrator.get_last_agent_trace(session_id)]
+    assert agents == ["planner", "safety", "executor", "tool", "critic", "coordinator"]
