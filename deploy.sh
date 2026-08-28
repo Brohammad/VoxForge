@@ -97,9 +97,9 @@ start_optional_workers() {
     profiles=()
   fi
 
-  if [[ "${KNOWLEDGE_WORKER_ENABLED:-false}" == "true" ]]; then
-    log "Starting knowledge worker (KNOWLEDGE_WORKER_ENABLED=true)..."
-    $COMPOSE --env-file "$ENV_FILE" --profile knowledge up -d knowledge-worker
+  if [[ "${KNOWLEDGE_ENABLED:-true}" != "false" ]]; then
+    log "Starting knowledge worker..."
+    $COMPOSE --env-file "$ENV_FILE" up -d knowledge-worker
   fi
 
   if [[ -n "${METRICS_BEARER_TOKEN:-}" ]]; then

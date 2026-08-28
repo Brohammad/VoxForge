@@ -29,6 +29,11 @@ def _mock_providers_in_use(settings: Settings) -> list[str]:
     return [name for name in _MOCK_PROVIDER_FIELDS if getattr(settings, name, "").lower() == "mock"]
 
 
+def _is_ephemeral_blob_path(path: str) -> bool:
+    normalized = path.strip().replace("\\", "/").rstrip("/").lower()
+    return normalized in {"/tmp", "/var/tmp"} or normalized.startswith(("/tmp/", "/var/tmp/"))
+
+
 def collect_production_errors(settings: Settings) -> list[str]:
     if settings.app_env != "production":
         return []
@@ -117,6 +122,20 @@ def collect_production_errors(settings: Settings) -> list[str]:
             errors.append(
                 "MCP_SERVERS_CONFIG is set but the mcp package is not installed; "
                 "pip install -e '.[mcp]'"
+            )
+
+    if settings.knowledge_enabled:
+        if not settings.knowledge_worker_enabled:
+            errors.append(
+                "KNOWLEDGE_WORKER_ENABLED must be true in production when "
+                "KNOWLEDGE_ENABLED=true so ingest jobs are processed"
+            )
+        if settings.knowledge_blob_store.lower() == "filesystem" and _is_ephemeral_blob_path(
+            settings.knowledge_blob_path
+        ):
+            errors.append(
+                "KNOWLEDGE_BLOB_PATH must be a persistent directory in production "
+                "(not under /tmp); use /data/knowledge with the knowledge_data volume"
             )
 
     return errors

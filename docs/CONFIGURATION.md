@@ -97,7 +97,8 @@ When email delivery succeeds, the API omits the raw `token` in production; in `l
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `KNOWLEDGE_ENABLED` | `true` | Enable knowledge module |
-| `KNOWLEDGE_WORKER_ENABLED` | `false` (local) | Background ingestion worker |
+| `KNOWLEDGE_WORKER_ENABLED` | `false` local / `true` production | Background ingestion worker |
+| `KNOWLEDGE_BLOB_PATH` | `/tmp/voxforge-knowledge` local / `/data/knowledge` production | Filesystem blob root; production must not use `/tmp` |
 | `KNOWLEDGE_SEARCH_MIN_SIMILARITY` | `0.65` | Search threshold (0.0 for mock) |
 | `KNOWLEDGE_CONTEXT_ENABLED` | `true` | Inject KB into agent context |
 

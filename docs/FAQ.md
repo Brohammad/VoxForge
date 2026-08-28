@@ -71,7 +71,7 @@ Set `DEMO_ENABLED=true` in `.env` and restart.
 ### How are uploads processed?
 
 - **Local (`KNOWLEDGE_WORKER_ENABLED=false`):** inline ingestion
-- **Production:** set `KNOWLEDGE_WORKER_ENABLED=true` — `deploy.sh` starts the worker
+- **Production:** `KNOWLEDGE_WORKER_ENABLED=true` with blobs on `/data/knowledge` (Docker volume). `deploy.sh` starts the worker. Uploads stay queued if the worker is down.
 
 ### Why does search return no results with mock embeddings?
 

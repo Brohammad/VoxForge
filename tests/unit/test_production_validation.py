@@ -23,6 +23,8 @@ def _production_settings(**overrides):
         demo_enabled=True,
         demo_org_id="a0000000-0000-4000-8000-000000000001",
         demo_user_id="a0000000-0000-4000-8000-000000000002",
+        knowledge_worker_enabled=True,
+        knowledge_blob_path="/data/knowledge",
     )
     base.update(overrides)
     return Settings(**base)
@@ -120,3 +122,27 @@ def test_production_allows_invite_only_without_demo():
         )
     )
     assert errors == []
+
+
+def test_production_requires_knowledge_worker_when_knowledge_enabled():
+    errors = collect_production_errors(_production_settings(knowledge_worker_enabled=False))
+    assert any("KNOWLEDGE_WORKER_ENABLED" in e for e in errors)
+
+
+def test_production_rejects_tmp_knowledge_blob_path():
+    errors = collect_production_errors(
+        _production_settings(knowledge_blob_path="/tmp/voxforge-knowledge")
+    )
+    assert any("KNOWLEDGE_BLOB_PATH" in e for e in errors)
+
+
+def test_production_allows_knowledge_disabled_without_worker():
+    errors = collect_production_errors(
+        _production_settings(
+            knowledge_enabled=False,
+            knowledge_worker_enabled=False,
+            knowledge_blob_path="/tmp/voxforge-knowledge",
+        )
+    )
+    assert not any("KNOWLEDGE_WORKER_ENABLED" in e for e in errors)
+    assert not any("KNOWLEDGE_BLOB_PATH" in e for e in errors)

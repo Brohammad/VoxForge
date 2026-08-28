@@ -61,7 +61,7 @@ make deploy-validate
 `deploy.sh init` automatically starts:
 
 - `livekit-worker` when `LIVEKIT_URL` is set
-- `knowledge-worker` when `KNOWLEDGE_WORKER_ENABLED=true`
+- `knowledge-worker` whenever `KNOWLEDGE_ENABLED` is not `false` (default on). Blobs persist in the `knowledge_data` volume at `/data/knowledge`.
 - Prometheus + Grafana when `METRICS_BEARER_TOKEN` is set
 
 ## 6. Verify

@@ -27,7 +27,8 @@ async def run_worker() -> None:
     settings = get_settings()
     if not settings.knowledge_enabled:
         logger.warning("knowledge_worker_disabled")
-        return
+        while True:
+            await asyncio.sleep(60)
 
     await init_db(settings.database_url)
     await init_redis(settings.redis_url)

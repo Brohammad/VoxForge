@@ -64,8 +64,8 @@ git clone ${REPO_URL} ${REMOTE_DIR}
 cd ${REMOTE_DIR}
 chmod +x scripts/*.sh deploy.sh
 ./scripts/setup-production-env.sh ${DOMAIN}
-# 2GB droplet: skip on-server monitoring, keep knowledge worker off by default
-sed -i 's/^KNOWLEDGE_WORKER_ENABLED=true/KNOWLEDGE_WORKER_ENABLED=false/' .env.production || true
+# 2GB droplet: skip on-server Grafana/Prometheus (SSH tunnel later if needed).
+# Keep the knowledge worker on — blobs persist in the knowledge_data volume.
 sed -i 's/^METRICS_BEARER_TOKEN=.*/METRICS_BEARER_TOKEN=/' .env.production || true
 REMOTE_SETUP
 
