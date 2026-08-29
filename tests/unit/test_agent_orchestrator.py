@@ -97,9 +97,7 @@ async def test_mock_orchestrator_runs_knowledge_tool():
 
     class _Router:
         def list_tools(self):
-            return [
-                ToolDefinition(name="knowledge_base_lookup", description="kb", parameters={})
-            ]
+            return [ToolDefinition(name="knowledge_base_lookup", description="kb", parameters={})]
 
         async def execute(self, name, args, **kwargs):
             return ToolResult(
@@ -109,9 +107,7 @@ async def test_mock_orchestrator_runs_knowledge_tool():
             )
 
     settings = Settings(orchestrator_mode="multi_agent", llm_provider="mock")
-    orchestrator = AgentOrchestrator(
-        settings, tool_router=_Router(), llm=MockLLMProvider()
-    )
+    orchestrator = AgentOrchestrator(settings, tool_router=_Router(), llm=MockLLMProvider())
     session_id = uuid4()
     orchestrator.init_session(session_id)
     orchestrator.add_user_message(session_id, "What is your refund policy?")

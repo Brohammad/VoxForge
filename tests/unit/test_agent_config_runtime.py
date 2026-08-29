@@ -56,7 +56,11 @@ def test_effective_orchestrator_mode_prefers_session_config():
         created_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
     )
     assert (
-        effective_orchestrator_mode(active, settings, session_config={"orchestrator": "multi_agent"})
+        effective_orchestrator_mode(
+            active,
+            settings,
+            session_config={"orchestrator": "multi_agent"},
+        )
         == "multi_agent"
     )
 
