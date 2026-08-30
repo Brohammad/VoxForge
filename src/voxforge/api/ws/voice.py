@@ -32,6 +32,37 @@ from voxforge.modules.voice_gateway.application.pipeline_factory import build_vo
 
 logger = get_logger(__name__)
 router = APIRouter()
+WS_AUDIO_QUEUE_MAX_FRAMES = 256
+
+
+def _enqueue_audio_frame(
+    audio_queue: asyncio.Queue[bytes | None],
+    frame: bytes,
+) -> bool:
+    """Enqueue the newest frame, dropping the oldest when ingress is saturated."""
+    try:
+        audio_queue.put_nowait(frame)
+        return False
+    except asyncio.QueueFull:
+        try:
+            audio_queue.get_nowait()
+        except asyncio.QueueEmpty:
+            pass
+        try:
+            audio_queue.put_nowait(frame)
+        except asyncio.QueueFull:
+            return True
+        return True
+
+
+def _signal_audio_end(audio_queue: asyncio.Queue[bytes | None]) -> None:
+    """Prioritize the end sentinel without blocking a cancelled consumer."""
+    while True:
+        try:
+            audio_queue.get_nowait()
+        except asyncio.QueueEmpty:
+            break
+    audio_queue.put_nowait(None)
 
 
 @router.websocket("/api/v1/ws/voice")
@@ -50,7 +81,8 @@ async def voice_websocket(websocket: WebSocket) -> None:
     settings = get_settings()
 
     session_id: UUID | None = None
-    audio_queue: asyncio.Queue[bytes | None] = asyncio.Queue()
+    audio_queue: asyncio.Queue[bytes | None] = asyncio.Queue(maxsize=WS_AUDIO_QUEUE_MAX_FRAMES)
+    audio_overflow_logged = False
     listening_task: asyncio.Task | None = None
     heartbeat_task: asyncio.Task | None = None
 
@@ -110,7 +142,16 @@ async def voice_websocket(websocket: WebSocket) -> None:
                         session_id = None
 
                 elif "bytes" in message and session_id is not None:
-                    await audio_queue.put(message["bytes"])
+                    if (
+                        _enqueue_audio_frame(audio_queue, message["bytes"])
+                        and not audio_overflow_logged
+                    ):
+                        audio_overflow_logged = True
+                        logger.warning(
+                            "ws_audio_queue_overflow",
+                            session_id=str(session_id),
+                            max_frames=WS_AUDIO_QUEUE_MAX_FRAMES,
+                        )
 
     except WebSocketDisconnect:
         logger.info("ws_disconnected", session_id=str(session_id))
@@ -132,7 +173,7 @@ async def voice_websocket(websocket: WebSocket) -> None:
             listening_task.cancel()
         if heartbeat_task and not heartbeat_task.done():
             heartbeat_task.cancel()
-        await audio_queue.put(None)
+        _signal_audio_end(audio_queue)
         if session_id is not None:
             active_sessions.dec()
             try:
@@ -288,7 +329,7 @@ async def _handle_control_message(
 
     elif msg_type == "end":
         if session_id:
-            await audio_queue.put(None)
+            _signal_audio_end(audio_queue)
             if listening_task and not listening_task.done():
                 listening_task.cancel()
             if heartbeat_task and not heartbeat_task.done():

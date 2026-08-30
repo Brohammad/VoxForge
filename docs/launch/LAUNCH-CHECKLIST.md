@@ -20,7 +20,7 @@
 
 ## Quality gates
 
-- [x] 400 pytest (excl. browser)
+- [x] 404 pytest (excl. browser)
 - [x] 8 Playwright browser tests
 - [x] Ruff clean
 - [x] 81% coverage (70% gate)

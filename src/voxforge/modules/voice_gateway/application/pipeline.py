@@ -109,8 +109,6 @@ class VoicePipelineService:
         self._interrupt_event = asyncio.Event()
         turn_start = time.monotonic()
         first_partial_time: float | None = None
-        final_transcript: str | None = None
-        final_confidence: float | None = None
 
         with _tracer.start_as_current_span("voice_pipeline.run_listening") as span:
             span.set_attribute("voxforge.session_id", str(session_id))
@@ -125,21 +123,21 @@ class VoicePipelineService:
                             stt_latency_seconds.observe(first_partial_time - turn_start)
                         await self._maybe_await(callbacks.on_transcript(event))
                     else:
-                        final_transcript = event.text
-                        final_confidence = event.confidence
                         await self._maybe_await(callbacks.on_transcript(event))
-
-                if final_transcript:
-                    await self._process_turn(
-                        session_id,
-                        final_transcript,
-                        callbacks,
-                        turn_start=turn_start,
-                        stt_ms=(first_partial_time - turn_start) * 1000
-                        if first_partial_time
-                        else None,
-                        confidence=final_confidence,
-                    )
+                        final_transcript = event.text.strip()
+                        if final_transcript:
+                            await self._process_turn(
+                                session_id,
+                                final_transcript,
+                                callbacks,
+                                turn_start=turn_start,
+                                stt_ms=(first_partial_time - turn_start) * 1000
+                                if first_partial_time
+                                else None,
+                                confidence=event.confidence,
+                            )
+                        turn_start = time.monotonic()
+                        first_partial_time = None
             except asyncio.CancelledError:
                 logger.info("pipeline_listening_cancelled", session_id=str(session_id))
                 raise
@@ -289,7 +287,7 @@ class VoicePipelineService:
 
         if assistant_text:
             trace = self._response_generator.get_last_agent_trace(session_id)
-            assistant_metadata = {"agent_trace": trace} if trace else {}
+            assistant_metadata: dict[str, Any] = {"agent_trace": trace} if trace else {}
             self._response_generator.add_assistant_message(session_id, assistant_text)
             assistant_message = await self._sessions.save_assistant_message(
                 session_id, assistant_text, metadata=assistant_metadata

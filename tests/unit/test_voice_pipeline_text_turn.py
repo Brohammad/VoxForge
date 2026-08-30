@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from voxforge.core.domain.entities import TurnMetrics
-from voxforge.core.domain.events import AudioChunk, TokenEvent
+from voxforge.core.domain.events import AudioChunk, TokenEvent, TranscriptEvent
 from voxforge.core.exceptions import SessionNotFoundError, UnauthorizedError
 from voxforge.modules.voice_gateway.application.pipeline import (
     PipelineCallbacks,
@@ -23,6 +23,61 @@ def _settings(**overrides):
     for key, value in overrides.items():
         setattr(settings, key, value)
     return settings
+
+
+@pytest.mark.asyncio
+async def test_run_listening_processes_each_final_before_stream_closes():
+    session_id = uuid4()
+    processed_two = asyncio.Event()
+    calls: list[dict] = []
+
+    async def transcribe(audio_stream, language=None):
+        turn = 0
+        async for _chunk in audio_stream:
+            turn += 1
+            yield TranscriptEvent(
+                text=f"partial {turn}",
+                is_partial=True,
+                confidence=0.5,
+            )
+            yield TranscriptEvent(
+                text=f"final {turn}",
+                is_partial=False,
+                confidence=0.8 + turn / 10,
+            )
+
+    async def process_turn(*args, **kwargs):
+        calls.append({"args": args, "kwargs": kwargs})
+        if len(calls) == 2:
+            processed_two.set()
+        return TurnMetrics()
+
+    stt = MagicMock()
+    stt.transcribe_stream = transcribe
+    pipeline = VoicePipelineService(
+        session_manager=MagicMock(),
+        stt_provider=stt,
+        response_generator=MagicMock(),
+        tts_provider=MagicMock(),
+        settings=_settings(),
+    )
+    pipeline._process_turn = AsyncMock(side_effect=process_turn)  # noqa: SLF001
+
+    queue: asyncio.Queue[bytes | None] = asyncio.Queue()
+    task = asyncio.create_task(
+        pipeline.run_listening(session_id, queue, PipelineCallbacks(), language="en")
+    )
+    await queue.put(b"turn-one")
+    await queue.put(b"turn-two")
+    await asyncio.wait_for(processed_two.wait(), timeout=1)
+
+    assert not task.done()
+    assert [call["args"][1] for call in calls] == ["final 1", "final 2"]
+    assert [call["kwargs"]["confidence"] for call in calls] == [0.9, 1.0]
+    assert all(call["kwargs"]["stt_ms"] is not None for call in calls)
+
+    await queue.put(None)
+    await task
 
 
 @pytest.mark.asyncio
@@ -46,7 +101,9 @@ async def test_run_text_turn_skips_stt_and_returns_metrics():
     )
 
     pipeline._process_turn.assert_awaited_once()  # noqa: SLF001
-    call_kwargs = pipeline._process_turn.await_args.kwargs  # noqa: SLF001
+    await_args = pipeline._process_turn.await_args  # noqa: SLF001
+    assert await_args is not None
+    call_kwargs = await_args.kwargs
     assert call_kwargs["stt_ms"] == 0.0
     assert call_kwargs["user_metadata_extra"] == {"intent": "greeting"}
     assert metrics.e2e_ms == 50.0
@@ -186,6 +243,75 @@ async def test_tts_error_sends_safe_client_message():
 
 
 @pytest.mark.asyncio
+async def test_interrupt_during_tts_stops_later_audio_and_marks_evaluation():
+    session_id = uuid4()
+    first_audio_ready = asyncio.Event()
+    release_tts = asyncio.Event()
+
+    sessions = MagicMock()
+    sessions.update_phase = AsyncMock()
+    sessions.save_user_message = AsyncMock(return_value=MagicMock(id=uuid4()))
+    sessions.save_assistant_message = AsyncMock(return_value=MagicMock(id=uuid4()))
+    sessions.save_turn_metrics = AsyncMock()
+    sessions.get_session_config = AsyncMock(return_value={})
+    sessions.commit = AsyncMock()
+    sessions.clear_interrupt = AsyncMock()
+    sessions.set_interrupt = AsyncMock()
+    sessions.track_tool_failures = AsyncMock(return_value=0)
+
+    async def gen_response(session_id, on_agent_step=None):
+        yield TokenEvent(text="First.")
+        yield TokenEvent(text=" Second.")
+
+    response_generator = MagicMock()
+    response_generator.generate_response = gen_response
+    response_generator.add_user_message = MagicMock()
+    response_generator.add_assistant_message = MagicMock()
+    response_generator.get_last_agent_trace = MagicMock(return_value=[])
+
+    async def synthesize_stream(text_iter, voice_id=None):
+        async for _ in text_iter:
+            yield AudioChunk(data=b"first")
+            first_audio_ready.set()
+            await release_tts.wait()
+            yield AudioChunk(data=b"must-not-emit")
+
+    tts = MagicMock()
+    tts.synthesize_stream = synthesize_stream
+    evaluation = MagicMock()
+    evaluation.evaluate_turn = AsyncMock(return_value=MagicMock())
+    audio: list[bytes] = []
+
+    pipeline = VoicePipelineService(
+        session_manager=sessions,
+        stt_provider=MagicMock(),
+        response_generator=response_generator,
+        tts_provider=tts,
+        settings=_settings(),
+        evaluation_engine=evaluation,
+    )
+    task = asyncio.create_task(
+        pipeline.run_text_turn(
+            session_id,
+            "Please stop",
+            callbacks=PipelineCallbacks(on_audio=lambda chunk: audio.append(chunk.data)),
+        )
+    )
+
+    await asyncio.wait_for(first_audio_ready.wait(), timeout=1)
+    await pipeline.interrupt(session_id)
+    release_tts.set()
+    await task
+
+    assert audio == [b"first"]
+    sessions.set_interrupt.assert_awaited_once_with(session_id)
+    sessions.clear_interrupt.assert_awaited_once_with(session_id)
+    assert sessions.update_phase.await_args_list[-1].args[1].value == "listening"
+    evaluation_input = evaluation.evaluate_turn.await_args.args[0]
+    assert evaluation_input.interrupted is True
+
+
+@pytest.mark.asyncio
 async def test_voxforge_error_handler_returns_code():
     from fastapi import Request
 
@@ -195,7 +321,9 @@ async def test_voxforge_error_handler_returns_code():
     app = create_app()
     handler = app.exception_handlers[VoxForgeError]
     request = MagicMock(spec=Request)
-    response = await handler(request, SessionNotFoundError("abc"))
+    response = await handler(  # pyright: ignore[reportGeneralTypeIssues]
+        request, SessionNotFoundError("abc")
+    )
     assert response.status_code == 404
     assert b"session_not_found" in response.body
 
@@ -210,6 +338,8 @@ async def test_unauthorized_error_handler():
     app = create_app()
     handler = app.exception_handlers[VoxForgeError]
     request = MagicMock(spec=Request)
-    response = await handler(request, UnauthorizedError("nope"))
+    response = await handler(  # pyright: ignore[reportGeneralTypeIssues]
+        request, UnauthorizedError("nope")
+    )
     assert response.status_code == 401
     assert b"unauthorized" in response.body

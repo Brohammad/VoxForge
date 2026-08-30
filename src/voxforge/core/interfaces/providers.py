@@ -11,7 +11,7 @@ class ChatMessage(Protocol):
 
 
 class SpeechProvider(Protocol):
-    async def transcribe_stream(
+    def transcribe_stream(
         self,
         audio_stream: AsyncIterator[bytes],
         *,
@@ -22,7 +22,7 @@ class SpeechProvider(Protocol):
 
 
 class LLMProvider(Protocol):
-    async def generate_stream(
+    def generate_stream(
         self,
         messages: list[ChatMessage],
         *,
@@ -33,7 +33,7 @@ class LLMProvider(Protocol):
 
 
 class TTSProvider(Protocol):
-    async def synthesize_stream(
+    def synthesize_stream(
         self,
         text_stream: AsyncIterator[str],
         *,

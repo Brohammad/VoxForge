@@ -48,10 +48,13 @@ Manages voice session lifecycle:
 
 Coordinates the full turn:
 1. Stream audio to STT, forward partial transcripts
-2. On final transcript, save user message
+2. On every final transcript, immediately run one turn while the STT stream stays open
 3. Stream LLM tokens to client and TTS concurrently
 4. Save assistant message and turn metrics
 5. Handle interrupt at any stage
+
+WebSocket and LiveKit ingress use bounded 256-frame queues. When a client outpaces
+processing, the oldest frame is dropped so latency and memory do not grow without bound.
 
 ## Wire Protocol
 
@@ -90,7 +93,7 @@ sequenceDiagram
     Note over P: Speaking response
     C->>G: interrupt
     G->>R: set interrupt=true
-    G->>P: cancel LLM + TTS tasks
+    G->>P: signal cooperative LLM + TTS stop
     P->>P: save partial assistant message
     P->>P: resume LISTENING phase
     G-->>C: interrupted

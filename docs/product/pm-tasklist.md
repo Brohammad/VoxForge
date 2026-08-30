@@ -48,7 +48,7 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 
 ## Stage 13 — Portfolio & OSS polish
 - [x] Interview case study (`docs/portfolio/case-study.md`)
-- [x] Portfolio index + updated resume kit / interview prep (408+ tests)
+- [x] Portfolio index + updated resume kit / interview prep (412+ tests)
 - [x] README test count + GIF refresh docs
 - [x] GitHub topics + good first issues (`scripts/github-oss-polish.sh` — issues #7–#10)
 
@@ -84,6 +84,14 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Add production credential validation and sanitized provider errors
 - [x] Add adapter, factory, and production-validation tests
 - [ ] Verify against a real Zendesk sandbox before claiming production proof
+
+## Stage 20 — Voice backend multi-turn hardening
+- [x] Dispatch every final STT transcript before the continuous stream closes
+- [x] Reset STT and end-to-end timing for each utterance
+- [x] Bound WebSocket audio ingress to 256 frames with drop-oldest backpressure
+- [x] Make full-queue shutdown signaling non-blocking
+- [x] Prove two persisted turns in one continuous listening session
+- [x] Prove TTS interruption suppresses subsequent audio and records interruption
 
 ## Deployment / GTM
 - [ ] Redeploy `voxforge.brohammad.tech` from current `main`
