@@ -4,7 +4,7 @@ Use these for senior/staff software engineer applications.
 
 ## Platform engineering
 
-- Architected and shipped **VoxForge**, an open-source voice AI infrastructure platform (Python/FastAPI, PostgreSQL/pgvector, Redis, Docker) with **354+ automated tests** and **81% code coverage**.
+- Architected and shipped **VoxForge**, an open-source voice AI infrastructure platform (Python/FastAPI, PostgreSQL/pgvector, Redis, Docker) with **423 tests collected** and **76.40% coverage across statements and branches**.
 
 - Designed a **unified voice pipeline** serving WebSocket, programmatic onboarding, and LiveKit WebRTC through a single `VoicePipelineService`, eliminating transport-specific business logic duplication.
 
@@ -24,7 +24,7 @@ Use these for senior/staff software engineer applications.
 
 - Shipped **per-turn evaluation engine** with latency breakdown, quality scoring, session replay, and operator dashboard analytics.
 
-- Added **Playwright browser test suite** (8 critical user journeys) running in CI alongside unit, integration, feature, and failure-mode tests.
+- Added **Playwright browser test suite** (9 critical user journeys) running in CI alongside unit, integration, feature, and failure-mode tests.
 
 ## Leadership / OSS
 

@@ -5,7 +5,7 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-38d996)](https://voxforge.brohammad.tech/demo)
 [![Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvoxforge.brohammad.tech%2Fapi%2Fv1%2Fhealth&query=%24.status&label=status&color=38d996)](https://voxforge.brohammad.tech/status)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](docs/testing/coverage-report.md)
+[![Coverage](https://img.shields.io/badge/coverage-76.40%25-brightgreen)](docs/project-metrics.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Production-grade Voice AI Infrastructure** — deploy, operate, and trust.
@@ -27,7 +27,7 @@ VoxForge is an open-source platform for building and operating enterprise voice 
 | Layer | Capabilities |
 |-------|----------------|
 | **Voice** | WebSocket gateway, programmatic onboarding API, LiveKit WebRTC |
-| **Intelligence** | LangGraph agent orchestrator (planner, safety, executor, critic) |
+| **Intelligence** | LangGraph orchestrator (planner, safety, executor + conditional tools, critic, coordinator) |
 | **Knowledge** | Document upload, chunking, pgvector search, citation grounding |
 | **Tools** | Builtin tools + MCP server discovery at runtime |
 | **Operations** | Dashboard, latency analytics, alerts, policy presets, SAML SSO |
@@ -45,7 +45,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 412+ automated tests (404 pytest + 8 Playwright) | Unknown |
+| **Tests** | 423 collected: 414 non-browser (404 passed, 10 skipped) + 9 Playwright | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
@@ -209,8 +209,8 @@ Production validation enforces real providers when `DEMO_ENABLED=false`.
 ## Testing
 
 ```bash
-make test              # 346+ tests (~16s, excludes browser)
-make test-browser      # 8 Playwright UI journeys
+make test              # 414 collected (404 passed, 10 skipped; excludes browser)
+make test-browser      # 9 Playwright UI journeys
 make test-unit         # Unit tests only
 make test-integration  # Integration tests
 make test-feature      # Feature scenarios
@@ -227,7 +227,8 @@ ruff check src tests   # Lint
 | Browser | `tests/browser/` | Landing, demo, dashboard, KB |
 | Failure | `tests/failure/` | Provider errors, timeouts |
 
-CI runs the full suite on every push to `main`. See [testing strategy](docs/testing/testing-strategy.md).
+CI runs the full suite on every push to `main`. See the canonical
+[project metrics](docs/project-metrics.md) and [testing strategy](docs/testing/testing-strategy.md).
 
 ---
 

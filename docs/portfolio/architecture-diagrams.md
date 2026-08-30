@@ -31,7 +31,11 @@ sequenceDiagram
   V->>V: STT
   V->>A: User utterance + context
   A->>A: Planner → Safety → Executor
-  A-->>V: Response + tool calls
+  opt Tool requested and tools enabled
+    A->>A: Execute tool → resume Executor
+  end
+  A->>A: Critic → Coordinator
+  A-->>V: Final response + tool trace
   V->>V: TTS
   V->>E: Score turn
   V-->>C: Audio + transcript

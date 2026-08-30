@@ -37,7 +37,8 @@ Show landing page hero.
 
 1. **Handoffs** queue
 2. Explain escalation + signed replay links
-3. Show Zendesk ticket creation with replay context (sandbox credentials required)
+3. Explain the unit-tested Zendesk ticket flow with replay context; do not present it as
+   live proof until sandbox verification is complete
 
 ## 6:30 — Architecture (90s)
 
@@ -53,7 +54,8 @@ Show landing architecture section or `docs/architecture/voice-pipeline.md`:
 git clone → uv sync → docker compose up → demo in 15 min
 ```
 
-Point to GitHub, CI badge, 346+ tests.
+Point to GitHub, the [verified CI run and canonical metrics](../project-metrics.md):
+423 tests collected, with 404 non-browser tests passed and 10 skipped.
 
 ## 8:00 — Close
 

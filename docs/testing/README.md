@@ -5,8 +5,8 @@ VoxForge uses a **test pyramid**: unit → integration → feature → failure �
 ## Quick commands
 
 ```bash
-make test              # Full suite except browser (~346 tests)
-make test-browser      # 8 Playwright UI journeys
+make test              # 414 collected (404 passed, 10 skipped; excludes browser)
+make test-browser      # 9 Playwright UI journeys
 make test-unit
 make test-integration
 make test-feature

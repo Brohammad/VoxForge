@@ -1,5 +1,9 @@
 # VoxForge Coverage Report
 
+> **Historical RC-1 snapshot (2026-07-10):** This report is retained as release evidence,
+> not as the current coverage claim. See [project metrics](../project-metrics.md) for the
+> current verified line coverage and test accounting.
+
 | Metric | Value | Target |
 |--------|------:|-------:|
 | Overall line coverage | 81.1% | 70% |

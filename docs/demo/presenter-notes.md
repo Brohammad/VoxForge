@@ -17,8 +17,9 @@
 
 ## Numbers to cite
 
-- **354+** automated tests
-- **81%** code coverage
+- **423** tests collected (414 non-browser + 9 Playwright)
+- **404 passed, 10 skipped** in the non-browser suite
+- **76.40%** coverage across statements and branches
 - **36ms** demo E2E (mock providers)
 - **15 min** clone to first demo
 - **RC-1** live at voxforge.brohammad.tech
@@ -26,7 +27,7 @@
 ## Anticipated questions
 
 **"Is the demo real voice?"**  
-Mock providers in public demo; swap env vars for Deepgram/OpenAI/ElevenLabs in pilot.
+Mock providers in public demo; swap env vars for Deepgram/OpenAI/Cartesia in a pilot.
 
 **"How is this different from Vapi?"**  
 Self-hosted, open source, evaluation/replay built in. See benchmark doc.

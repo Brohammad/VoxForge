@@ -6,15 +6,36 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTEST = ROOT / ".venv" / "bin" / "pytest"
-if not PYTEST.exists():
-    PYTEST = Path(sys.executable)
+VENV_PYTEST = ROOT / ".venv" / "bin" / "pytest"
+PYTEST_CMD = [str(VENV_PYTEST)] if VENV_PYTEST.exists() else [sys.executable, "-m", "pytest"]
 API_DIR = ROOT / "src" / "voxforge" / "api"
 MODULES_DIR = ROOT / "src" / "voxforge" / "modules"
+VERIFIED_COMMIT = "33186a0f98504641e95e9af9e649e311f35d7edd"
+VERIFIED_CI_RUN = "https://github.com/Brohammad/VoxForge/actions/runs/33297954885"
+VERIFIED_CI_DATE = "2026-08-30"
+VERIFIED_COVERAGE_PERCENT = 76.40
+TEST_ENV = {
+    "STT_PROVIDER": "mock",
+    "LLM_PROVIDER": "mock",
+    "TTS_PROVIDER": "mock",
+    "EMBEDDING_PROVIDER": "mock",
+    "MEMORY_ENABLED": "false",
+    "EVALUATION_HALLUCINATION_ENABLED": "false",
+    "TOOLS_ENABLED": "false",
+}
+
+
+@dataclass(frozen=True)
+class TestMetrics:
+    non_browser_collected: int
+    non_browser_passed: int
+    non_browser_skipped: int
+    browser_collected: int
 
 
 def count_rest_endpoints() -> int:
@@ -33,39 +54,69 @@ def count_websocket_endpoints() -> int:
     return total
 
 
-def count_tests() -> int:
+def run_pytest(*args: str) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
-        [str(PYTEST), "--collect-only", "-q"],
+        [*PYTEST_CMD, *args],
         cwd=ROOT,
         capture_output=True,
         text=True,
-        env={**subprocess.os.environ, "PYTHONPATH": str(ROOT)},
+        env={**subprocess.os.environ, **TEST_ENV, "PYTHONPATH": str(ROOT)},
         check=False,
     )
-    for line in reversed(result.stdout.splitlines()):
-        match = re.search(r"(\d+) tests collected", line)
-        if match:
-            return int(match.group(1))
-    return 0
+    if result.returncode != 0:
+        details = "\n".join(part for part in (result.stdout.strip(), result.stderr.strip()) if part)
+        raise RuntimeError(f"pytest failed ({' '.join(args)}):\n{details}")
+    return result
 
 
-def coverage_percent() -> str:
+def parse_collected(result: subprocess.CompletedProcess[str]) -> int:
+    output = f"{result.stdout}\n{result.stderr}"
+    match = re.search(r"(\d+) tests collected", output)
+    if not match:
+        raise RuntimeError(f"Could not parse collected test count:\n{output}")
+    return int(match.group(1))
+
+
+def collect_test_metrics() -> TestMetrics:
+    non_browser_collected = parse_collected(
+        run_pytest("--collect-only", "-q", "--ignore=tests/browser")
+    )
+    browser_collected = parse_collected(run_pytest("tests/browser", "--collect-only", "-q"))
+
+    result = run_pytest("-q", "--ignore=tests/browser")
+    output = f"{result.stdout}\n{result.stderr}"
+    passed_match = re.search(r"(\d+) passed", output)
+    skipped_match = re.search(r"(\d+) skipped", output)
+    if not passed_match:
+        raise RuntimeError(f"Could not parse passed test count:\n{output}")
+
+    return TestMetrics(
+        non_browser_collected=non_browser_collected,
+        non_browser_passed=int(passed_match.group(1)),
+        non_browser_skipped=int(skipped_match.group(1)) if skipped_match else 0,
+        browser_collected=browser_collected,
+    )
+
+
+def git_revision() -> str:
     result = subprocess.run(
-        [str(PYTEST), "--cov=src/voxforge", "--cov-report=term", "-q"],
+        ["git", "rev-parse", "HEAD"],
         cwd=ROOT,
         capture_output=True,
         text=True,
-        env={**subprocess.os.environ, "PYTHONPATH": str(ROOT)},
-        check=False,
+        check=True,
     )
-    for line in result.stdout.splitlines():
-        if line.startswith("TOTAL"):
-            parts = line.split()
-            return parts[-1]
-    return "n/a"
+    return result.stdout.strip()
 
 
 def main() -> None:
+    tests = collect_test_metrics()
+    revision = git_revision()
+    coverage = (
+        f"{VERIFIED_COVERAGE_PERCENT:.2f}%"
+        if revision == VERIFIED_COMMIT
+        else "Unverified for this revision"
+    )
     modules = sorted(
         p.name
         for p in MODULES_DIR.iterdir()
@@ -77,9 +128,15 @@ def main() -> None:
 
     content = f"""# VoxForge Project Metrics
 
-> Single source of truth for repository engineering metrics.  
-> Last updated: {datetime.now(UTC).strftime("%Y-%m-%d")}  
-> Regenerate: `python scripts/generate_project_metrics.py`
+> Single source of truth for repository engineering metrics.
+> Last updated: {datetime.now(UTC).strftime("%Y-%m-%d")}
+> Repository revision: `{revision}`
+> Regenerate: `python3 scripts/generate_project_metrics.py`
+
+The local results below distinguish **collected**, **passed**, and **skipped** tests.
+Browser tests are collection-verified here; they are executed separately by the Playwright CI job.
+Coverage and CI evidence are pinned to the verified commit above; coverage is marked
+unverified if this document is regenerated at another revision.
 
 ## Summary
 
@@ -88,11 +145,22 @@ def main() -> None:
 | Application modules | {len(modules)} |
 | REST endpoints | {count_rest_endpoints()} |
 | WebSocket endpoints | {count_websocket_endpoints()} |
-| Tests collected | {count_tests()} |
-| Line coverage (`src/voxforge`) | {coverage_percent()} |
+| Non-browser tests collected | {tests.non_browser_collected} |
+| Non-browser tests passed | {tests.non_browser_passed} |
+| Non-browser tests skipped | {tests.non_browser_skipped} |
+| Browser tests collected | {tests.browser_collected} |
+| Total tests collected | {tests.non_browser_collected + tests.browser_collected} |
+| Verified coverage (`src/voxforge`, non-browser suite) | {coverage} |
 | ADRs | {len(adrs)} |
 | Architecture documents | {len(arch_docs)} |
 | Benchmark documents | {len(benchmarks)} |
+
+## Verification evidence
+
+- Local non-browser command: `PYTHONPATH=. pytest -q --ignore=tests/browser --cov=src/voxforge`
+- Browser collection command: `PYTHONPATH=. pytest tests/browser --collect-only -q`
+- Verified GitHub CI: [run 33297954885]({VERIFIED_CI_RUN}) passed on
+  {VERIFIED_CI_DATE} for commit [`{VERIFIED_COMMIT[:8]}`](https://github.com/Brohammad/VoxForge/commit/{VERIFIED_COMMIT}).
 
 ## Application modules ({len(modules)})
 
@@ -103,11 +171,12 @@ def main() -> None:
 | Transport | Count | Entry points |
 |-----------|------:|--------------|
 | REST | {count_rest_endpoints()} | `/api/v1/*` routers |
-| WebSocket | {count_websocket_endpoints()} | `/api/v1/ws/voice` |
+| WebSocket | {count_websocket_endpoints()} | `/api/v1/ws/voice`, `/lk/{{path}}` |
 
 ## Tests
 
-Run: `PYTHONPATH=. pytest -v`
+Run non-browser tests: `make test`
+Run Playwright tests: `make test-browser`
 
 | Category | Location |
 |----------|----------|

@@ -1,5 +1,10 @@
 # Launch Checklist — VoxForge v1.0 RC
 
+> **Historical launch snapshot:** Checked counts and sign-off statements are preserved
+> from the RC-1 launch process and are not current metrics. See
+> [project metrics](../project-metrics.md) for the current collected/passed/skipped totals,
+> coverage, and verified CI evidence.
+
 ## Public deployment
 
 - [x] Live at https://voxforge.brohammad.tech

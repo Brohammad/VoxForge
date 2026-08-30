@@ -4,6 +4,11 @@
 **Target:** Public v1.0 release  
 **Branch:** `main` (18 commits ahead of `origin/main` at RC-1 cut)
 
+> **Historical snapshot:** Counts, coverage, integration status, and open items in this
+> report describe the 2026-07-10 RC-1 cut. They are intentionally preserved as release
+> evidence, not current metrics. See [project metrics](../project-metrics.md) and
+> [known limitations](./known-limitations.md) for the current verified state.
+
 ---
 
 ## Executive Summary

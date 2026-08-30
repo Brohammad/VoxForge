@@ -86,7 +86,9 @@ flowchart TB
 
 - Diagram omits background job queue and worker polling (ingest sidecar)
 - `Context Builder` injection into prompts is optional (`KNOWLEDGE_CONTEXT_ENABLED`)
-- External KB providers (Zendesk/Freshdesk) bypass internal stages after the tool boundary
+- A future external KB provider would bypass internal stages after the tool boundary.
+  Zendesk currently exists only as a unit-tested ticketing adapter (live sandbox proof
+  pending), and Freshdesk is not implemented.
 
 ## References
 

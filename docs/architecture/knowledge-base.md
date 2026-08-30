@@ -395,7 +395,7 @@ KNOWLEDGE_DEFAULT_CHUNK_OVERLAP=64
 KNOWLEDGE_SEARCH_TOP_K=5
 KNOWLEDGE_SEARCH_MIN_SIMILARITY=0.65
 KNOWLEDGE_CONTEXT_ENABLED=true
-KNOWLEDGE_BASE_PROVIDER=internal    # internal | mock | zendesk | freshdesk
+KNOWLEDGE_BASE_PROVIDER=internal    # internal | mock
 
 # S3-compatible (optional)
 KNOWLEDGE_S3_ENDPOINT=
@@ -444,7 +444,8 @@ Targets (engineering, mock providers, 10k chunks):
 2. `InternalKnowledgeBaseProvider` replaces `MockKnowledgeBaseProvider` in factory
 3. Existing `knowledge_base_lookup` tool unchanged — adapter swap only
 4. Upload enterprise docs via API or dashboard
-5. Zendesk/Freshdesk adapters remain available for hybrid deployments
+5. Ticketing integrations are separate from knowledge retrieval: Zendesk ticketing is
+   implemented and unit-tested but awaits live sandbox proof; Freshdesk is not implemented
 
 ## Related docs
 
