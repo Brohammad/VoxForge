@@ -15,8 +15,9 @@ VENV_PYTEST = ROOT / ".venv" / "bin" / "pytest"
 PYTEST_CMD = [str(VENV_PYTEST)] if VENV_PYTEST.exists() else [sys.executable, "-m", "pytest"]
 API_DIR = ROOT / "src" / "voxforge" / "api"
 MODULES_DIR = ROOT / "src" / "voxforge" / "modules"
-VERIFIED_COMMIT = "33186a0f98504641e95e9af9e649e311f35d7edd"
-VERIFIED_CI_RUN = "https://github.com/Brohammad/VoxForge/actions/runs/33297954885"
+VERIFIED_COMMIT = "5d0571689ffc4d50aaf9c94dd2ecada856530033"
+VERIFIED_CI_RUN = "https://github.com/Brohammad/VoxForge/actions/runs/33298953452"
+VERIFIED_CI_RUN_ID = VERIFIED_CI_RUN.rsplit("/", 1)[-1]
 VERIFIED_CI_DATE = "2026-08-30"
 VERIFIED_COVERAGE_PERCENT = 76.40
 TEST_ENV = {
@@ -159,7 +160,7 @@ unverified if this document is regenerated at another revision.
 
 - Local non-browser command: `PYTHONPATH=. pytest -q --ignore=tests/browser --cov=src/voxforge`
 - Browser collection command: `PYTHONPATH=. pytest tests/browser --collect-only -q`
-- Verified GitHub CI: [run 33297954885]({VERIFIED_CI_RUN}) passed on
+- Verified GitHub CI: [run {VERIFIED_CI_RUN_ID}]({VERIFIED_CI_RUN}) passed on
   {VERIFIED_CI_DATE} for commit [`{VERIFIED_COMMIT[:8]}`](https://github.com/Brohammad/VoxForge/commit/{VERIFIED_COMMIT}).
 
 ## Application modules ({len(modules)})

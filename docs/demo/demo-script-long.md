@@ -55,7 +55,7 @@ git clone → uv sync → docker compose up → demo in 15 min
 ```
 
 Point to GitHub, the [verified CI run and canonical metrics](../project-metrics.md):
-423 tests collected, with 404 non-browser tests passed and 10 skipped.
+426 tests collected, with 407 non-browser tests passed and 10 skipped.
 
 ## 8:00 — Close
 

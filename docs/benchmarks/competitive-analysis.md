@@ -49,7 +49,7 @@ Legend: ✅ native · ⚙️ partial/BYO · ❌ not available
 2. **Self-hosted with TLS automation** — data sovereignty
 3. **Evaluation + replay first-class** — operator trust
 4. **MCP tool router** — extensibility without code forks
-5. **423 tests collected** — engineering credibility with explicit pass/skip accounting
+5. **426 tests collected** — engineering credibility with explicit pass/skip accounting
 
 ## Weaknesses (VoxForge)
 

@@ -17,8 +17,8 @@
 
 ## Numbers to cite
 
-- **423** tests collected (414 non-browser + 9 Playwright)
-- **404 passed, 10 skipped** in the non-browser suite
+- **426** tests collected (417 non-browser + 9 Playwright)
+- **407 passed, 10 skipped** in the non-browser suite
 - **76.40%** coverage across statements and branches
 - **36ms** demo E2E (mock providers)
 - **15 min** clone to first demo

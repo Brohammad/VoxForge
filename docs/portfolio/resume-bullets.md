@@ -4,7 +4,7 @@ Use these for senior/staff software engineer applications.
 
 ## Platform engineering
 
-- Architected and shipped **VoxForge**, an open-source voice AI infrastructure platform (Python/FastAPI, PostgreSQL/pgvector, Redis, Docker) with **423 tests collected** and **76.40% coverage across statements and branches**.
+- Architected and shipped **VoxForge**, an open-source voice AI infrastructure platform (Python/FastAPI, PostgreSQL/pgvector, Redis, Docker) with **426 tests collected** and **76.40% coverage across statements and branches**.
 
 - Designed a **unified voice pipeline** serving WebSocket, programmatic onboarding, and LiveKit WebRTC through a single `VoicePipelineService`, eliminating transport-specific business logic duplication.
 

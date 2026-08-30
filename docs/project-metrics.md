@@ -2,7 +2,7 @@
 
 > Single source of truth for repository engineering metrics.
 > Last updated: 2026-08-30
-> Repository revision: `33186a0f98504641e95e9af9e649e311f35d7edd`
+> Repository revision: `5d0571689ffc4d50aaf9c94dd2ecada856530033`
 > Regenerate: `python3 scripts/generate_project_metrics.py`
 
 The local results below distinguish **collected**, **passed**, and **skipped** tests.
@@ -17,11 +17,11 @@ unverified if this document is regenerated at another revision.
 | Application modules | 19 |
 | REST endpoints | 84 |
 | WebSocket endpoints | 2 |
-| Non-browser tests collected | 414 |
-| Non-browser tests passed | 404 |
+| Non-browser tests collected | 417 |
+| Non-browser tests passed | 407 |
 | Non-browser tests skipped | 10 |
 | Browser tests collected | 9 |
-| Total tests collected | 423 |
+| Total tests collected | 426 |
 | Verified coverage (`src/voxforge`, non-browser suite) | 76.40% |
 | ADRs | 7 |
 | Architecture documents | 26 |
@@ -31,8 +31,8 @@ unverified if this document is regenerated at another revision.
 
 - Local non-browser command: `PYTHONPATH=. pytest -q --ignore=tests/browser --cov=src/voxforge`
 - Browser collection command: `PYTHONPATH=. pytest tests/browser --collect-only -q`
-- Verified GitHub CI: [run 33297954885](https://github.com/Brohammad/VoxForge/actions/runs/33297954885) passed on
-  2026-08-30 for commit [`33186a0f`](https://github.com/Brohammad/VoxForge/commit/33186a0f98504641e95e9af9e649e311f35d7edd).
+- Verified GitHub CI: [run 33298953452](https://github.com/Brohammad/VoxForge/actions/runs/33298953452) passed on
+  2026-08-30 for commit [`5d057168`](https://github.com/Brohammad/VoxForge/commit/5d0571689ffc4d50aaf9c94dd2ecada856530033).
 
 ## Application modules (19)
 

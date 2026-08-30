@@ -48,7 +48,7 @@ Every transport calls the same pipeline. Mock providers run CI and public demo w
 | **Demo** | Browser TTS via `/demo/speak`, provider badges, automated GIF capture |
 | **Knowledge** | List/delete APIs, server-backed dashboard catalog (no localStorage) |
 | **Dashboard** | Hub IA: Talk / Knowledge / Inbox / Settings |
-| **Quality** | 414 non-browser tests collected, 9 Playwright journeys, verified green CI |
+| **Quality** | 417 non-browser tests collected, 9 Playwright journeys, verified green CI |
 
 ---
 
@@ -76,8 +76,8 @@ Fix: unify auth checks, wire SAML cold-login, invalidate in-flight `refreshAll` 
 
 | Metric | Value |
 |--------|-------|
-| Tests collected | 414 non-browser + 9 Playwright |
-| Non-browser result | 404 passed, 10 skipped |
+| Tests collected | 417 non-browser + 9 Playwright |
+| Non-browser result | 407 passed, 10 skipped |
 | Coverage (statements + branches) | 76.40% (70% CI gate) |
 | Demo E2E (mock) | ~5–100 ms |
 | Deploy | `./deploy.sh init` → HTTPS on Ubuntu VPS |

@@ -48,7 +48,7 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 
 ## Stage 13 — Portfolio & OSS polish
 - [x] Interview case study (`docs/portfolio/case-study.md`)
-- [x] Portfolio index + updated resume kit / interview prep (423 tests collected)
+- [x] Portfolio index + updated resume kit / interview prep (426 tests collected)
 - [x] README test count + GIF refresh docs
 - [x] GitHub topics + good first issues (`scripts/github-oss-polish.sh` — issues #7–#10)
 

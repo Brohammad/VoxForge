@@ -24,7 +24,7 @@ Get from `git clone` to first voice session in under 15 minutes.
 ## Verify tests
 
 ```bash
-make test              # 414 collected (404 passed, 10 skipped; excludes browser)
+make test              # 417 collected (407 passed, 10 skipped; excludes browser)
 make test-browser      # 9 Playwright journeys
 ruff check src tests
 ```

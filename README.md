@@ -45,7 +45,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 423 collected: 414 non-browser (404 passed, 10 skipped) + 9 Playwright | Unknown |
+| **Tests** | 426 collected: 417 non-browser (407 passed, 10 skipped) + 9 Playwright | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
@@ -209,7 +209,7 @@ Production validation enforces real providers when `DEMO_ENABLED=false`.
 ## Testing
 
 ```bash
-make test              # 414 collected (404 passed, 10 skipped; excludes browser)
+make test              # 417 collected (407 passed, 10 skipped; excludes browser)
 make test-browser      # 9 Playwright UI journeys
 make test-unit         # Unit tests only
 make test-integration  # Integration tests
