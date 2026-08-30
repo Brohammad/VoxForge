@@ -7,7 +7,7 @@ Two layers of proof for sales, pilots, and resume. This does not redeploy the VP
 
 ## Automated proof
 
-On a server with real keys:
+Configure the target host with real providers and keys, then redeploy:
 
 ```bash
 export STT_PROVIDER=deepgram
@@ -16,9 +16,26 @@ export TTS_PROVIDER=cartesia
 export DEEPGRAM_API_KEY=...
 export OPENAI_API_KEY=...
 export CARTESIA_API_KEY=...
+./deploy.sh up
+```
 
+Run the proof from a trusted client:
+
+```bash
 ./scripts/prove-real-voice.sh https://your-domain.example
 ```
+
+Authentication options:
+
+- Set `ACCESS_TOKEN` directly.
+- For an existing account on invite-only production, set `PROVE_EMAIL`,
+  `PROVE_PASSWORD`, and `PROVE_AUTH_MODE=login`.
+- On a host with registration enabled, the default `auto` mode tries login and
+  then creates a temporary account.
+- The script requires `/api/v1/demo/info` to report `providers_mode=live` by
+  default. On a locked-down host with the demo disabled, set
+  `PROVE_REQUIRE_LIVE_MODE=false` only after verifying its server configuration
+  separately.
 
 Leave `DEMO_ENABLED=true` on the public demo host if you also want the script to hit `POST /api/v1/demo/trust-loop` (cite → replay → handoff). Set `DEMO_ENABLED=false` only on a locked-down pilot host that should not expose the unauthenticated demo.
 
