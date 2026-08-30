@@ -48,7 +48,7 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 
 ## Stage 13 — Portfolio & OSS polish
 - [x] Interview case study (`docs/portfolio/case-study.md`)
-- [x] Portfolio index + updated resume kit / interview prep (386+ tests)
+- [x] Portfolio index + updated resume kit / interview prep (408+ tests)
 - [x] README test count + GIF refresh docs
 - [x] GitHub topics + good first issues (`scripts/github-oss-polish.sh` — issues #7–#10)
 
@@ -76,6 +76,14 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 - [x] Run `/demo` sessions through the LangGraph multi-agent path
 - [x] Exercise `knowledge_base_lookup` with mock providers
 - [x] Display planner / tool / critic trace in the public demo
+
+## Stage 19 — Zendesk ticketing connector
+- [x] Implement ticket create, lookup by ID, and lookup by customer email
+- [x] Carry conversation summary, replay URL, and session ID into private ticket context
+- [x] Suppress duplicate session tickets with a deterministic Zendesk tag
+- [x] Add production credential validation and sanitized provider errors
+- [x] Add adapter, factory, and production-validation tests
+- [ ] Verify against a real Zendesk sandbox before claiming production proof
 
 ## Deployment / GTM
 - [ ] Redeploy `voxforge.brohammad.tech` from current `main`

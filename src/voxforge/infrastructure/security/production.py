@@ -98,8 +98,22 @@ def collect_production_errors(settings: Settings) -> list[str]:
         elif settings.handoff_replay_signing_secret == settings.jwt_secret_key:
             errors.append("HANDOFF_REPLAY_SIGNING_SECRET must differ from JWT_SECRET_KEY")
 
+    ticketing_provider = settings.ticketing_provider.lower()
+    if ticketing_provider == "zendesk":
+        missing = [
+            name
+            for name, value in (
+                ("ZENDESK_SUBDOMAIN", settings.zendesk_subdomain),
+                ("ZENDESK_EMAIL", settings.zendesk_email),
+                ("ZENDESK_API_TOKEN", settings.zendesk_api_token),
+            )
+            if not value.strip()
+        ]
+        if missing:
+            errors.append(f"{', '.join(missing)} required when TICKETING_PROVIDER=zendesk")
+
     stub_providers: list[str] = []
-    if settings.ticketing_provider.lower() in ("zendesk", "freshdesk"):
+    if ticketing_provider == "freshdesk":
         stub_providers.append(f"TICKETING_PROVIDER={settings.ticketing_provider}")
     if settings.knowledge_base_provider.lower() in ("zendesk", "freshdesk"):
         stub_providers.append(f"KNOWLEDGE_BASE_PROVIDER={settings.knowledge_base_provider}")

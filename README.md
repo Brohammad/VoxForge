@@ -45,7 +45,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 386+ automated tests (378 pytest + 8 Playwright) | Unknown |
+| **Tests** | 408+ automated tests (400 pytest + 8 Playwright) | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
@@ -279,7 +279,7 @@ No — WebSocket voice works without it. LiveKit adds browser WebRTC.
 Yes — `./deploy.sh init` on Ubuntu 24.04 with automatic HTTPS.
 
 **What's not production-ready yet?**  
-Zendesk/Freshdesk connectors were removed (stubs); use `mock` ticketing and `internal`/`mock` knowledge. Dashboard login uses HttpOnly cookies (JWT paste still works as Bearer override). See [known limitations](docs/release/known-limitations.md).
+Zendesk ticketing is implemented but still needs live sandbox verification; Freshdesk is not implemented. Use `internal`/`mock` knowledge. Dashboard login uses HttpOnly cookies (JWT paste still works as Bearer override). See [known limitations](docs/release/known-limitations.md).
 
 [Full FAQ →](docs/FAQ.md)
 

@@ -71,11 +71,30 @@ def test_production_validation_requires_distinct_replay_secret():
     assert any("must differ from JWT_SECRET_KEY" in e for e in errors)
 
 
-def test_production_validation_rejects_stub_support_providers():
+def test_production_validation_rejects_unimplemented_support_providers():
     errors = collect_production_errors(
-        _production_settings(ticketing_provider="zendesk", knowledge_base_provider="freshdesk")
+        _production_settings(ticketing_provider="freshdesk", knowledge_base_provider="freshdesk")
     )
     assert any("Stub support integrations" in e for e in errors)
+
+
+def test_production_validation_requires_zendesk_credentials():
+    errors = collect_production_errors(_production_settings(ticketing_provider="zendesk"))
+    assert any("ZENDESK_SUBDOMAIN" in error for error in errors)
+    assert any("ZENDESK_EMAIL" in error for error in errors)
+    assert any("ZENDESK_API_TOKEN" in error for error in errors)
+
+
+def test_production_validation_allows_configured_zendesk():
+    errors = collect_production_errors(
+        _production_settings(
+            ticketing_provider="zendesk",
+            zendesk_subdomain="acme",
+            zendesk_email="agent@example.com",
+            zendesk_api_token="token",
+        )
+    )
+    assert errors == []
 
 
 def test_development_skips_validation():

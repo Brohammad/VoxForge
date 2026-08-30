@@ -55,7 +55,7 @@ Legend: ✅ native · ⚙️ partial/BYO · ❌ not available
 
 1. No managed SaaS — operator must run infrastructure
 2. Single-node compose default — not multi-region
-3. Zendesk/Freshdesk integrations are stubs
+3. Zendesk ticketing is implemented but awaits live sandbox proof; Freshdesk is not implemented
 4. Voice UX polish behind Vapi/Retell managed UIs
 5. No visual flow builder (Voiceflow-style)
 

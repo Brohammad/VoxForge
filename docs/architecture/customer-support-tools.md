@@ -37,10 +37,11 @@ Tool handlers (support_tools.py)
     ↓
 Ports (KnowledgeBaseProvider, TicketingProvider)
     ↓
-Adapters (mock, zendesk*, freshdesk*)
+Adapters (mock, Zendesk ticketing)
 ```
 
-\* Zendesk and Freshdesk adapters are stubbed for future integration.
+Zendesk is implemented for ticket lookup and creation. Knowledge remains `internal` or `mock`;
+Freshdesk is not implemented.
 
 ### Key files
 
@@ -49,6 +50,7 @@ Adapters (mock, zendesk*, freshdesk*)
 | Domain | `src/voxforge/core/domain/support.py` |
 | Ports | `src/voxforge/core/interfaces/support.py` |
 | Mock adapters | `src/voxforge/infrastructure/providers/support/mock.py` |
+| Zendesk adapter | `src/voxforge/infrastructure/providers/support/zendesk.py` |
 | Factory | `src/voxforge/infrastructure/providers/support/factory.py` |
 | Tool handlers | `src/voxforge/infrastructure/tools/support_tools.py` |
 | Registry wiring | `src/voxforge/infrastructure/tools/registry_factory.py` |
@@ -80,11 +82,10 @@ Execution remains in-process via `ToolRouter` (not external MCP stdio).
 TOOLS_ENABLED=true
 SUPPORT_TOOLS_ENABLED=true
 KNOWLEDGE_BASE_PROVIDER=mock
-TICKETING_PROVIDER=mock
-
-# Future Zendesk integration
-ZENDESK_SUBDOMAIN=
-ZENDESK_API_TOKEN=
+TICKETING_PROVIDER=zendesk
+ZENDESK_SUBDOMAIN=your-company
+ZENDESK_EMAIL=agent@example.com
+ZENDESK_API_TOKEN=replace-me
 
 # Future Freshdesk integration
 FRESHDESK_DOMAIN=
@@ -102,6 +103,18 @@ The `customer-support-deflection` template references these tools in `tool_confi
 **Tickets:** `TKT-1001` (refund), `TKT-1002` (delivery) for `customer@example.com`.
 
 New tickets created via `ticket_create` receive sequential IDs (`TKT-1003`, …).
+
+## Zendesk behavior
+
+- Authenticates with `{ZENDESK_EMAIL}/token` and `ZENDESK_API_TOKEN`.
+- Creates private ticket comments containing the conversation summary, replay URL, and
+  VoxForge session ID.
+- Adds a deterministic `voxforge_session_*` tag and searches it before creation to
+  suppress duplicate tickets for the same session.
+- Maps Zendesk `new/open`, `pending/hold`, `solved`, and `closed` statuses to the
+  VoxForge ticket model.
+- Raises a sanitized provider error on Zendesk failures; API response bodies and tokens
+  are not exposed.
 
 ## Testing
 

@@ -37,7 +37,7 @@ Show landing page hero.
 
 1. **Handoffs** queue
 2. Explain escalation + signed replay links
-3. Mention ticketing integration hooks (Zendesk stub — roadmap)
+3. Show Zendesk ticket creation with replay context (sandbox credentials required)
 
 ## 6:30 — Architecture (90s)
 

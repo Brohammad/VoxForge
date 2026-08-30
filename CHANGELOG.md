@@ -16,12 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CreateSessionRequest.config` is schema-validated (allowlisted fields + size cap).
 - Voice composition unified on `build_voice_pipeline_bundle` (REST onboarding + WS + LiveKit).
 - Dashboard auth prefers HttpOnly cookies; JWT paste remains as Bearer override.
-- Removed unimplemented Zendesk/Freshdesk stub providers from the factory.
+- Freshdesk remains blocked as an unimplemented provider.
 - Production Redis requires `REDIS_PASSWORD`; Dependabot enabled.
 - ADR retrieval supplement renumbered to ADR-008.
 - Cookie sessions require double-submit CSRF (`X-CSRF-Token`) on mutating requests.
 
 ### Added
+- Zendesk ticketing adapter with create/lookup, replay context, session deduplication,
+  production credential validation, and sanitized errors.
 - Public `/demo` hold-to-talk: browser microphone → `POST /api/v1/demo/voice` → same pipeline + in-browser TTS.
 - Public `/demo` trust loop: seed FAQ, cite refund policy, signed replay, handoff inbox.
 - `prove-real-voice.sh` hits the public trust loop when demo is enabled; GIF recorder captures that path.
