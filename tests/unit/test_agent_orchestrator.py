@@ -106,7 +106,11 @@ async def test_mock_orchestrator_runs_knowledge_tool():
                 status=ToolCallStatus.SUCCESS,
             )
 
-    settings = Settings(orchestrator_mode="multi_agent", llm_provider="mock")
+    settings = Settings(
+        orchestrator_mode="multi_agent",
+        llm_provider="mock",
+        tools_enabled=True,
+    )
     orchestrator = AgentOrchestrator(settings, tool_router=_Router(), llm=MockLLMProvider())
     session_id = uuid4()
     orchestrator.init_session(session_id)

@@ -41,6 +41,7 @@ def demo_env(monkeypatch, tmp_path):
     monkeypatch.setenv("LLM_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     monkeypatch.setenv("EMBEDDING_PROVIDER", "mock")
+    monkeypatch.setenv("TOOLS_ENABLED", "true")
     monkeypatch.setenv("KNOWLEDGE_WORKER_ENABLED", "false")
     monkeypatch.setenv("KNOWLEDGE_BLOB_PATH", str(tmp_path / "kb"))
     get_settings.cache_clear()
