@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: GitHub Discussions
-    url: https://github.com/Brohammad/VoxForge/discussions
-    about: Ask questions and share ideas
+  - name: FAQ
+    url: https://github.com/Brohammad/VoxForge/blob/main/docs/FAQ.md
+    about: Common setup, deploy, and provider questions
   - name: Security advisory
     url: https://github.com/Brohammad/VoxForge/security/advisories/new
     about: Report a vulnerability privately

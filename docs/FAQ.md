@@ -8,7 +8,7 @@ Quick answers. Full docs: [README.md](README.md)
 
 ### Do I need API keys to try VoxForge locally?
 
-No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Run one-click sample call**.
+No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Start talking**, **Run trust loop**, or **Run one-click sample call**.
 
 ### How long does local setup take?
 
@@ -109,6 +109,10 @@ Login sets **HttpOnly cookies** (`voxforge_access`) with CSRF protection for mut
 ---
 
 ## Contributing & pilots
+
+### How do I ask a question or contribute?
+
+Search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue. First-time contributors: pick a [good first issue](https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and follow [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ### How do I become a design partner?
 

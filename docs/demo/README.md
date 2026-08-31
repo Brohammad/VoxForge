@@ -10,6 +10,18 @@ Materials for demonstrating VoxForge to recruiters, investors, and pilot custome
 | https://voxforge.brohammad.tech/demo | Speak, or run the trust loop (cite → replay → handoff) |
 | https://voxforge.brohammad.tech/dashboard | Operator console |
 
+## Public `/demo` buttons
+
+Use these exact labels in docs, issues, and recordings. The page has three actions:
+
+| Button | What it proves |
+|--------|----------------|
+| **Start talking** | Microphone → pipeline → in-browser TTS |
+| **Run trust loop** | No mic: cite FAQ → signed replay → handoff inbox |
+| **Run one-click sample call** | Scripted billing sample on the production `VoicePipelineService` |
+
+For social video, prefer **Start talking** (or **Run trust loop** if you cannot use a mic). Do not say "Run demo call" — that button does not exist.
+
 ## Scripts
 
 | Document | Duration | Audience |

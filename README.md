@@ -87,7 +87,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 
-Mock STT/LLM/TTS providers work **without API keys**. Open `/demo`, click **Start talking** (or **Run one-click sample call**), and hear TTS in your browser.
+Mock STT/LLM/TTS providers work **without API keys**. Open `/demo` and click **Start talking**, **Run trust loop**, or **Run one-click sample call**.
 
 Detailed walkthrough: [docs/ONBOARDING.md](docs/ONBOARDING.md)
 
@@ -262,6 +262,7 @@ scripts/               Deploy, backup, benchmarks, smoke tests
 | Operations | [docs/operations/](docs/operations/) |
 | Testing | [docs/testing/](docs/testing/) |
 | Pilot program | [docs/pilot/](docs/pilot/) |
+| Demo scripts | [docs/demo/](docs/demo/) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Releases | [docs/release/](docs/release/) |
@@ -297,7 +298,9 @@ Contributions welcome — especially docs, tests, and provider adapters.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md)
 
-**Good first issues:** look for the `good first issue` label on GitHub.
+**Questions:** search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue.
+
+**Good first issues:** https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
 
 ---
 

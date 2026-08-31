@@ -43,6 +43,7 @@ Yes — provider adapters via environment variables.
 
 ## Close
 
-- Star on GitHub
-- Try `/demo`
-- Open pilot request issue
+- Try `/demo` (speak, trust loop, or one-click sample call)
+- Star / fork on GitHub
+- Open a [question or feature issue](https://github.com/Brohammad/VoxForge/issues/new/choose)
+- For social posts, use the [60-second script](demo-script-short.md) with captions + end card

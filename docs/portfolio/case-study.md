@@ -87,7 +87,7 @@ Fix: unify auth checks, wire SAML cold-login, invalidate in-flight `refreshAll` 
 
 ## Try it in 2 minutes
 
-1. [Live demo](https://voxforge.brohammad.tech/demo) — click **Run one-click sample call**
+1. [Live demo](https://voxforge.brohammad.tech/demo) — **Start talking**, **Run trust loop**, or **Run one-click sample call**
 2. [Dashboard](https://voxforge.brohammad.tech/dashboard) — register, upload knowledge, replay a session
 3. Clone → `docker compose up` → mock providers, no keys required
 

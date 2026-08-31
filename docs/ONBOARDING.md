@@ -19,7 +19,7 @@ Get from `git clone` to first voice session in under 15 minutes.
 | 7–8 | Start API | `uvicorn voxforge.main:app --reload --app-dir src` |
 | 8–10 | First API call | Open http://localhost:8000/api/v1/docs → `GET /health` |
 | 10–12 | Dashboard | http://localhost:8000/dashboard → register account |
-| 12–15 | Voice demo | http://localhost:8000/demo → **Run one-click sample call** |
+| 12–15 | Voice demo | http://localhost:8000/demo → **Start talking** or **Run one-click sample call** |
 
 ## Verify tests
 

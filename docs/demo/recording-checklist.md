@@ -18,6 +18,17 @@
 - [ ] Microphone: clear audio, no background noise
 - [ ] Optional: webcam corner for presenter
 
+## 60-second social cut (do this first)
+
+Follow [demo-script-short.md](demo-script-short.md). One video is reused on Twitter, LinkedIn, Reddit, README, and outreach.
+
+- [ ] Record the live site, not slides
+- [ ] Hit **Start talking** or **Run trust loop** — never a renamed button
+- [ ] Show citation → replay → handoff inbox
+- [ ] Burn in captions
+- [ ] End card: GitHub URL + `voxforge.brohammad.tech/demo`
+- [ ] Export 16:9 MP4 (`demo-showcase-60s.mp4`)
+
 ## Assets to capture
 
 | Asset | Duration | Output |
