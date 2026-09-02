@@ -12,9 +12,10 @@ Show landing page hero.
 ## 0:30 — Live demo (90s)
 
 1. Navigate to `/demo`
-2. Click **Run demo call**
-3. Point out: status `test_call_passed`, E2E latency (~36ms mock), session ID
-4. Read transcript — billing support scenario
+2. Click **Start talking**, or **Run trust loop** if you cannot use a mic
+3. Optionally run **Run one-click sample call** to show the scripted billing path
+4. Point out: citations, session ID, then replay — not mock latency
+5. Read transcript — billing / refund support scenario
 
 > "This is the same `VoicePipelineService` path used in production."
 
@@ -37,7 +38,8 @@ Show landing page hero.
 
 1. **Handoffs** queue
 2. Explain escalation + signed replay links
-3. Mention ticketing integration hooks (Zendesk stub — roadmap)
+3. Explain the unit-tested Zendesk ticket flow with replay context; do not present it as
+   live proof until sandbox verification is complete
 
 ## 6:30 — Architecture (90s)
 
@@ -53,7 +55,8 @@ Show landing architecture section or `docs/architecture/voice-pipeline.md`:
 git clone → uv sync → docker compose up → demo in 15 min
 ```
 
-Point to GitHub, CI badge, 346+ tests.
+Point to GitHub, the [verified CI run and canonical metrics](../project-metrics.md):
+426 tests collected, with 407 non-browser tests passed and 10 skipped.
 
 ## 8:00 — Close
 

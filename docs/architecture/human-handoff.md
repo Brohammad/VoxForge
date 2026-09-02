@@ -49,7 +49,7 @@ flowchart TB
 | **Single orchestrated flow** | `HandoffOrchestrator` coordinates ticket + summary + replay + assignment atomically |
 | **Policy-driven** | Org-level `EscalationPolicy` from agent config / support templates |
 | **Observable** | Metrics, traces, and replay events on every handoff stage |
-| **No vendor lock-in** | `TicketingProvider` and `AssignmentProvider` ports (mock, Zendesk, Freshdesk, internal queue) |
+| **No vendor lock-in** | Provider ports with mock/internal adapters and a unit-tested Zendesk ticketing adapter; Freshdesk remains planned |
 | **Idempotent** | Duplicate trigger on same session returns existing handoff record |
 
 ## Escalation triggers
@@ -514,7 +514,8 @@ PUBLIC_BASE_URL=https://app.voxforge.io
 | **2** | HandoffOrchestrator, replay links, `handoff_to_human` tool |
 | **3** | Pipeline integration, session phase transitions |
 | **4** | Human agent API, assignment provider, dashboard queue |
-| **5** | Zendesk/Freshdesk ticket context passthrough, SLA alerts |
+| **5a — shipped** | Zendesk ticket context passthrough (unit-tested; live sandbox proof pending) |
+| **5b — planned** | Freshdesk integration and SLA alerts |
 
 ## Open questions (for review)
 

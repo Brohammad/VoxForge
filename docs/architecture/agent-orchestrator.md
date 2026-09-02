@@ -10,11 +10,18 @@ flowchart LR
     planner --> safety
     safety -->|pass| executor
     safety -->|block| coordinator
-    executor --> critic
+    executor --> tool_check{Tool call requested?}
+    tool_check -->|yes, tools enabled| tool[Execute tool]
+    tool --> executor
+    tool_check -->|no| critic
     critic -->|approved| coordinator
     critic -->|revise| planner
     coordinator --> END
 ```
+
+The conditional tool loop runs inside the executor node. It is available only when a
+`ToolRouter` is configured and `TOOLS_ENABLED=true`; otherwise the executor proceeds
+directly to the critic.
 
 ## Agents
 
@@ -22,7 +29,7 @@ flowchart LR
 |-------|------|
 | **Planner** | Creates a brief response plan from conversation context |
 | **Safety** | Blocks unsafe requests before execution |
-| **Executor** | Drafts the user-facing response following the plan |
+| **Executor** | Drafts the response and conditionally executes requested tools before finalizing the draft |
 | **Critic** | Reviews draft quality; triggers revision loop if needed |
 | **Coordinator** | Finalizes the response for streaming to TTS |
 

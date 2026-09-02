@@ -1,6 +1,8 @@
 """E2E: audio ingress through the voice pipeline (mock STT → LLM → TTS → DB)."""
 
 import asyncio
+from collections.abc import AsyncIterator
+from typing import cast
 from uuid import UUID, uuid4
 
 import pytest
@@ -8,15 +10,45 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from voxforge.config import get_settings
 from voxforge.core.domain.entities import TransportType
+from voxforge.core.domain.events import TranscriptEvent
 from voxforge.core.events.bus import get_event_bus
+from voxforge.core.interfaces.response_generator import ResponseGenerator
 from voxforge.infrastructure.redis.session_state import RedisSessionStateStore
 from voxforge.modules.voice_gateway.application.pipeline import PipelineCallbacks
 from voxforge.modules.voice_gateway.application.pipeline_factory import build_voice_pipeline_bundle
 
 
+class TwoTurnSTT:
+    async def transcribe_stream(
+        self,
+        audio_stream: AsyncIterator[bytes],
+        *,
+        language: str | None = None,
+    ) -> AsyncIterator[TranscriptEvent]:
+        turn = 0
+        async for chunk in audio_stream:
+            if not chunk:
+                continue
+            turn += 1
+            yield TranscriptEvent(
+                text=f"mock transcript {turn}",
+                is_partial=True,
+                confidence=0.9,
+            )
+            yield TranscriptEvent(
+                text=f"mock transcript {turn}",
+                is_partial=False,
+                confidence=1.0,
+            )
+
+
 @pytest.mark.asyncio
-async def test_run_listening_audio_turn_persists_messages(auth_client, fake_redis, db_engine):
-    """PCM audio queue exercises the same path WebSocket bytes feed into the pipeline."""
+async def test_run_listening_persists_two_turns_before_stream_end(
+    auth_client,
+    fake_redis,
+    db_engine,
+):
+    """One continuous STT stream dispatches every finalized utterance."""
     register = await auth_client.post(
         "/api/v1/auth/register",
         json={
@@ -50,9 +82,11 @@ async def test_run_listening_audio_turn_persists_messages(auth_client, fake_redi
             created_by_user_id=user_id,
         )
         session = await bundle.session_manager.activate_session(session.id)
-        bundle.response_generator.init_session(session.id)
-        bundle.response_generator.set_session_org(session.id, org_id)
+        response_generator = cast(ResponseGenerator, bundle.response_generator)
+        response_generator.init_session(session.id)
+        response_generator.set_session_org(session.id, org_id)
         bundle.pipeline.set_session_org(session.id, org_id)
+        bundle.pipeline._stt = TwoTurnSTT()  # noqa: SLF001
 
         audio_queue: asyncio.Queue[bytes | None] = asyncio.Queue()
         transcripts: list[str] = []
@@ -69,6 +103,7 @@ async def test_run_listening_audio_turn_persists_messages(auth_client, fake_redi
             )
         )
         await audio_queue.put(b"\x00\x01" * 1600)
+        await audio_queue.put(b"\x02\x03" * 1600)
         await audio_queue.put(None)
         await task
         await bundle.session_manager.commit()
@@ -79,7 +114,15 @@ async def test_run_listening_audio_turn_persists_messages(auth_client, fake_redi
     )
     assert messages.status_code == 200
     body = messages.json()["messages"]
-    assert len(body) >= 2
-    assert any("mock transcript" in m.get("content", "") for m in body)
-    assert any(m.get("role") == "assistant" for m in body)
-    assert transcripts
+    assert len(body) == 4
+    assert [m["content"] for m in body if m["role"] == "user"] == [
+        "mock transcript 1",
+        "mock transcript 2",
+    ]
+    assert len([m for m in body if m["role"] == "assistant"]) == 2
+    assert transcripts == [
+        "mock transcript 1",
+        "mock transcript 1",
+        "mock transcript 2",
+        "mock transcript 2",
+    ]

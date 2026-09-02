@@ -24,7 +24,7 @@ Open-source voice AI infrastructure platform with unified pipeline, RAG, evaluat
 
 ## LinkedIn / portfolio summary (short — ~80 words)
 
-VoxForge is a production-grade, open-source voice AI platform I designed and shipped end-to-end. It unifies WebSocket, REST onboarding, and LiveKit WebRTC through a single voice pipeline, with LangGraph orchestration, pgvector knowledge retrieval, MCP tools, per-turn evaluation, and human handoff. The system is live in production with HTTPS, 386+ automated tests, Playwright UI coverage, and Docker-based deployment. Built for teams who want Vapi-class capabilities without vendor lock-in or per-minute platform fees.
+VoxForge is a production-grade, open-source voice AI platform I designed and shipped end-to-end. It unifies WebSocket, REST onboarding, and LiveKit WebRTC through a single voice pipeline, with LangGraph orchestration, pgvector knowledge retrieval, MCP tools, per-turn evaluation, and human handoff. The system is live in production with HTTPS, 426 tests collected across pytest and Playwright, and Docker-based deployment. Built for teams who want Vapi-class capabilities without vendor lock-in or per-minute platform fees.
 
 ---
 
@@ -42,7 +42,7 @@ I architected it as a modular monolith with Clean Architecture boundaries — on
 
 Production deployment is automated (`./deploy.sh init` on Ubuntu 24.04 with Let's Encrypt). CI enforces linting, dependency audit, secret scanning, 70% coverage gate, and browser tests for critical user journeys.
 
-**Impact:** Recruiters and pilot customers can try a live demo without cloning. Engineering evaluators can inspect ADRs, runbooks, case study, and 386+ tests.
+**Impact:** Recruiters and pilot customers can try a live demo without cloning. Engineering evaluators can inspect ADRs, runbooks, the case study, and 426 collected tests.
 
 ---
 
@@ -61,7 +61,7 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 | Area | Deliverable |
 |------|-------------|
 | Voice core | WebSocket gateway, `VoicePipelineService`, multi-provider STT/LLM/TTS |
-| Agents | LangGraph pipeline: planner, safety, executor, critic |
+| Agents | LangGraph pipeline: planner, safety, executor + conditional tools, critic, coordinator |
 | Knowledge | Document ingestion, chunking, pgvector search, citation grounding |
 | Tools | MCP runtime discovery + builtin tools |
 | Operations | Dashboard (sessions, latency, alerts, policy presets) |
@@ -69,7 +69,7 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 | Auth | JWT, RBAC, API keys, SAML SSO |
 | WebRTC | LiveKit token API + worker integration |
 | Deploy | Docker Compose prod stack, NGINX, Certbot, health/readiness, backups |
-| Quality | 354+ tests, Playwright browser suite, pip-audit, gitleaks |
+| Quality | 426 tests collected, Playwright browser suite, pip-audit, gitleaks |
 
 ### Technical decisions
 
@@ -82,7 +82,7 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 
 - Live production deployment with HTTPS and smoke-tested endpoints
 - v1.0.0-rc.1 released on GitHub
-- 81% test coverage, green CI
+- 76.40% coverage (statements + branches) and a [verified passing CI run](../project-metrics.md)
 - Public demo completes voice pipeline in ~100ms (mock providers)
 
 ### Links
@@ -105,7 +105,7 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 
 - **Automated production deployment** (Docker, NGINX, Let's Encrypt) with health/readiness probes, backup/restore, and env validation; fresh VPS to HTTPS in one command.
 
-- **Established engineering quality bar** with 386+ automated tests (378 pytest + 8 Playwright), 81% code coverage, dependency audit, and secret scanning in CI.
+- **Established engineering quality bar** with 426 tests collected (417 non-browser: 407 passed, 10 skipped; 9 Playwright), 76.40% coverage across statements and branches, dependency audit, and secret scanning in CI.
 
 ### Senior (technical depth)
 
@@ -121,7 +121,7 @@ VoxForge — a batteries-included voice AI platform you deploy on your own infra
 
 ### Condensed (3 bullets for tight resume)
 
-- Built **VoxForge**, open-source voice AI platform (Python/FastAPI, LangGraph, pgvector) — live in prod with HTTPS, 386+ tests, operator dashboard.
+- Built **VoxForge**, open-source voice AI platform (Python/FastAPI, LangGraph, pgvector) — live in prod with HTTPS, 426 tests collected, operator dashboard.
 
 - Designed **unified voice pipeline** for WebSocket, REST, and LiveKit; RAG, MCP tools, evaluation, replay, and human handoff included.
 
@@ -186,7 +186,7 @@ Open-source voice AI infrastructure — unified pipeline, RAG, evaluation, repla
 
 - **S:** RC-1 launch required confidence from recruiters and pilot customers, not just features.
 - **T:** Prove reliability before tagging v1.0.0-rc.1.
-- **A:** 386+ tests, Playwright browser suite, smoke scripts, gitleaks/pip-audit in CI, public deployment.
+- **A:** 426 tests collected, Playwright browser suite, smoke scripts, gitleaks/pip-audit in CI, public deployment.
 - **R:** Green CI, live demo, GitHub release — portfolio-ready artifact.
 
 ### Story 4 — Pilot hardening under real auth flows
@@ -208,9 +208,10 @@ Open-source voice AI infrastructure — unified pipeline, RAG, evaluation, repla
 
 | Metric | Value |
 |--------|-------|
-| Automated tests | 386+ (378 pytest + 8 Playwright) |
-| Code coverage | 81% |
-| Browser test journeys | 8 |
+| Tests collected | 426 (417 non-browser + 9 Playwright) |
+| Non-browser result | 407 passed, 10 skipped |
+| Coverage (statements + branches) | 76.40% |
+| Browser test journeys collected | 9 |
 | Demo E2E latency (mock) | ~100ms |
 | Time to local demo | ~15 min |
 | Deploy path | `git clone` → `./deploy.sh init` |
@@ -221,7 +222,7 @@ Open-source voice AI infrastructure — unified pipeline, RAG, evaluation, repla
 
 ## Cover letter paragraph
 
-In my personal project VoxForge, I set out to prove I can ship production systems—not prototypes. I designed and deployed an open-source voice AI platform with a unified pipeline across WebSocket and WebRTC, knowledge retrieval with pgvector, per-turn evaluation, and operator tooling including replay and human handoff. The system is live at voxforge.brohammad.tech with automated HTTPS deployment, 386+ tests, and CI gates for coverage, dependency audit, and secret scanning. It demonstrates the same skills I bring to product engineering: clear architecture, operational maturity, and user trust through observability and documentation.
+In my personal project VoxForge, I set out to prove I can ship production systems—not prototypes. I designed and deployed an open-source voice AI platform with a unified pipeline across WebSocket and WebRTC, knowledge retrieval with pgvector, per-turn evaluation, and operator tooling including replay and human handoff. The system is live at voxforge.brohammad.tech with automated HTTPS deployment, 426 tests collected, and CI gates for coverage, dependency audit, and secret scanning. It demonstrates the same skills I bring to product engineering: clear architecture, operational maturity, and user trust through observability and documentation.
 
 ---
 

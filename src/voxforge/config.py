@@ -131,8 +131,9 @@ class Settings(BaseSettings):
     knowledge_context_enabled: bool = True
     knowledge_max_upload_bytes: int = 52_428_800  # 50 MiB
     embedding_provider: str = "mock"  # openai | mock
-    ticketing_provider: str = "mock"  # mock only until real connectors ship
+    ticketing_provider: str = "mock"  # mock | zendesk
     zendesk_subdomain: str = ""
+    zendesk_email: str = ""
     zendesk_api_token: str = ""
     freshdesk_domain: str = ""
     freshdesk_api_key: str = ""

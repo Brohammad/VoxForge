@@ -5,8 +5,8 @@ How to use VoxForge as an operator or demo user — no engineering setup require
 ## Try the public demo
 
 1. Open https://voxforge.brohammad.tech/demo
-2. Click **Run demo call**
-3. Review the transcript, latency, and session ID
+2. Click **Start talking**, **Run trust loop**, or **Run one-click sample call**
+3. Review the transcript, citations, and session ID
 
 No account or API keys needed.
 
@@ -46,4 +46,4 @@ No account or API keys needed.
 
 - [FAQ](../FAQ.md)
 - [Operator guide](operator-guide.md) — detailed workflows
-- [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions)
+- [GitHub Issues](https://github.com/Brohammad/VoxForge/issues/new?template=question.md)

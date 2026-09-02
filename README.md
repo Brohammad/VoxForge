@@ -5,7 +5,7 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-38d996)](https://voxforge.brohammad.tech/demo)
 [![Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvoxforge.brohammad.tech%2Fapi%2Fv1%2Fhealth&query=%24.status&label=status&color=38d996)](https://voxforge.brohammad.tech/status)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](docs/testing/coverage-report.md)
+[![Coverage](https://img.shields.io/badge/coverage-76.40%25-brightgreen)](docs/project-metrics.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Production-grade Voice AI Infrastructure** — deploy, operate, and trust.
@@ -27,7 +27,7 @@ VoxForge is an open-source platform for building and operating enterprise voice 
 | Layer | Capabilities |
 |-------|----------------|
 | **Voice** | WebSocket gateway, programmatic onboarding API, LiveKit WebRTC |
-| **Intelligence** | LangGraph agent orchestrator (planner, safety, executor, critic) |
+| **Intelligence** | LangGraph orchestrator (planner, safety, executor + conditional tools, critic, coordinator) |
 | **Knowledge** | Document upload, chunking, pgvector search, citation grounding |
 | **Tools** | Builtin tools + MCP server discovery at runtime |
 | **Operations** | Dashboard, latency analytics, alerts, policy presets, SAML SSO |
@@ -45,7 +45,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 386+ automated tests (378 pytest + 8 Playwright) | Unknown |
+| **Tests** | 426 collected: 417 non-browser (407 passed, 10 skipped) + 9 Playwright | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
@@ -87,7 +87,7 @@ uvicorn voxforge.main:app --reload --app-dir src
 | Dashboard | http://localhost:8000/dashboard |
 | API docs | http://localhost:8000/api/v1/docs |
 
-Mock STT/LLM/TTS providers work **without API keys**. Open `/demo`, click **Start talking** (or **Run one-click sample call**), and hear TTS in your browser.
+Mock STT/LLM/TTS providers work **without API keys**. Open `/demo` and click **Start talking**, **Run trust loop**, or **Run one-click sample call**.
 
 Detailed walkthrough: [docs/ONBOARDING.md](docs/ONBOARDING.md)
 
@@ -209,8 +209,8 @@ Production validation enforces real providers when `DEMO_ENABLED=false`.
 ## Testing
 
 ```bash
-make test              # 346+ tests (~16s, excludes browser)
-make test-browser      # 8 Playwright UI journeys
+make test              # 417 collected (407 passed, 10 skipped; excludes browser)
+make test-browser      # 9 Playwright UI journeys
 make test-unit         # Unit tests only
 make test-integration  # Integration tests
 make test-feature      # Feature scenarios
@@ -227,7 +227,8 @@ ruff check src tests   # Lint
 | Browser | `tests/browser/` | Landing, demo, dashboard, KB |
 | Failure | `tests/failure/` | Provider errors, timeouts |
 
-CI runs the full suite on every push to `main`. See [testing strategy](docs/testing/testing-strategy.md).
+CI runs the full suite on every push to `main`. See the canonical
+[project metrics](docs/project-metrics.md) and [testing strategy](docs/testing/testing-strategy.md).
 
 ---
 
@@ -261,6 +262,7 @@ scripts/               Deploy, backup, benchmarks, smoke tests
 | Operations | [docs/operations/](docs/operations/) |
 | Testing | [docs/testing/](docs/testing/) |
 | Pilot program | [docs/pilot/](docs/pilot/) |
+| Demo scripts | [docs/demo/](docs/demo/) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Releases | [docs/release/](docs/release/) |
@@ -279,7 +281,7 @@ No — WebSocket voice works without it. LiveKit adds browser WebRTC.
 Yes — `./deploy.sh init` on Ubuntu 24.04 with automatic HTTPS.
 
 **What's not production-ready yet?**  
-Zendesk/Freshdesk connectors were removed (stubs); use `mock` ticketing and `internal`/`mock` knowledge. Dashboard login uses HttpOnly cookies (JWT paste still works as Bearer override). See [known limitations](docs/release/known-limitations.md).
+Zendesk ticketing is implemented but still needs live sandbox verification; Freshdesk is not implemented. Use `internal`/`mock` knowledge. Dashboard login uses HttpOnly cookies (JWT paste still works as Bearer override). See [known limitations](docs/release/known-limitations.md).
 
 [Full FAQ →](docs/FAQ.md)
 
@@ -296,9 +298,9 @@ Contributions welcome — especially docs, tests, and provider adapters.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md)
 
-**Have a question?** Ask it in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) — community and pilot Q&A live there, with a template for new posts.
+**Questions:** ask in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A category). Search existing threads first.
 
-**Good first issues:** look for the `good first issue` label on GitHub.
+**Good first issues:** https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
 
 ---
 

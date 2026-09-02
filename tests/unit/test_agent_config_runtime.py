@@ -42,6 +42,29 @@ def test_effective_orchestrator_mode_prefers_active_config():
     assert effective_orchestrator_mode(active, settings) == "multi_agent"
 
 
+def test_effective_orchestrator_mode_prefers_session_config():
+    settings = Settings(orchestrator_mode="single")
+    active = AgentConfigVersion(
+        id=uuid4(),
+        org_id=uuid4(),
+        version=1,
+        label="preset:test",
+        prompt_config={},
+        orchestrator_config={"mode": "single"},
+        eval_thresholds={},
+        is_active=True,
+        created_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+    )
+    assert (
+        effective_orchestrator_mode(
+            active,
+            settings,
+            session_config={"orchestrator": "multi_agent"},
+        )
+        == "multi_agent"
+    )
+
+
 def test_conversation_engine_uses_session_system_prompt():
     settings = Settings(system_prompt="default", llm_provider="mock", openai_api_key="test")
     from voxforge.infrastructure.providers.llm.openai import OpenAILLMProvider

@@ -9,12 +9,14 @@
 - [x] HttpOnly cookie auth for dashboard (Bearer still supported)
 - [x] Org email invite + accept flow
 - [ ] LiveKit WebRTC end-to-end validation with real audio
-- [x] Zendesk / Freshdesk stubs removed from factory (re-add when implemented)
+- [x] Zendesk adapter implementation + unit tests (create/lookup + handoff replay context)
+- [ ] Zendesk production proof: verify the adapter against a live sandbox
+- [ ] Freshdesk adapter
+- [x] Collection delete API for knowledge base
 - [ ] Nightly CI: live provider + load smoke jobs
 
 ## v1.1
 
-- Collection delete API for knowledge base
 - Playwright coverage for SSO admin flows
 - Horizontal scaling guide (multi-worker + sticky sessions)
 

@@ -242,3 +242,113 @@ def build_agent_graph(settings: Settings, tool_router: Any | None = None):
     graph.add_edge("coordinator", END)
 
     return graph.compile()
+
+
+def build_mock_agent_graph(
+    settings: Settings, tool_router: Any | None = None, llm: Any | None = None
+):
+    """Deterministic planner → safety → executor → critic graph for mock LLM demos.
+
+    Still executes real tools so /demo can show an agent trace without OpenAI.
+    """
+
+    async def planner(state: OrchestratorState) -> dict:
+        plan = "Look up knowledge, then answer from retrieved policy."
+        return {"plan": plan, "agent_trace": _trace("planner", "completed", plan)}
+
+    async def safety(state: OrchestratorState) -> dict:
+        return {
+            "safety_passed": True,
+            "safety_reason": "passed",
+            "agent_trace": _trace("safety", "completed", "passed"),
+        }
+
+    async def executor(state: OrchestratorState) -> dict:
+        from voxforge.core.domain.entities import MessageRole
+
+        recorded_calls: list[dict] = []
+        tool_trace: list[dict] = []
+        org_id = _parse_uuid(state.get("org_id"))
+        session_id = _parse_uuid(state.get("session_id"))
+        if tool_router and settings.tools_enabled:
+            names = {item.name for item in tool_router.list_tools()}
+            if "knowledge_base_lookup" in names:
+                tool_result = await tool_router.execute(
+                    "knowledge_base_lookup",
+                    {"query": state["user_input"]},
+                    org_id=org_id,
+                    session_id=session_id,
+                    caller_scopes=state.get("caller_scopes", []),
+                )
+                output = tool_result.output or tool_result.error or ""
+                recorded_calls.append(
+                    {
+                        "tool": "knowledge_base_lookup",
+                        "arguments": {"query": state["user_input"]},
+                        "status": tool_result.status.value,
+                        "output": output[:500],
+                    }
+                )
+                tool_trace.extend(
+                    _trace(
+                        "tool",
+                        tool_result.status.value,
+                        f"knowledge_base_lookup: {output[:120]}",
+                    )
+                )
+
+        draft = ""
+        if llm is not None:
+
+            class _Msg:
+                def __init__(self, role: MessageRole, content: str) -> None:
+                    self.role = role
+                    self.content = content
+
+            history = [
+                _Msg(MessageRole(msg.get("role", "user")), str(msg.get("content", "")))
+                for msg in state.get("messages", [])
+            ]
+            if not history:
+                history = [_Msg(MessageRole.USER, state["user_input"])]
+            parts: list[str] = []
+            async for event in llm.generate_stream(history, model=settings.default_llm_model):
+                if event.text:
+                    parts.append(event.text)
+            draft = "".join(parts).strip()
+        if not draft:
+            draft = "I looked that up and can help with the next step."
+        return {
+            "draft_response": draft,
+            "agent_trace": _trace("executor", "completed", draft[:200]) + tool_trace,
+            "tool_calls": recorded_calls,
+        }
+
+    async def critic(state: OrchestratorState) -> dict:
+        return {
+            "critic_approved": True,
+            "critic_feedback": "approved",
+            "iteration": state["iteration"],
+            "agent_trace": _trace("critic", "completed", "approved"),
+        }
+
+    async def coordinator(state: OrchestratorState) -> dict:
+        final = state.get("draft_response", "")
+        return {
+            "final_response": final,
+            "agent_trace": _trace("coordinator", "completed", final[:200]),
+        }
+
+    graph = StateGraph(OrchestratorState)
+    graph.add_node("planner", planner)
+    graph.add_node("safety", safety)
+    graph.add_node("executor", executor)
+    graph.add_node("critic", critic)
+    graph.add_node("coordinator", coordinator)
+    graph.add_edge(START, "planner")
+    graph.add_edge("planner", "safety")
+    graph.add_edge("safety", "executor")
+    graph.add_edge("executor", "critic")
+    graph.add_edge("critic", "coordinator")
+    graph.add_edge("coordinator", END)
+    return graph.compile()

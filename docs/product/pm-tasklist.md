@@ -48,9 +48,56 @@ Prioritized implementation plan from the RC-1 product review. Each stage ends wi
 
 ## Stage 13 — Portfolio & OSS polish
 - [x] Interview case study (`docs/portfolio/case-study.md`)
-- [x] Portfolio index + updated resume kit / interview prep (386+ tests)
+- [x] Portfolio index + updated resume kit / interview prep (426 tests collected)
 - [x] README test count + GIF refresh docs
 - [x] GitHub topics + good first issues (`scripts/github-oss-polish.sh` — issues #7–#10)
+
+## Stage 14 — Public voice UX
+- [x] Browser microphone capture on `/demo`
+- [x] Speech input runs through STT → agent → browser TTS
+- [x] Typed chat remains available as a fallback
+
+## Stage 15 — Public trust loop
+- [x] Seed and cite a demo FAQ
+- [x] Link the completed session to replay
+- [x] Create a handoff and link it to Inbox
+
+## Stage 16 — Production knowledge reliability
+- [x] Enable the knowledge worker in production defaults
+- [x] Persist knowledge blobs outside `/tmp`
+- [x] Validate production config when knowledge is enabled without a worker
+
+## Stage 17 — Real-provider proof workflow
+- [x] Point proof and GIF scripts at the public trust loop
+- [ ] Run `./scripts/prove-real-voice.sh` against production with real provider keys
+- [ ] Replace the mock-provider GIF with a real-provider recording
+
+## Stage 18 — Visible multi-agent demo
+- [x] Run `/demo` sessions through the LangGraph multi-agent path
+- [x] Exercise `knowledge_base_lookup` with mock providers
+- [x] Display planner / tool / critic trace in the public demo
+
+## Stage 19 — Zendesk ticketing connector
+- [x] Implement ticket create, lookup by ID, and lookup by customer email
+- [x] Carry conversation summary, replay URL, and session ID into private ticket context
+- [x] Suppress duplicate session tickets with a deterministic Zendesk tag
+- [x] Add production credential validation and sanitized provider errors
+- [x] Add adapter, factory, and production-validation tests
+- [ ] Verify against a real Zendesk sandbox before claiming production proof
+
+## Stage 20 — Voice backend multi-turn hardening
+- [x] Dispatch every final STT transcript before the continuous stream closes
+- [x] Reset STT and end-to-end timing for each utterance
+- [x] Bound WebSocket audio ingress to 256 frames with drop-oldest backpressure
+- [x] Make full-queue shutdown signaling non-blocking
+- [x] Prove two persisted turns in one continuous listening session
+- [x] Prove TTS interruption suppresses subsequent audio and records interruption
+
+## Deployment / GTM
+- [ ] Redeploy `voxforge.brohammad.tech` from current `main`
+- [ ] Verify microphone, trust loop, replay, handoff, and knowledge ingestion on production
+- [ ] Record the 60-second showcase video (issue #8)
+- [ ] Send three targeted founder / engineer outreach messages using the live proof
 
 ## Non-goals (do not build yet)
 - Multi-tenant billing / hosted SaaS

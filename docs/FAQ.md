@@ -8,7 +8,7 @@ Quick answers. Full docs: [README.md](README.md)
 
 ### Do I need API keys to try VoxForge locally?
 
-No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Run one-click sample call**.
+No. Copy `.env.example` — mock STT/LLM/TTS/embedding providers work without paid keys. Open http://localhost:8000/demo and click **Start talking**, **Run trust loop**, or **Run one-click sample call**.
 
 ### How long does local setup take?
 
@@ -71,7 +71,7 @@ Set `DEMO_ENABLED=true` in `.env` and restart.
 ### How are uploads processed?
 
 - **Local (`KNOWLEDGE_WORKER_ENABLED=false`):** inline ingestion
-- **Production:** set `KNOWLEDGE_WORKER_ENABLED=true` — `deploy.sh` starts the worker
+- **Production:** `KNOWLEDGE_WORKER_ENABLED=true` with blobs on `/data/knowledge` (Docker volume). `deploy.sh` starts the worker. Uploads stay queued if the worker is down.
 
 ### Why does search return no results with mock embeddings?
 
@@ -84,8 +84,8 @@ Mock provider uses a permissive similarity threshold automatically. Ensure docum
 ### How do I run tests?
 
 ```bash
-make test              # 346+ tests (excludes browser)
-make test-browser      # Playwright UI journeys
+make test              # 417 collected (407 passed, 10 skipped; excludes browser)
+make test-browser      # 9 Playwright UI journeys
 ```
 
 See [testing/README.md](testing/README.md).
@@ -109,6 +109,10 @@ Login sets **HttpOnly cookies** (`voxforge_access`) with CSRF protection for mut
 ---
 
 ## Contributing & pilots
+
+### How do I ask a question or contribute?
+
+Search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue. First-time contributors: pick a [good first issue](https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and follow [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ### How do I become a design partner?
 

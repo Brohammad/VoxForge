@@ -9,7 +9,7 @@ from voxforge.infrastructure.providers.support.mock import (
     MockTicketingProvider,
 )
 
-_REMOVED_STUBS = frozenset({"zendesk", "freshdesk"})
+_REMOVED_KNOWLEDGE_STUBS = frozenset({"zendesk", "freshdesk"})
 
 
 def create_knowledge_base_provider(settings: Settings) -> KnowledgeBaseProvider:
@@ -22,7 +22,7 @@ def create_knowledge_base_provider(settings: Settings) -> KnowledgeBaseProvider:
         from voxforge.infrastructure.db.session import get_session_factory
 
         return InternalKnowledgeBaseProvider(get_session_factory(), settings)
-    if provider in _REMOVED_STUBS:
+    if provider in _REMOVED_KNOWLEDGE_STUBS:
         raise ProviderError(
             "factory",
             f"Knowledge base provider '{provider}' was removed (unimplemented stub). "
@@ -35,9 +35,21 @@ def create_ticketing_provider(settings: Settings) -> TicketingProvider:
     provider = settings.ticketing_provider.lower()
     if provider == "mock":
         return MockTicketingProvider()
-    if provider in _REMOVED_STUBS:
+    if provider == "zendesk":
+        from voxforge.infrastructure.providers.support.zendesk import (
+            ZendeskTicketingProvider,
+        )
+
+        return ZendeskTicketingProvider(
+            subdomain=settings.zendesk_subdomain,
+            email=settings.zendesk_email,
+            api_token=settings.zendesk_api_token,
+            timeout_seconds=settings.tool_timeout_seconds,
+        )
+    if provider == "freshdesk":
         raise ProviderError(
             "factory",
-            f"Ticketing provider '{provider}' was removed (unimplemented stub). Use 'mock'.",
+            "Ticketing provider 'freshdesk' was removed (unimplemented stub). "
+            "Use 'mock' or 'zendesk'.",
         )
     raise ProviderError("factory", f"Unknown ticketing provider: {provider}")

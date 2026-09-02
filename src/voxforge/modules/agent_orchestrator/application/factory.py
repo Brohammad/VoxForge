@@ -25,6 +25,7 @@ def create_response_generator(
             memory_service=memory_service,
             tool_router=tool_router,
             knowledge_context_builder=knowledge_context_builder,
+            llm=llm,
         )
     if llm is None:
         llm = OpenAILLMProvider(settings.openai_api_key)

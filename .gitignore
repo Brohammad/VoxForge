@@ -53,3 +53,4 @@ deploy/nginx/conf.d/voxforge.conf
 deploy/nginx/conf.d/voxforge-http.conf
 deploy/nginx/conf.d/voxforge-https.conf
 infra/prometheus/prometheus.prod.yml
+/data/knowledge/

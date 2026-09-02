@@ -46,6 +46,23 @@ router = APIRouter(prefix="/demo", tags=["demo"])
 DEMO_AUDIO_MAX_BYTES = 2_000_000
 
 
+def _demo_session_config(**extra: object) -> dict:
+    config: dict = {
+        "template_slug": "customer-support-deflection",
+        "orchestrator": "multi_agent",
+    }
+    config.update(extra)
+    return config
+
+
+def _assistant_turn(messages: list) -> tuple[str, list[dict]]:
+    for message in reversed(messages):
+        if message.role.value == "assistant":
+            trace = list(message.provider_metadata.get("agent_trace") or [])
+            return message.content, trace
+    return "", []
+
+
 class DemoQuickstartResponse(BaseModel):
     status: str
     session_id: UUID | None = None
@@ -53,6 +70,7 @@ class DemoQuickstartResponse(BaseModel):
     assistant_response: str | None = None
     e2e_ms: float | None = None
     script_id: str
+    agent_trace: list[dict] = Field(default_factory=list)
 
 
 class DemoAccountResponse(BaseModel):
@@ -87,6 +105,7 @@ class DemoChatResponse(BaseModel):
     user_message: str
     assistant_response: str
     e2e_ms: float | None = None
+    agent_trace: list[dict] = Field(default_factory=list)
 
 
 class DemoVoiceResponse(BaseModel):
@@ -96,6 +115,7 @@ class DemoVoiceResponse(BaseModel):
     e2e_ms: float | None = None
     stt_source: str
     stt_provider: str
+    agent_trace: list[dict] = Field(default_factory=list)
 
 
 class DemoCitation(BaseModel):
@@ -115,6 +135,7 @@ class DemoTrustLoopResponse(BaseModel):
     replay_url: str | None = None
     inbox_url: str
     handoff_id: UUID | None = None
+    agent_trace: list[dict] = Field(default_factory=list)
 
 
 def _pcm16le_to_wav(pcm: bytes, sample_rate: int = 24000) -> bytes:
@@ -224,7 +245,7 @@ async def _complete_demo_turn(
     org_id: UUID,
     transcript: str,
     user_metadata: dict,
-) -> tuple[str, float | None]:
+) -> tuple[str, float | None, list[dict]]:
     from voxforge.core.exceptions import SessionNotFoundError
 
     try:
@@ -241,16 +262,10 @@ async def _complete_demo_turn(
             detail="Demo session state expired — run sample call again to start a fresh session.",
         ) from exc
 
-    assistant_response = ""
-    messages = await session_manager.get_messages(session_id)
-    for message in reversed(messages):
-        if message.role.value == "assistant":
-            assistant_response = message.content
-            break
-
+    assistant_response, trace = _assistant_turn(await session_manager.get_messages(session_id))
     if not assistant_response:
         raise HTTPException(status_code=502, detail="No assistant response generated")
-    return assistant_response, metrics.e2e_ms
+    return assistant_response, metrics.e2e_ms, trace
 
 
 async def _synthesize_wav(tts, text: str, voice_id: str | None) -> tuple[bytes, int]:
@@ -321,11 +336,7 @@ async def demo_quickstart(
 
     session = await session_manager.create_session(
         transport_type=TransportType.WEBSOCKET,
-        config={
-            "template_slug": "customer-support-deflection",
-            "demo_quickstart": True,
-            "script_id": script.script_id,
-        },
+        config=_demo_session_config(demo_quickstart=True, script_id=script.script_id),
         org_id=org_id,
         created_by_user_id=user_id,
     )
@@ -345,12 +356,9 @@ async def demo_quickstart(
         await session_manager.commit()
         raise HTTPException(status_code=502, detail=f"Demo turn failed: {exc}") from exc
 
-    assistant_response: str | None = None
-    messages = await session_manager.get_messages(session.id)
-    for message in reversed(messages):
-        if message.role.value == "assistant":
-            assistant_response = message.content
-            break
+    assistant_response, agent_trace = _assistant_turn(
+        await session_manager.get_messages(session.id)
+    )
 
     return DemoQuickstartResponse(
         status="demo_turn_ok",
@@ -359,6 +367,7 @@ async def demo_quickstart(
         assistant_response=assistant_response,
         e2e_ms=metrics.e2e_ms,
         script_id=script.script_id,
+        agent_trace=agent_trace,
     )
 
 
@@ -439,9 +448,9 @@ async def demo_chat(
         org_id=org_id,
         user_id=user_id,
         session_id=body.session_id,
-        config={"demo_chat": True, "template_slug": "customer-support-deflection"},
+        config=_demo_session_config(demo_chat=True),
     )
-    assistant_response, e2e_ms = await _complete_demo_turn(
+    assistant_response, e2e_ms, agent_trace = await _complete_demo_turn(
         session_manager,
         pipeline_runner,
         session_id=session_id,
@@ -454,6 +463,7 @@ async def demo_chat(
         user_message=transcript,
         assistant_response=assistant_response,
         e2e_ms=e2e_ms,
+        agent_trace=agent_trace,
     )
 
 
@@ -521,9 +531,9 @@ async def demo_voice(
         org_id=org_id,
         user_id=user_id,
         session_id=session_id,
-        config={"demo_voice": True, "template_slug": "customer-support-deflection"},
+        config=_demo_session_config(demo_voice=True),
     )
-    assistant_response, e2e_ms = await _complete_demo_turn(
+    assistant_response, e2e_ms, agent_trace = await _complete_demo_turn(
         session_manager,
         pipeline_runner,
         session_id=resolved_session_id,
@@ -538,6 +548,7 @@ async def demo_voice(
         e2e_ms=e2e_ms,
         stt_source=stt_source,
         stt_provider=settings.stt_provider,
+        agent_trace=agent_trace,
     )
 
 
@@ -574,9 +585,9 @@ async def demo_trust_loop(
         org_id=org_id,
         user_id=user_id,
         session_id=None,
-        config={"demo_trust_loop": True, "template_slug": "customer-support-deflection"},
+        config=_demo_session_config(demo_trust_loop=True),
     )
-    assistant_response, e2e_ms = await _complete_demo_turn(
+    assistant_response, e2e_ms, agent_trace = await _complete_demo_turn(
         session_manager,
         pipeline_runner,
         session_id=session_id,
@@ -652,4 +663,5 @@ async def demo_trust_loop(
         replay_url=replay_url,
         inbox_url=inbox_url,
         handoff_id=handoff_id,
+        agent_trace=agent_trace,
     )

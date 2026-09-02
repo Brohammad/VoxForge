@@ -33,9 +33,13 @@ Reuse the existing Postgres deployment with a dedicated `knowledge_chunks` table
 | `EmbeddingProvider` | `OpenAIEmbeddingProvider` (existing) | Local sentence-transformers, mock |
 | `BlobStore` | Filesystem (dev) | S3-compatible object storage |
 | `KnowledgeChunkStore` | `KnowledgeRepository` (pgvector) | — |
-| `KnowledgeBaseProvider` | `InternalKnowledgeBaseProvider` | mock, zendesk, freshdesk (existing) |
+| `KnowledgeBaseProvider` | `InternalKnowledgeBaseProvider` | mock; external knowledge adapters remain future work |
 
 No LangChain document loaders. Thin parser adapters keep dependencies minimal and testable.
+
+**Current-state clarification (2026-08-30):** Zendesk is implemented only as a
+unit-tested ticketing adapter and still awaits live sandbox proof. Freshdesk is not
+implemented. Neither is an implemented knowledge-base provider.
 
 ### 3. Background ingestion via Postgres job queue (not Celery/ARQ)
 

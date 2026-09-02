@@ -51,8 +51,10 @@ class VoicePipelineBundle:
     knowledge_context_builder: object | None = None
 
     async def bootstrap_session_agent_config(self, org_id: UUID, session_id: UUID) -> object:
+        from voxforge.core.domain.auth import ROLE_SCOPES, OrgRole
         from voxforge.modules.agent_config.application.runtime import apply_active_agent_config
 
+        session_config = await self.session_manager.get_session_config(session_id)
         self.response_generator = await apply_active_agent_config(
             db=self.session_manager.db_session,
             org_id=org_id,
@@ -64,7 +66,10 @@ class VoicePipelineBundle:
             memory_service=self.memory_service,
             tool_router=self.tool_router,
             knowledge_context_builder=self.knowledge_context_builder,
+            session_config=session_config,
         )
+        self.pipeline.set_session_org(session_id, org_id)
+        self.pipeline.set_caller_scopes(session_id, list(ROLE_SCOPES[OrgRole.OWNER]))
         return self.response_generator
 
 

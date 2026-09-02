@@ -1,21 +1,38 @@
 # VoxForge Project Metrics
 
-> Single source of truth for repository engineering metrics.  
-> Last updated: 2026-07-10  
-> Regenerate: `python scripts/generate_project_metrics.py`
+> Single source of truth for repository engineering metrics.
+> Last updated: 2026-08-30
+> Repository revision: `5d0571689ffc4d50aaf9c94dd2ecada856530033`
+> Regenerate: `python3 scripts/generate_project_metrics.py`
+
+The local results below distinguish **collected**, **passed**, and **skipped** tests.
+Browser tests are collection-verified here; they are executed separately by the Playwright CI job.
+Coverage and CI evidence are pinned to the verified commit above; coverage is marked
+unverified if this document is regenerated at another revision.
 
 ## Summary
 
 | Metric | Value |
 |--------|------:|
 | Application modules | 19 |
-| REST endpoints | 72 |
-| WebSocket endpoints | 1 |
-| Tests collected | 352 |
-| Line coverage (`src/voxforge`) | 76.9% |
+| REST endpoints | 84 |
+| WebSocket endpoints | 2 |
+| Non-browser tests collected | 417 |
+| Non-browser tests passed | 407 |
+| Non-browser tests skipped | 10 |
+| Browser tests collected | 9 |
+| Total tests collected | 426 |
+| Verified coverage (`src/voxforge`, non-browser suite) | 76.40% |
 | ADRs | 7 |
-| Architecture documents | 25 |
-| Benchmark documents | 2 |
+| Architecture documents | 26 |
+| Benchmark documents | 4 |
+
+## Verification evidence
+
+- Local non-browser command: `PYTHONPATH=. pytest -q --ignore=tests/browser --cov=src/voxforge`
+- Browser collection command: `PYTHONPATH=. pytest tests/browser --collect-only -q`
+- Verified GitHub CI: [run 33298953452](https://github.com/Brohammad/VoxForge/actions/runs/33298953452) passed on
+  2026-08-30 for commit [`5d057168`](https://github.com/Brohammad/VoxForge/commit/5d0571689ffc4d50aaf9c94dd2ecada856530033).
 
 ## Application modules (19)
 
@@ -43,12 +60,13 @@
 
 | Transport | Count | Entry points |
 |-----------|------:|--------------|
-| REST | 72 | `/api/v1/*` routers |
-| WebSocket | 1 | `/api/v1/ws/voice` |
+| REST | 84 | `/api/v1/*` routers |
+| WebSocket | 2 | `/api/v1/ws/voice`, `/lk/{path}` |
 
 ## Tests
 
-Run: `PYTHONPATH=. pytest -v`
+Run non-browser tests: `make test`
+Run Playwright tests: `make test-browser`
 
 | Category | Location |
 |----------|----------|
@@ -62,11 +80,12 @@ Run: `PYTHONPATH=. pytest -v`
 - [ADR-003-mcp-runtime-discovery.md](adr/ADR-003-mcp-runtime-discovery.md)
 - [ADR-004-livekit-transport-adapter.md](adr/ADR-004-livekit-transport-adapter.md)
 - [ADR-005-enterprise-knowledge-base.md](adr/ADR-005-enterprise-knowledge-base.md)
-- [ADR-008-retrieval-pipeline.md](adr/ADR-008-retrieval-pipeline.md)
 - [ADR-006-human-handoff.md](adr/ADR-006-human-handoff.md)
+- [ADR-008-retrieval-pipeline.md](adr/ADR-008-retrieval-pipeline.md)
 
-## Architecture documents (25)
+## Architecture documents (26)
 
+- [README.md](architecture/README.md)
 - [agent-config-versioning.md](architecture/agent-config-versioning.md)
 - [agent-orchestrator.md](architecture/agent-orchestrator.md)
 - [alerts.md](architecture/alerts.md)
@@ -93,8 +112,10 @@ Run: `PYTHONPATH=. pytest -v`
 - [session-consistency.md](architecture/session-consistency.md)
 - [voice-pipeline.md](architecture/voice-pipeline.md)
 
-## Benchmarks (2)
+## Benchmarks (4)
 
+- [README.md](benchmarks/README.md)
+- [competitive-analysis.md](benchmarks/competitive-analysis.md)
 - [knowledge-base.md](benchmarks/knowledge-base.md)
 - [onboarding.md](benchmarks/onboarding.md)
 

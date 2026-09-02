@@ -18,7 +18,7 @@ Welcome to the VoxForge design partner program. This guide takes you from kickof
 1. Visit https://voxforge.brohammad.tech/dashboard
 2. Register your team accounts
 3. Upload 3–5 knowledge documents
-4. Run demo call + review replay
+4. Run **Start talking** or **Run trust loop** on `/demo`, then review replay
 
 ### Option B: Dedicated VPS
 
@@ -53,8 +53,7 @@ Follow [deployment checklist](../deployment/verification-checklist.md).
 
 | Channel | Use for |
 |---------|---------|
-| GitHub Issues | Bugs, feature requests |
-| GitHub Discussions | Questions, architecture |
+| GitHub Issues | Bugs, questions, feature requests |
 | Security advisories | Vulnerabilities |
 
 ## Pilot completion

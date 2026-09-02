@@ -49,13 +49,13 @@ Legend: ✅ native · ⚙️ partial/BYO · ❌ not available
 2. **Self-hosted with TLS automation** — data sovereignty
 3. **Evaluation + replay first-class** — operator trust
 4. **MCP tool router** — extensibility without code forks
-5. **354+ automated tests** — engineering credibility
+5. **426 tests collected** — engineering credibility with explicit pass/skip accounting
 
 ## Weaknesses (VoxForge)
 
 1. No managed SaaS — operator must run infrastructure
 2. Single-node compose default — not multi-region
-3. Zendesk/Freshdesk integrations are stubs
+3. Zendesk ticketing is implemented but awaits live sandbox proof; Freshdesk is not implemented
 4. Voice UX polish behind Vapi/Retell managed UIs
 5. No visual flow builder (Voiceflow-style)
 
@@ -71,7 +71,7 @@ Legend: ✅ native · ⚙️ partial/BYO · ❌ not available
 - Visual agent builder
 - Multi-tenant hosted offering
 - Native telephony (SIP/PSTN) — use LiveKit SIP
-- Production Zendesk/Freshdesk connectors (use mock ticketing + replay/API export today)
+- Live Zendesk sandbox proof; Freshdesk adapter is not implemented
 - httpOnly dashboard sessions — **shipped** (JWT paste remains under Advanced)
 
 ## Pricing positioning

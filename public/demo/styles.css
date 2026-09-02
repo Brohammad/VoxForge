@@ -78,6 +78,31 @@ header p { color: var(--muted); }
   color: var(--muted);
 }
 .citations li { margin-bottom: 0.4rem; }
+.agent-trace {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.agent-trace h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.agent-trace ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.agent-trace li { margin-bottom: 0.35rem; }
+.agent-trace .trace-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
 .inspect-links {
   display: flex;
   flex-wrap: wrap;
@@ -85,7 +110,8 @@ header p { color: var(--muted); }
   margin-top: 0.85rem;
 }
 .inspect-links.hidden,
-.citations.hidden { display: none; }
+.citations.hidden,
+.agent-trace.hidden { display: none; }
 .status { color: var(--muted); margin-top: 1rem; }
 .hidden { display: none; }
 .metric-row {

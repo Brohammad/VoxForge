@@ -9,6 +9,7 @@
 | I want to… | Go to |
 |------------|-------|
 | Run VoxForge locally in 15 minutes | [ONBOARDING.md](ONBOARDING.md) |
+| Record a 60-second demo | [demo/demo-script-short.md](demo/demo-script-short.md) |
 | Deploy to production with HTTPS | [deployment/guide.md](deployment/guide.md) |
 | Understand the architecture | [architecture/README.md](architecture/README.md) |
 | Configure environment variables | [CONFIGURATION.md](CONFIGURATION.md) |
@@ -56,6 +57,7 @@
 - [SECURITY.md](../SECURITY.md)
 - [Testing strategy](testing/testing-strategy.md)
 - [Roadmap](ROADMAP.md)
+- [Good first issues](https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ---
 

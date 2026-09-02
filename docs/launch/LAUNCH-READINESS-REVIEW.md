@@ -2,6 +2,11 @@
 
 **Date:** 2026-07-10
 
+> **Historical snapshot:** Scores, test counts, and roadmap statements in this review
+> reflect launch readiness on 2026-07-10. They are not current-state claims. See
+> [project metrics](../project-metrics.md), [roadmap](../ROADMAP.md), and
+> [known limitations](../release/known-limitations.md) for current status.
+
 ## Final scores
 
 | Dimension | Score | Notes |

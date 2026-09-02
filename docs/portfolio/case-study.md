@@ -48,7 +48,7 @@ Every transport calls the same pipeline. Mock providers run CI and public demo w
 | **Demo** | Browser TTS via `/demo/speak`, provider badges, automated GIF capture |
 | **Knowledge** | List/delete APIs, server-backed dashboard catalog (no localStorage) |
 | **Dashboard** | Hub IA: Talk / Knowledge / Inbox / Settings |
-| **Quality** | 378+ pytest, 8 Playwright journeys, green CI on every PR |
+| **Quality** | 417 non-browser tests collected, 9 Playwright journeys, verified green CI |
 
 ---
 
@@ -76,8 +76,9 @@ Fix: unify auth checks, wire SAML cold-login, invalidate in-flight `refreshAll` 
 
 | Metric | Value |
 |--------|-------|
-| Automated tests | 378+ (excl. browser) + 8 Playwright |
-| Code coverage | 81% (70% CI gate) |
+| Tests collected | 417 non-browser + 9 Playwright |
+| Non-browser result | 407 passed, 10 skipped |
+| Coverage (statements + branches) | 76.40% (70% CI gate) |
 | Demo E2E (mock) | ~5–100 ms |
 | Deploy | `./deploy.sh init` → HTTPS on Ubuntu VPS |
 | OSS | MIT, v1.0.0-rc.1, live production demo |
@@ -86,7 +87,7 @@ Fix: unify auth checks, wire SAML cold-login, invalidate in-flight `refreshAll` 
 
 ## Try it in 2 minutes
 
-1. [Live demo](https://voxforge.brohammad.tech/demo) — click **Run one-click sample call**
+1. [Live demo](https://voxforge.brohammad.tech/demo) — **Start talking**, **Run trust loop**, or **Run one-click sample call**
 2. [Dashboard](https://voxforge.brohammad.tech/dashboard) — register, upload knowledge, replay a session
 3. Clone → `docker compose up` → mock providers, no keys required
 
