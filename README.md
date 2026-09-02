@@ -298,7 +298,7 @@ Contributions welcome — especially docs, tests, and provider adapters.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md)
 
-**Questions:** search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue.
+**Questions:** ask in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A category). Search existing threads first.
 
 **Good first issues:** https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
 

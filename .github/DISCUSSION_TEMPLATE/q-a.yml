@@ -1,0 +1,24 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for stopping by. Use this Q&A category for **community and pilot
+        questions** that don't fit an issue report — "how do I..." and
+        "does it support...".
+
+        For bugs, open a GitHub issue. For security reports, see SECURITY.md.
+
+  - type: textarea
+    attributes:
+      label: Your question
+      description: What would you like to know or discuss?
+      placeholder: "e.g. Does VoxForge support a custom TTS provider for my use case?"
+    validations:
+      required: true
+
+  - type: checkboxes
+    attributes:
+      label: Before posting
+      options:
+        - label: I read the README and searched existing discussions first
+          required: true
