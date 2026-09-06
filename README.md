@@ -6,11 +6,12 @@
 [![Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvoxforge.brohammad.tech%2Fapi%2Fv1%2Fhealth&query=%24.status&label=status&color=38d996)](https://voxforge.brohammad.tech/status)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Coverage](https://img.shields.io/badge/coverage-76.40%25-brightgreen)](docs/project-metrics.md)
+[![Discussions](https://img.shields.io/badge/discussions-Q%26A-563d7c)](https://github.com/Brohammad/VoxForge/discussions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Production-grade Voice AI Infrastructure** — deploy, operate, and trust.
 
-🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs)
+🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs) · [Discussions](https://github.com/Brohammad/VoxForge/discussions)
 
 ![VoxForge demo — one-click sample call with in-browser TTS](docs/assets/screenshots/demo.gif)
 
@@ -45,7 +46,7 @@ One `VoicePipelineService` powers every transport — no duplicated business log
 | **Deploy** | Self-hosted Docker + HTTPS | Vendor lock-in |
 | **Pipeline** | STT → agent → TTS + evaluation | LLM wrapper only |
 | **Operations** | Dashboard, replay, handoff queue | Logs in a black box |
-| **Tests** | 426 collected: 417 non-browser (407 passed, 10 skipped) + 9 Playwright | Unknown |
+| **Tests** | 426 collected (verified snapshot) — [project metrics](docs/project-metrics.md) | Unknown |
 | **Extensibility** | MCP tools, swappable providers | Hardcoded integrations |
 
 Compared to managed platforms (Vapi, Retell) you get **data sovereignty and no per-minute platform tax**. Compared to frameworks (LiveKit Agents, Pipecat, LangGraph alone) you get a **batteries-included product** with auth, dashboard, and deploy scripts.
@@ -209,8 +210,8 @@ Production validation enforces real providers when `DEMO_ENABLED=false`.
 ## Testing
 
 ```bash
-make test              # 417 collected (407 passed, 10 skipped; excludes browser)
-make test-browser      # 9 Playwright UI journeys
+make test              # non-browser suite (see docs/project-metrics.md)
+make test-browser      # Playwright UI journeys
 make test-unit         # Unit tests only
 make test-integration  # Integration tests
 make test-feature      # Feature scenarios
@@ -264,6 +265,7 @@ scripts/               Deploy, backup, benchmarks, smoke tests
 | Pilot program | [docs/pilot/](docs/pilot/) |
 | Demo scripts | [docs/demo/](docs/demo/) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
+| Community Q&A | [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Releases | [docs/release/](docs/release/) |
 
@@ -298,7 +300,7 @@ Contributions welcome — especially docs, tests, and provider adapters.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md)
 
-**Questions:** ask in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A category). Search existing threads first.
+**Questions:** [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A). Search existing threads first. Bugs and features stay on [issues](https://github.com/Brohammad/VoxForge/issues).
 
 **Good first issues:** https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
 
