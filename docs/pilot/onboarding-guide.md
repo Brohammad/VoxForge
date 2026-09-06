@@ -53,7 +53,8 @@ Follow [deployment checklist](../deployment/verification-checklist.md).
 
 | Channel | Use for |
 |---------|---------|
-| GitHub Issues | Bugs, questions, feature requests |
+| GitHub Issues | Bugs and feature requests |
+| GitHub Discussions | Questions, architecture, pilot Q&A |
 | Security advisories | Vulnerabilities |
 
 ## Pilot completion

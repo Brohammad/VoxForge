@@ -90,6 +90,6 @@ Report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## Questions
 
-Search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue. Do not file security reports as public issues.
+Ask community and pilot questions in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A). File bugs and feature requests as issues. Do not file security reports as public issues.
 
 Documentation index: [docs/README.md](docs/README.md)

@@ -46,4 +46,5 @@ No account or API keys needed.
 
 - [FAQ](../FAQ.md)
 - [Operator guide](operator-guide.md) — detailed workflows
-- [GitHub Issues](https://github.com/Brohammad/VoxForge/issues/new?template=question.md)
+- [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) — questions
+- [GitHub Issues](https://github.com/Brohammad/VoxForge/issues) — bugs and feature requests
