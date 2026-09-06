@@ -38,7 +38,7 @@
 - [x] CONTRIBUTING, SECURITY, CODE_OF_CONDUCT
 - [x] CHANGELOG RC-1
 - [x] Issue + PR templates
-- [ ] GitHub Discussions enabled
+- [x] GitHub Discussions enabled (#11)
 - [x] Repository topics set (`scripts/github-oss-polish.sh`)
 - [x] GitHub Release `v1.0.0-rc.1` (tag pushed; create release on GitHub)
 - [x] Good first issues filed (#7–#10)

@@ -8,12 +8,15 @@ assignees: ''
 
 ## Question
 
+Prefer [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A) for how-to and architecture questions. Use this issue only if Discussions does not fit.
+
 What are you trying to do?
 
 ## What I already tried
 
 - [ ] Read the [README](https://github.com/Brohammad/VoxForge/blob/main/README.md)
 - [ ] Read the [FAQ](https://github.com/Brohammad/VoxForge/blob/main/docs/FAQ.md)
+- [ ] Searched [existing Discussions](https://github.com/Brohammad/VoxForge/discussions)
 - [ ] Searched [existing issues](https://github.com/Brohammad/VoxForge/issues)
 
 ## Context

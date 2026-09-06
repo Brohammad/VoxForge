@@ -72,7 +72,7 @@ scripts/e2e_qa_manual.py
 3. **Run relevant tests** — at minimum `ruff check src tests` and `pytest` for affected areas.
 4. **Do not reduce coverage** or break existing APIs without discussion.
 5. **Update docs** when behavior, env vars, or deployment steps change.
-6. **Keep line endings LF.** Do not rewrite unchanged files.
+6. **Keep line endings LF.** `.gitattributes` enforces this. Do not rewrite unchanged files.
 
 ## Code style
 
@@ -90,6 +90,6 @@ Report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## Questions
 
-Search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue. Do not file security reports as public issues.
+Ask community and pilot questions in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A). File bugs and feature requests as issues. Do not file security reports as public issues.
 
 Documentation index: [docs/README.md](docs/README.md)

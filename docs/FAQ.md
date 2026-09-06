@@ -112,7 +112,7 @@ Login sets **HttpOnly cookies** (`voxforge_access`) with CSRF protection for mut
 
 ### How do I ask a question or contribute?
 
-Search [existing issues](https://github.com/Brohammad/VoxForge/issues) first, then open a [Question](https://github.com/Brohammad/VoxForge/issues/new?template=question.md) issue. First-time contributors: pick a [good first issue](https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and follow [CONTRIBUTING.md](../CONTRIBUTING.md).
+Ask in [GitHub Discussions](https://github.com/Brohammad/VoxForge/discussions) (Q&A). Search existing threads first. Bugs and features still go to [issues](https://github.com/Brohammad/VoxForge/issues). First-time contributors: pick a [good first issue](https://github.com/Brohammad/VoxForge/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and follow [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ### How do I become a design partner?
 
