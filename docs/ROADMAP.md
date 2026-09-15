@@ -13,7 +13,7 @@
 - [ ] Zendesk production proof: verify the adapter against a live sandbox
 - [ ] Freshdesk adapter
 - [x] Collection delete API for knowledge base
-- [ ] Nightly CI: live provider + load smoke jobs
+- [x] Nightly CI: live provider + load smoke jobs
 
 ## v1.1
 
