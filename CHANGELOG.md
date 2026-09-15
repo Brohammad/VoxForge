@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Onboarding points at `prove-real-voice.sh` for real-provider proof after the mock 15-minute path.
+- Nightly secrets-gated live-provider smoke and mock-provider load smoke (`.github/workflows/nightly-smoke.yml`).
 - Question issue template and 60-second demo recording shot list for outreach.
 - Zendesk ticketing adapter with create/lookup, replay context, session deduplication,
   production credential validation, and sanitized errors.
