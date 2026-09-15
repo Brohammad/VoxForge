@@ -14,8 +14,10 @@ Headless smoke (10 users, 30s):
 
 ```bash
 locust -f scripts/load/locustfile.py --host http://127.0.0.1:8000 \
-  --headless -u 10 -r 2 -t 30s --csv=load-results
+    --headless -u 10 -r 2 -t 30s --csv=load-results
 ```
+
+The same cheap headless command runs in `.github/workflows/nightly-smoke.yml` (schedule + `workflow_dispatch`, mock providers). Paid live-provider smoke is secrets-gated on that workflow and is not on `pull_request`.
 
 ### Tasks weighted
 

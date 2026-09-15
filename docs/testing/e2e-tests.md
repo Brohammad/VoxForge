@@ -16,7 +16,7 @@ WebSocket lifecycle is covered in `tests/feature/test_session_lifecycle_flow.py`
 
 **LiveKit token API (no WebRTC):** `tests/integration/test_livekit_token_api.py` — 503 when disabled, 404 for unknown session.
 
-LiveKit room connect, real mic capture, and docker-compose orchestration smoke are candidates for a nightly job (not in default PR CI).
+LiveKit room connect, real mic capture, and docker-compose orchestration smoke remain nightly-only (not in default PR CI). See `.github/workflows/nightly-smoke.yml` for the live-provider smoke subset and load smoke run.
 
 ## Run
 
