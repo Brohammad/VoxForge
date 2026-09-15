@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cookie sessions require double-submit CSRF (`X-CSRF-Token`) on mutating requests.
 
 ### Added
+- Root `.dockerignore` so production image builds skip git, tests, coverage, and local env files.
 - Question issue template and 60-second demo recording shot list for outreach.
 - Zendesk ticketing adapter with create/lookup, replay context, session deduplication,
   production credential validation, and sanitized errors.
