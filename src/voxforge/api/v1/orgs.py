@@ -67,6 +67,7 @@ class InviteResponse(BaseModel):
     accept_url: str
     token: str | None = None
     email_sent: bool = False
+    email_delivery_warning: str | None = None
 
 
 class MemberResponse(BaseModel):
@@ -219,6 +220,7 @@ async def create_invite(
         accept_url=accept_url,
         token=raw_token if expose_token else None,
         email_sent=email_sent,
+        email_delivery_warning=mailer.delivery_warning(email_sent=email_sent),
     )
 
 

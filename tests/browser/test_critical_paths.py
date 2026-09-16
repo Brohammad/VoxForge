@@ -224,6 +224,33 @@ def test_logout_clears_session(page: Page, base_url: str) -> None:
     expect(page.locator("#auth-status")).to_contain_text("Not connected", timeout=10_000)
 
 
+def test_dashboard_invite_warns_when_email_is_log_only(page: Page, base_url: str) -> None:
+    suffix = uuid.uuid4().hex[:8]
+    email = f"invite-op-{suffix}@example.com"
+    _post_json(
+        page,
+        f"{base_url}/api/v1/auth/register",
+        {
+            "email": email,
+            "password": "securepass123",
+            "full_name": "Invite Operator",
+            "org_name": f"Invite Org {suffix}",
+        },
+    )
+    page.goto(f"{base_url}/dashboard")
+    page.locator("#login-email").fill(email)
+    page.locator("#login-password").fill("securepass123")
+    page.get_by_role("button", name="Login").click()
+    expect(page.locator("#auth-status")).to_contain_text("Connected", timeout=15_000)
+
+    page.get_by_role("link", name="Settings").click()
+    page.get_by_role("link", name="Invites").click()
+    page.locator("#invite-email").fill(f"teammate-{suffix}@example.com")
+    page.get_by_role("button", name="Create invite").click()
+    expect(page.locator("#invite-result")).to_contain_text("EMAIL_PROVIDER=log", timeout=10_000)
+    expect(page.locator("#invite-accept-url")).to_be_visible()
+
+
 def test_404_returns_not_found(page: Page, base_url: str) -> None:
     response = page.request.get(f"{base_url}/this-route-does-not-exist")
     assert response.status == 404

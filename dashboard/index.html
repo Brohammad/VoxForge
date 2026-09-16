@@ -82,6 +82,7 @@
           <a href="#policies" class="hub-tab active" data-section="policies">Policy Presets</a>
           <a href="#sso" class="hub-tab" data-section="sso">SSO</a>
           <a href="#api-keys" class="hub-tab" data-section="api-keys">API Keys</a>
+          <a href="#invites" class="hub-tab" data-section="invites">Invites</a>
           <a href="#activity" class="hub-tab" data-section="activity">Activity</a>
         </div>
       </nav>
@@ -461,6 +462,34 @@
             </div>
           </form>
           <pre id="api-key-created-secret" class="json-preview hidden"></pre>
+        </div>
+      </section>
+
+      <section id="invites" class="section hidden">
+        <div class="panel">
+          <h2>Invites</h2>
+          <p class="card-sub">
+            Invite teammates by email. If <code>EMAIL_PROVIDER=log</code>, mail is not sent —
+            copy the accept URL and share it yourself.
+          </p>
+          <div id="invite-status" class="card-sub"></div>
+          <form id="invite-create-form" class="sso-form">
+            <label>
+              Email
+              <input id="invite-email" type="email" placeholder="teammate@example.com" required />
+            </label>
+            <label>
+              Role
+              <select id="invite-role">
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <div class="button-row">
+              <button type="submit">Create invite</button>
+            </div>
+          </form>
+          <div id="invite-result" class="invite-result hidden"></div>
         </div>
       </section>
 

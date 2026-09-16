@@ -65,7 +65,10 @@ Cookie-authenticated mutating requests require `X-CSRF-Token` matching the `voxf
 | `SMTP_USE_TLS` | `true` | STARTTLS for SMTP |
 | `INVITE_TTL_HOURS` | `72` | Invite expiry |
 
-When email delivery succeeds, the API omits the raw `token` in production; in `log` mode the token is returned for local testing.
+When email delivery succeeds, the API omits the raw `token` in production and
+`email_delivery_warning` is `null`. In `log` mode (the default) mail is not sent;
+the response includes `email_sent: false` plus `email_delivery_warning` so operators
+copy the `accept_url` instead of waiting for inbox delivery.
 
 ---
 
