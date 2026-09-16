@@ -27,6 +27,15 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/T.../B.../..."
 ./scripts/uptime-ready-check.sh https://voxforge.brohammad.tech
 ```
 
+Default: `status=degraded` (optional deps) is still OK. To page on degradation
+without setting `READY_FAIL_ON_DEGRADED` on the app:
+
+```bash
+FAIL_ON_DEGRADED=true ./scripts/uptime-ready-check.sh https://voxforge.brohammad.tech
+```
+
+See [uptime.md](./uptime.md) for both monitor recipes.
+
 Create the Slack webhook: **Slack app → Incoming Webhooks → Add to workspace**.
 
 ### Cron (every 5 minutes)

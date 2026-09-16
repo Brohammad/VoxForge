@@ -21,7 +21,7 @@
 
 - **Single uvicorn worker** — Production compose uses one worker by design; see scaling notes before multi-instance deploy.
 - **Grafana** — Bound to localhost; requires SSH tunnel for remote access.
-- **Degraded readiness** — `/api/v1/ready` returns HTTP 200 when optional deps fail unless `READY_FAIL_ON_DEGRADED=true`.
+- **Degraded readiness** — `/api/v1/ready` returns HTTP 200 when optional deps fail unless `READY_FAIL_ON_DEGRADED=true`. `scripts/uptime-ready-check.sh` matches that default; set `FAIL_ON_DEGRADED=true` on the checker to page on `status=degraded`.
 
 ## Security
 
