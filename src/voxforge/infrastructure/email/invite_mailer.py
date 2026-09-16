@@ -24,6 +24,13 @@ class InviteEmailPayload:
     expires_hours: int
 
 
+LOG_ONLY_INVITE_WARNING = (
+    "Invite email was not sent because EMAIL_PROVIDER=log. "
+    "Copy the accept URL and share it with the invitee. "
+    "Set EMAIL_PROVIDER=resend or smtp to deliver mail."
+)
+
+
 class InviteEmailSender:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
@@ -31,6 +38,21 @@ class InviteEmailSender:
     @property
     def delivers_email(self) -> bool:
         return self._settings.email_provider.lower() in {"resend", "smtp"}
+
+    @property
+    def provider_name(self) -> str:
+        return self._settings.email_provider.lower().strip() or "log"
+
+    def delivery_warning(self, *, email_sent: bool) -> str | None:
+        """Operator-facing warning when the invitee will not receive mail."""
+        if email_sent:
+            return None
+        if self.provider_name == "log":
+            return LOG_ONLY_INVITE_WARNING
+        return (
+            f"Invite email was not delivered (EMAIL_PROVIDER={self.provider_name}). "
+            "Copy the accept URL and share it with the invitee, then check mailer logs."
+        )
 
     async def send_invite(self, payload: InviteEmailPayload) -> bool:
         provider = self._settings.email_provider.lower()
