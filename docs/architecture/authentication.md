@@ -83,3 +83,5 @@ REGISTRATION_ENABLED=true
 ```
 
 Set `REGISTRATION_ENABLED=false` for invite-only deployments. `POST /api/v1/auth/register` then returns 403; use `POST /api/v1/orgs/{org_id}/invites` and `POST /api/v1/auth/invites/accept` instead. Production validation rejects open registration when `DEMO_ENABLED=false`.
+
+When `EMAIL_PROVIDER=log` (default), invite create returns `email_sent: false` and `email_delivery_warning` so operators share the accept URL instead of assuming mail was delivered.

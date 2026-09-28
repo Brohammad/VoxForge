@@ -79,6 +79,11 @@ const els = {
   apiKeyCreateForm: document.getElementById("api-key-create-form"),
   apiKeyName: document.getElementById("api-key-name"),
   apiKeyCreatedSecret: document.getElementById("api-key-created-secret"),
+  inviteStatus: document.getElementById("invite-status"),
+  inviteCreateForm: document.getElementById("invite-create-form"),
+  inviteEmail: document.getElementById("invite-email"),
+  inviteRole: document.getElementById("invite-role"),
+  inviteResult: document.getElementById("invite-result"),
   knowledgeStatus: document.getElementById("knowledge-status"),
   knowledgeRefreshBtn: document.getElementById("knowledge-refresh-btn"),
   knowledgeCollectionsBody: document.getElementById("knowledge-collections-body"),
@@ -140,6 +145,7 @@ const HUBS = {
       policies: "Policy Presets",
       sso: "SSO",
       "api-keys": "API Keys",
+      invites: "Invites",
       activity: "Activity",
     },
   },
@@ -344,6 +350,29 @@ async function loadApiKeys() {
     els.apiKeyCreatedSecret.classList.add("hidden");
     els.apiKeyCreatedSecret.textContent = "";
   }
+}
+
+async function loadInvites() {
+  const id = await ensureOrgId();
+  if (els.inviteStatus) els.inviteStatus.textContent = `Organization ${id}`;
+}
+
+function renderInviteResult(created) {
+  if (!els.inviteResult) return;
+  const warning = created.email_delivery_warning;
+  const lines = [];
+  if (warning) {
+    lines.push(`<p class="invite-warning">${escapeHtml(warning)}</p>`);
+  } else if (created.email_sent) {
+    lines.push("<p>Invite email sent.</p>");
+  }
+  if (created.accept_url) {
+    lines.push(
+      `<p>Accept URL: <code id="invite-accept-url">${escapeHtml(created.accept_url)}</code></p>`
+    );
+  }
+  els.inviteResult.innerHTML = lines.join("") || "<p>Invite created.</p>";
+  els.inviteResult.classList.remove("hidden");
 }
 
 function renderWizardPresets(presets) {
@@ -995,6 +1024,9 @@ async function loadSectionData(section) {
   }
   if (section === "api-keys") {
     await loadApiKeys();
+  }
+  if (section === "invites") {
+    await loadInvites();
   }
 }
 
@@ -1715,6 +1747,30 @@ els.apiKeyCreateForm?.addEventListener("submit", async (event) => {
     }
     els.apiKeyCreateForm?.reset();
     await loadApiKeys();
+  } catch (err) {
+    showError(err.message);
+  }
+});
+
+els.inviteCreateForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    clearError();
+    const id = await ensureOrgId();
+    const email = els.inviteEmail?.value.trim();
+    const role = els.inviteRole?.value || "member";
+    if (!email) throw new Error("Enter an invite email");
+    const res = await fetch(`/api/v1/orgs/${id}/invites`, {
+      method: "POST",
+      credentials: "include",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ email, role }),
+    });
+    const body = await res.text();
+    if (!res.ok) throw new Error(parseApiError(res.status, body));
+    const created = JSON.parse(body);
+    renderInviteResult(created);
+    els.inviteCreateForm?.reset();
   } catch (err) {
     showError(err.message);
   }
