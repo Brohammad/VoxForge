@@ -32,6 +32,8 @@ On `/demo`, the buttons are **Start talking**, **Run trust loop**, and **Run one
 
 ## Running tests
 
+Run `make help` to list every available target with a one-line description.
+
 ```bash
 # Full suite (excludes browser — use make test-browser for Playwright)
 make test

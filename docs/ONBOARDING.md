@@ -35,6 +35,8 @@ Details: [real-voice-proof.md](product/real-voice-proof.md). Do not run this aga
 
 ## Verify tests
 
+Run `make help` to see every target. The common checks are:
+
 ```bash
 make test              # 417 collected (407 passed, 10 skipped; excludes browser)
 make test-browser      # 9 Playwright journeys
