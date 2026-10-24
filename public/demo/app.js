@@ -574,4 +574,3 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 }
 
 loadDemoInfo();
-chatInput.focus();

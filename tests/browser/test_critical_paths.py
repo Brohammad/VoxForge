@@ -227,3 +227,16 @@ def test_logout_clears_session(page: Page, base_url: str) -> None:
 def test_404_returns_not_found(page: Page, base_url: str) -> None:
     response = page.request.get(f"{base_url}/this-route-does-not-exist")
     assert response.status == 404
+
+
+@pytest.mark.parametrize("path", ["/dashboard", "/demo", "/status"])
+def test_skip_link_is_first_focusable(page: Page, base_url: str, path: str) -> None:
+    page.goto(f"{base_url}{path}")
+    page.keyboard.press("Tab")
+    skip_link = page.locator("a.skip-link")
+    expect(skip_link).to_be_focused()
+    expect(skip_link).to_be_visible()
+
+    page.keyboard.press("Enter")
+    expect(page).to_have_url(re.compile(r"#main-content$"))
+    expect(page.locator("#main-content")).to_be_focused()
