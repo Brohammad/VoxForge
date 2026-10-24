@@ -81,6 +81,7 @@ scripts/e2e_qa_manual.py
 - Python 3.12+, formatted with **ruff** (line length 100).
 - Clean Architecture layering: `api/` → `modules/` → `core/`; infrastructure adapters in `infrastructure/`.
 - Prefer extending existing factories and services over duplicating pipeline wiring.
+- Editors should honor [`.editorconfig`](.editorconfig): UTF-8, LF line endings, 4-space Python indent, and 2-space YAML/JSON indent.
 
 ## Architecture decisions
 
