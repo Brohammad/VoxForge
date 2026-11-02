@@ -59,4 +59,4 @@ Follow [deployment checklist](../deployment/verification-checklist.md).
 
 ## Pilot completion
 
-Complete [feedback questionnaire](feedback-questionnaire.md) and [pilot completion report](pilot-completion-report.md) template.
+Complete [feedback questionnaire](feedback-questionnaire.md) and [pilot completion report](case-study-template.md) template.
