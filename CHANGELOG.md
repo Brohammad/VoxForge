@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Dependabot `groups` for pip minor/patch and GitHub Actions updates.
+- Playwright coverage for the public `/status` page (health, ready, and dependency checks).
 - Skip-to-content links on the dashboard, demo, and status pages; the demo no longer grabs focus on load.
 - `make help` (now the default goal) lists every Makefile target; `make` with no arguments prints it.
 - Root `.editorconfig` enforces UTF-8/LF and matches ruff's 4-space Python, 2-space YAML/JSON style.
