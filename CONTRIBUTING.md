@@ -75,6 +75,7 @@ scripts/e2e_qa_manual.py
 4. **Do not reduce coverage** or break existing APIs without discussion.
 5. **Update docs** when behavior, env vars, or deployment steps change.
 6. **Keep line endings LF.** `.gitattributes` enforces this. Do not rewrite unchanged files.
+7. **Dependabot:** pip minor/patch and GitHub Actions bumps are grouped in [`.github/dependabot.yml`](.github/dependabot.yml); security advisories may still open standalone PRs.
 
 ## Code style
 
