@@ -256,6 +256,26 @@ def test_404_returns_not_found(page: Page, base_url: str) -> None:
     assert response.status == 404
 
 
+def test_public_status_page_health_and_ready(page: Page, base_url: str) -> None:
+    page.add_init_script("window.setInterval = () => 0;")
+    page.goto(f"{base_url}/status")
+    expect(page).to_have_title(re.compile("VoxForge Status"))
+    expect(page.locator("#overall")).not_to_contain_text("checking", timeout=15_000)
+
+    overall = page.locator("#overall").inner_text().strip().lower()
+    assert overall in {"ok", "degraded", "unavailable", "unknown"}
+
+    expect(page.locator("#health-status")).not_to_have_text("—", timeout=10_000)
+    expect(page.locator("#ready-status")).not_to_have_text("—", timeout=10_000)
+    expect(page.locator("#health-body")).to_contain_text('"status"', timeout=10_000)
+    expect(page.locator("#ready-body")).to_contain_text('"status"', timeout=10_000)
+
+    checks = page.locator("#ready-checks li .name")
+    expect(checks).not_to_have_count(0, timeout=10_000)
+    names = {checks.nth(i).inner_text().lower() for i in range(checks.count())}
+    assert {"database", "redis"} <= names
+
+
 @pytest.mark.parametrize("path", ["/dashboard", "/demo", "/status"])
 def test_skip_link_is_first_focusable(page: Page, base_url: str, path: str) -> None:
     page.goto(f"{base_url}{path}")
