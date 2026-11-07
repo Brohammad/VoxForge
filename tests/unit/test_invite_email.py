@@ -23,6 +23,17 @@ async def test_log_provider_does_not_deliver():
     )
     assert sent is False
     assert sender.delivers_email is False
+    warning = sender.delivery_warning(email_sent=False)
+    assert warning is not None
+    assert "EMAIL_PROVIDER=log" in warning
+    assert sender.delivery_warning(email_sent=True) is None
+
+
+def test_failed_resend_delivery_warning():
+    sender = InviteEmailSender(Settings(email_provider="resend"))
+    warning = sender.delivery_warning(email_sent=False)
+    assert warning is not None
+    assert "EMAIL_PROVIDER=resend" in warning
 
 
 @pytest.mark.asyncio
@@ -107,6 +118,37 @@ async def test_create_invite_api_hides_token_when_email_sent(auth_client, monkey
     data = invite.json()
     assert data["email_sent"] is True
     assert data["token"] is None
+    assert data["email_delivery_warning"] is None
     assert "accept_url" in data
 
     get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_create_invite_api_warns_when_log_provider(auth_client):
+    register = await auth_client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": f"owner-{uuid4().hex[:8]}@example.com",
+            "password": "securepass123",
+            "full_name": "Owner",
+            "org_name": "Log Invite Org",
+        },
+    )
+    body = register.json()
+    headers = {"Authorization": f"Bearer {body['tokens']['access_token']}"}
+    org_id = body["org_id"]
+
+    invite = await auth_client.post(
+        f"/api/v1/orgs/{org_id}/invites",
+        json={"email": f"invitee-{uuid4().hex[:8]}@example.com", "role": "member"},
+        headers=headers,
+    )
+
+    assert invite.status_code == 201
+    data = invite.json()
+    assert data["email_sent"] is False
+    assert data["email_delivery_warning"]
+    assert "EMAIL_PROVIDER=log" in data["email_delivery_warning"]
+    assert data["accept_url"]
+    assert data["token"]
