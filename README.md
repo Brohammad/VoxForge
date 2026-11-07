@@ -11,7 +11,7 @@
 
 **Production-grade Voice AI Infrastructure** — deploy, operate, and trust.
 
-🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs) · [Discussions](https://github.com/Brohammad/VoxForge/discussions)
+🌐 **Live:** [voxforge.brohammad.tech](https://voxforge.brohammad.tech) · [Status](https://voxforge.brohammad.tech/status) · [Demo](https://voxforge.brohammad.tech/demo) · [Dashboard](https://voxforge.brohammad.tech/dashboard) · [API](https://voxforge.brohammad.tech/api/v1/docs) · [Case study](https://brohammad.tech/projects/voxforge) · [Discussions](https://github.com/Brohammad/VoxForge/discussions)
 
 ![VoxForge demo — one-click sample call with in-browser TTS](docs/assets/screenshots/demo.gif)
 
