@@ -27,4 +27,4 @@ jobs:
         uses: lycheeverse/lychee-action@v2
         with:
           fail: true
-          args: --config lychee.toml --offline --no-progress --exclude-path ./.git README.md CONTRIBUTING.md SECURITY.md CHANGELOG.md docs examples
+          args: --config lychee.toml --offline --no-progress --exclude-path ./.git README.md CONTRIBUTING.md SECURITY.md CHANGELOG.md docs examples/hello-voice/README.md examples/livekit-client/README.md
