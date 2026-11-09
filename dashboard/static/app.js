@@ -589,11 +589,20 @@ async function initWizard(options = {}) {
   setWizardStep(wizardState.step);
 }
 
+function visibleSectionId() {
+  const current = document.querySelector("main > .section:not(.hidden)");
+  return current?.id || "";
+}
+
 async function maybeOpenWizardAfterLogin() {
   if (isWizardDismissed()) return;
   try {
     const step = await inferWizardStepFromStatus();
     if (step >= 5) return;
+    const sectionId = visibleSectionId();
+    if (sectionId && sectionId !== "overview" && sectionId !== "onboarding") {
+      return;
+    }
     showSection("onboarding");
     wizardState.step = step;
     saveWizardState();

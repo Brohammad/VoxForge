@@ -106,6 +106,10 @@ def test_knowledge_upload_and_search(page: Page, base_url: str) -> None:
     page.get_by_role("button", name="Login").click()
     expect(page.locator("#auth-status")).to_contain_text("Connected", timeout=10_000)
 
+    dismiss = page.locator("#wizard-dismiss-btn")
+    if dismiss.is_visible():
+        dismiss.click()
+
     page.locator('a[data-hub="knowledge"]').click()
     expect(page.locator("#knowledge-collection-name")).to_be_visible(timeout=5_000)
 
@@ -120,7 +124,11 @@ def test_knowledge_upload_and_search(page: Page, base_url: str) -> None:
             "buffer": b"Our refund policy allows returns within 30 days.",
         }
     )
-    page.locator("#knowledge-upload-form button[type='submit']").click()
+    upload_btn = page.locator("#knowledge-upload-form button[type='submit']")
+    if not upload_btn.is_visible():
+        page.locator('a[data-hub="knowledge"]').click()
+    expect(upload_btn).to_be_visible(timeout=5_000)
+    upload_btn.click()
     expect(page.locator("#knowledge-upload-status")).to_contain_text(
         re.compile("Upload|queued|document", re.I), timeout=15_000
     )
