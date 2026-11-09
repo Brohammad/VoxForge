@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Deployment guide documents org invite email (`log` / `resend` / `smtp`) and invite-only pilots.
+- CI job checks relative Markdown links in README, CONTRIBUTING, and docs (`lychee --offline`).
 - Docs use the live `/demo` button labels and route questions to GitHub Issues until Discussions is enabled.
 - Operator docs and dashboard empty states use cookie login; JWT paste stays under Advanced.
 - LiveKit example copy plays audio in the browser instead of “Mac speakers”.

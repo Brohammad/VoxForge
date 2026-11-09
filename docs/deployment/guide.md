@@ -83,6 +83,29 @@ docker compose -f docker-compose.prod.yml --env-file .env.production run --rm --
   -e APP_ENV=production --entrypoint python app /app/scripts/validate_production_env.py
 ```
 
+## Org invite email (pilots)
+
+Production `.env.production.example` sets `REGISTRATION_ENABLED=false` so new operators join via **org invite**, not open signup. An owner creates invites from the dashboard or `POST /api/v1/orgs/{org_id}/invites`; recipients accept with `POST /api/v1/auth/invites/accept`.
+
+| `EMAIL_PROVIDER` | When to use | What operators see |
+|------------------|-------------|-------------------|
+| `log` (default) | Local dev or first VPS smoke test | No inbox mail. API logs the accept URL; dashboard shows `email_delivery_warning` — copy the link manually. |
+| `resend` | Small pilots without your own SMTP | Set `RESEND_API_KEY` and a verified `EMAIL_FROM` domain in Resend. |
+| `smtp` | Corporate relay (Google Workspace, SendGrid SMTP, etc.) | Set `SMTP_HOST`, `SMTP_PORT`, and credentials; optional `SMTP_USE_TLS`. |
+
+Minimum for real delivery:
+
+```env
+REGISTRATION_ENABLED=false
+EMAIL_PROVIDER=resend
+EMAIL_FROM=VoxForge <invites@your-domain.example>
+RESEND_API_KEY=re_...
+```
+
+For SMTP, use `EMAIL_PROVIDER=smtp` and the `SMTP_*` variables (see [CONFIGURATION.md](../CONFIGURATION.md#org-invites)).
+
+After deploy, create an invite as an org owner and confirm the recipient receives mail (or, in `log` mode, copy `accept_url` from the API response). See [known-limitations.md](../release/known-limitations.md) for log-mode behavior.
+
 ## LiveKit (optional)
 
 WebRTC transport requires an external LiveKit server (LiveKit Cloud recommended):
