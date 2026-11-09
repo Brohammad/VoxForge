@@ -1,0 +1,6 @@
+# Internal Markdown link check (CI uses --offline; external URLs are skipped).
+exclude = [
+    'https://img.shields.io/',
+    'https://voxforge.brohammad.tech/',
+    'https://github.com/Brohammad/VoxForge/discussions',
+]

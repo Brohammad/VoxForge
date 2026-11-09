@@ -1,0 +1,40 @@
+name: Docs links
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "lychee.toml"
+      - ".github/workflows/docs-links.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "lychee.toml"
+      - ".github/workflows/docs-links.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-internal-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check relative Markdown links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >
+            --config lychee.toml
+            --offline
+            --no-progress
+            --exclude-path './.git'
+            README.md
+            CONTRIBUTING.md
+            SECURITY.md
+            CHANGELOG.md
+            docs
+            examples
+        fail: true
