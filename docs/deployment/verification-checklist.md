@@ -34,6 +34,7 @@ cd VoxForge
 | TLS | Browser padlock | Valid Let's Encrypt cert |
 | Metrics auth | `curl /api/v1/metrics` without token | 401 in production |
 | Manual QA | `python scripts/e2e_qa_manual.py` | 63/63 (set BASE in script) |
+| Invite email | Dashboard → Settings → Invites, or `POST /orgs/{id}/invites` | With `EMAIL_PROVIDER=resend` or `smtp`, message arrives at the invitee inbox; with `log`, API/dashboard shows `accept_url` to copy |
 
 ## Optional profiles
 
