@@ -256,6 +256,38 @@ def test_404_returns_not_found(page: Page, base_url: str) -> None:
     assert response.status == 404
 
 
+def test_landing_and_demo_mobile_viewport(page: Page, base_url: str) -> None:
+    page.set_viewport_size({"width": 375, "height": 667})
+    page.goto(f"{base_url}/")
+    expect(page.get_by_role("link", name="Try live demo")).to_be_visible()
+    expect(page.get_by_role("link", name="Run interactive demo")).to_be_visible()
+    cannot_overflow = page.evaluate(
+        "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"
+    )
+    assert cannot_overflow
+
+    page.goto(f"{base_url}/demo")
+    if "Public demo is disabled" in page.locator("#status").inner_text():
+        pytest.skip("Demo disabled — set DEMO_ENABLED=true")
+    expect(page.get_by_role("button", name="Start talking")).to_be_visible()
+    expect(page.get_by_role("button", name="Run trust loop")).to_be_visible()
+    run_btn = page.get_by_role("button", name="Run one-click sample call")
+    expect(run_btn).to_be_visible()
+    expect(run_btn).to_be_enabled()
+
+
+def test_livekit_example_page_smoke(page: Page, base_url: str) -> None:
+    """Smoke /examples/livekit — full WebRTC flow: examples/livekit-client/README.md."""
+    errors: list[str] = []
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+    page.goto(f"{base_url}/examples/livekit")
+    expect(page.get_by_role("button", name="Start WebRTC Session")).to_be_visible()
+    expect(page.locator("#token-input")).to_be_visible()
+    expect(page.locator("#identity-input")).to_be_visible()
+    page.wait_for_timeout(500)
+    assert errors == []
+
+
 def test_public_status_page_health_and_ready(page: Page, base_url: str) -> None:
     page.add_init_script("window.setInterval = () => 0;")
     page.goto(f"{base_url}/status")
