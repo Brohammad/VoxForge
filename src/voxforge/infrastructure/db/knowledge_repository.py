@@ -6,7 +6,7 @@ import math
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select, text, update
+from sqlalchemy import bindparam, func, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -594,10 +594,8 @@ class KnowledgeRepository:
         min_similarity: float,
     ) -> list[tuple[KnowledgeChunk, float, KnowledgeDocument, KnowledgeDocumentVersion]]:
         query_vec = _pgvector_literal(query_embedding)
-        version_list = ",".join(f"'{vid}'" for vid in version_ids)
-        result = await self._session.execute(
-            text(
-                f"""
+        stmt = text(
+            """
                 SELECT c.id, c.org_id, c.document_version_id, c.chunk_index, c.content,
                        c.content_hash, c.token_count, c.metadata, c.created_at,
                        1 - (c.embedding_vec <=> CAST(:query_vec AS vector)) AS similarity,
@@ -609,13 +607,20 @@ class KnowledgeRepository:
                 JOIN knowledge_document_versions v ON v.id = c.document_version_id
                 JOIN knowledge_documents d ON d.id = v.document_id
                 WHERE c.org_id = :org_id
-                  AND c.document_version_id IN ({version_list})
+                  AND c.document_version_id IN :version_ids
                   AND c.embedding_vec IS NOT NULL
                 ORDER BY c.embedding_vec <=> CAST(:query_vec AS vector)
                 LIMIT :limit
                 """
-            ),
-            {"org_id": str(org_id), "query_vec": query_vec, "limit": limit * 3},
+        ).bindparams(bindparam("version_ids", expanding=True))
+        result = await self._session.execute(
+            stmt,
+            {
+                "org_id": str(org_id),
+                "query_vec": query_vec,
+                "limit": limit * 3,
+                "version_ids": [str(vid) for vid in version_ids],
+            },
         )
         return self._rows_to_scored(result.all(), min_similarity, limit)
 
