@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Knowledge base Postgres search uses bound `IN` parameters instead of interpolated UUID lists.
+- `uptime-ready-check.sh` delegates JSON rules to `uptime_ready_eval.py` (`FAIL_ON_DEGRADED`).
 - Deployment guide documents org invite email (`log` / `resend` / `smtp`) and invite-only pilots.
 - CI job checks relative Markdown links in README, CONTRIBUTING, and docs (`lychee --offline`).
 - Docs use the live `/demo` button labels and route questions to GitHub Issues until Discussions is enabled.
@@ -25,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cookie sessions require double-submit CSRF (`X-CSRF-Token`) on mutating requests.
 
 ### Added
+- Optional `.pre-commit-config.yaml` for local ruff check/format.
+- Playwright mobile (375px) smoke for `/` and `/demo`; smoke for `/examples/livekit`.
+- `make docs-link-check` runs offline lychee on docs and example READMEs.
 - Dependabot `groups` for pip minor/patch and GitHub Actions updates.
 - Playwright coverage for the public `/status` page (health, ready, and dependency checks).
 - Skip-to-content links on the dashboard, demo, and status pages; the demo no longer grabs focus on load.
