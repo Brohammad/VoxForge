@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help dev-up dev-down test test-all test-unit test-integration test-feature test-failure test-e2e test-browser test-cov lint typecheck benchmark-onboarding benchmark-onboarding-json benchmark-onboarding-memory benchmark-knowledge-base benchmark-knowledge-base-json livekit-worker knowledge-worker deploy-validate deploy-smoke prove-real-voice uptime-check client-demo
+.PHONY: help dev-up dev-down test test-all test-unit test-integration test-feature test-failure test-e2e test-browser test-cov lint typecheck docs-link-check benchmark-onboarding benchmark-onboarding-json benchmark-onboarding-memory benchmark-knowledge-base benchmark-knowledge-base-json livekit-worker knowledge-worker deploy-validate deploy-smoke prove-real-voice uptime-check client-demo
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*## "; printf "Usage: make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_.-]+:.*## / {printf "  %-30s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -46,6 +46,9 @@ test-cov: ## Run the coverage gate (70% minimum)
 lint: ## Check formatting and lint with ruff
 	ruff check src tests
 	ruff format --check src tests
+
+docs-link-check: ## Verify internal Markdown links (install lychee CLI first)
+	lychee --config lychee.toml --offline --no-progress README.md CONTRIBUTING.md SECURITY.md CHANGELOG.md docs examples/hello-voice/README.md examples/livekit-client/README.md
 
 typecheck: ## Type-check with pyright
 	pyright

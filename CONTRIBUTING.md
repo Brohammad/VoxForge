@@ -30,6 +30,15 @@ Open:
 
 On `/demo`, the buttons are **Start talking**, **Run trust loop**, and **Run one-click sample call**.
 
+## Optional pre-commit hooks
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Runs **ruff check** and **ruff format** on staged files (same rules as CI). Hooks are optional; CI remains the source of truth.
+
 ## Running tests
 
 Run `make help` to list every available target with a one-line description.

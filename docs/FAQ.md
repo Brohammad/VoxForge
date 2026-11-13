@@ -66,6 +66,21 @@ Set `DEMO_ENABLED=true` in `.env` and restart.
 
 ---
 
+## MCP tools (production)
+
+### How do I turn on MCP tools in production?
+
+1. Set `TOOLS_ENABLED=true` and `MCP_SERVERS_CONFIG` (JSON path or inline config) in `.env.production` — see [CONFIGURATION.md](CONFIGURATION.md).
+2. Install the **`[mcp]`** extra in the **production image**. The default `Dockerfile.prod` installs `[livekit]` only; rebuild with:
+   ```dockerfile
+   RUN pip install --no-cache-dir -e ".[livekit,mcp]"
+   ```
+3. Redeploy and confirm tool discovery in logs on startup when `MCP_STARTUP_DISCOVER=true`.
+
+Details: [architecture/mcp-tool-router.md](architecture/mcp-tool-router.md). Limitations: [release/known-limitations.md](release/known-limitations.md).
+
+---
+
 ## Knowledge base
 
 ### How are uploads processed?

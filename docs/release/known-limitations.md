@@ -15,7 +15,7 @@
   sandbox before claiming production proof.
 - **Freshdesk** — Not implemented; use Zendesk, `mock` ticketing, or export handoffs via replay/API.
 - **Invite email** — Resend and SMTP are supported via `EMAIL_PROVIDER`; default `log` mode does not send mail. The invite-create API returns `email_delivery_warning`, and Settings → Invites shows that warning with the accept URL.
-- **MCP servers** — Require `pip install -e ".[mcp]"` in production image when `MCP_SERVERS_CONFIG` is set.
+- **MCP servers** — Require `pip install -e ".[mcp]"` in production image when `MCP_SERVERS_CONFIG` is set. See [FAQ.md](../FAQ.md#how-do-i-turn-on-mcp-tools-in-production).
 
 ## Operations
 
